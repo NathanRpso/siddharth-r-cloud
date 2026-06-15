@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rapsodo Design System — Reference</title>
+<link rel="stylesheet" href="../tokens.css" />
+<style>
+  body { background: var(--neutral-950); color: #fff; padding: 48px; font-family: var(--font-sans); }
+  h1 { font-family: var(--font-display); font-weight: 800; font-style: italic; text-transform: uppercase; font-size: 72px; line-height: 1; letter-spacing: -0.02em; margin-bottom: 8px; }
+  h1 em { font-style: normal; color: var(--rap-red); }
+  .sub { color: var(--neutral-400); margin-bottom: 48px; max-width: 640px; }
+  .group { margin-top: 48px; }
+  .group-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--neutral-500); margin-bottom: 16px; font-weight: 700; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  a.card { background: var(--neutral-900); border: 1px solid var(--neutral-800); border-radius: 16px; padding: 24px; color: #fff; text-decoration: none; transition: all 200ms var(--ease-out); display: block; }
+  a.card:hover { border-color: var(--rap-red); transform: translateY(-2px); }
+  .card-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .card-desc { font-size: 13px; color: var(--neutral-400); }
+  .kicker { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--rap-red); margin-bottom: 8px; font-weight: 700; }
+  .header-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .header-bar img { height: 32px; }
+</style>
+</head>
+<body>
+
+<div class="header-bar">
+  <img src="../assets/logos/rapsodo-wordmark.svg" alt="Rapsodo"/>
+  <span style="color:var(--neutral-500); font-size:12px; text-transform:uppercase; letter-spacing:0.1em;">Design System · Reference</span>
+</div>
+
+<h1>Rapsodo <em>Design</em> System</h1>
+<p class="sub">Visual reference for tokens and components. Open any card to see the real rendered component with full markup/styling. For implementation guidance, see <code>../CLAUDE.md</code>.</p>
+
+<div class="group">
+  <div class="group-label">Foundations</div>
+  <div class="grid">
+    <a class="card" href="colors.html"><div class="kicker">Atoms</div><div class="card-title">Colors</div><div class="card-desc">Brand, sport accents, neutrals, semantic.</div></a>
+    <a class="card" href="typography.html"><div class="kicker">Atoms</div><div class="card-title">Typography</div><div class="card-desc">Acumin display + Barlow text.</div></a>
+    <a class="card" href="spacing-radii-shadows.html"><div class="kicker">Atoms</div><div class="card-title">Spacing · Radii · Shadows</div><div class="card-desc">4pt scale, radius ladder, elevation.</div></a>
+    <a class="card" href="iconography.html"><div class="kicker">Atoms</div><div class="card-title">Iconography</div><div class="card-desc">102 UI icons · 15 metric icons · store badges.</div></a>
+  </div>
+</div>
+
+<div class="group">
+  <div class="group-label">Components · Form &amp; action</div>
+  <div class="grid">
+    <a class="card" href="buttons.html"><div class="kicker">Molecules</div><div class="card-title">Buttons</div><div class="card-desc">Primary CTA, secondary, ghost, sport variants.</div></a>
+    <a class="card" href="forms.html"><div class="kicker">Molecules</div><div class="card-title">Forms</div><div class="card-desc">Inputs, selects, checkboxes, toggles, sliders.</div></a>
+    <a class="card" href="controls.html"><div class="kicker">Molecules</div><div class="card-title">Controls</div><div class="card-desc">Switches, progress, tooltips, highlights.</div></a>
+    <a class="card" href="date-picker.html"><div class="kicker">Molecules</div><div class="card-title">Date picker</div><div class="card-desc">Calendar, range, presets.</div></a>
+    <a class="card" href="dropdowns.html"><div class="kicker">Molecules</div><div class="card-title">Dropdowns</div><div class="card-desc">Menus, selects, combobox.</div></a>
+  </div>
+</div>
+
+<div class="group">
+  <div class="group-label">Components · Content &amp; status</div>
+  <div class="grid">
+    <a class="card" href="feedback.html"><div class="kicker">Molecules</div><div class="card-title">Feedback</div><div class="card-desc">Alerts, toasts, tags, badges.</div></a>
+    <a class="card" href="avatars.html"><div class="kicker">Molecules</div><div class="card-title">Avatars</div><div class="card-desc">Single, stacked, status.</div></a>
+    <a class="card" href="bullets.html"><div class="kicker">Molecules</div><div class="card-title">Bullets &amp; Lists</div><div class="card-desc">Check-lists, ordered, styled.</div></a>
+    <a class="card" href="modals.html"><div class="kicker">Organisms</div><div class="card-title">Modals &amp; Dialogs</div><div class="card-desc">Confirm, form, media, drawer.</div></a>
+    <a class="card" href="navigation.html"><div class="kicker">Organisms</div><div class="card-title">Navigation</div><div class="card-desc">Accordion, breadcrumb, tabs, pagination, steppers.</div></a>
+    <a class="card" href="product-cards.html"><div class="kicker">Composition</div><div class="card-title">Product &amp; Data Cards</div><div class="card-desc">Commerce cards, session cards, cart.</div></a>
+  </div>
+</div>
+
+<div class="group">
+  <div class="group-label">Brand</div>
+  <div class="grid">
+    <a class="card" href="logos-and-brand.html"><div class="kicker">Brand</div><div class="card-title">Logos &amp; Brand</div><div class="card-desc">Wordmark, lockups, sport marks, clear-space.</div></a>
+  </div>
+</div>
+
+</body>
+</html>

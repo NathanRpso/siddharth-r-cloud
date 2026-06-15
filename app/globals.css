@@ -1,0 +1,218 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Rapsodo Design System — Tokens (inlined from public/design-system/tokens.css)
+   Font URLs rewritten to absolute paths under /design-system/fonts/.
+   ========================================================================== */
+
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 100; font-display: swap; src: url("/design-system/fonts/Barlow-Thin.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 300; font-display: swap; src: url("/design-system/fonts/Barlow-Light.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: swap; src: url("/design-system/fonts/Barlow-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: swap; src: url("/design-system/fonts/Barlow-Medium.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: swap; src: url("/design-system/fonts/Barlow-SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 700; font-display: swap; src: url("/design-system/fonts/Barlow-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 800; font-display: swap; src: url("/design-system/fonts/Barlow-ExtraBold.ttf") format("truetype"); }
+
+@font-face { font-family: "Acumin Pro ExtraCondensed"; font-style: normal; font-weight: 600; font-display: swap; src: url("/design-system/fonts/Acumin_Pro_ExtraCond_Semibold.otf") format("opentype"); }
+@font-face { font-family: "Acumin Pro ExtraCondensed"; font-style: italic; font-weight: 600; font-display: swap; src: url("/design-system/fonts/Acumin_Pro_ExtraCond_Semibold_Italic.otf") format("opentype"); }
+@font-face { font-family: "Acumin Pro ExtraCondensed"; font-style: italic; font-weight: 700; font-display: swap; src: url("/design-system/fonts/Acumin-Pro-ExtraCond-Bold-Italic.ttf") format("truetype"); }
+@font-face { font-family: "Acumin Pro ExtraCondensed"; font-style: italic; font-weight: 800; font-display: swap; src: url("/design-system/fonts/Acumin-Pro-ExtraCond-Bold-Italic.ttf") format("truetype"); }
+
+:root {
+  --rap-red: #CD1B32;
+  --rap-red-hover: #B81729;
+  --rap-red-dark: #A41E22;
+  --rap-black: #000;
+  --rap-white: #FFF;
+
+  --sport-golf: #1BE377;
+  --sport-golf-400: #1AFF84;
+  --sport-golf-600: #1CB864;
+  --sport-golf-700: #1D804A;
+
+  --neutral-0: #FFFFFF;
+  --neutral-25: #FCFCFC;
+  --neutral-50: #F7F7F7;
+  --neutral-75: #F5F5F5;
+  --neutral-100: #EDEDED;
+  --neutral-150: #E4E5E9;
+  --neutral-200: #DFDFDF;
+  --neutral-300: #F2F4F7;
+  --neutral-400: #9CA3AF;
+  --neutral-500: #8D94A2;
+  --neutral-600: #737373;
+  --neutral-700: #5C616B;
+  --neutral-800: #404040;
+  --neutral-850: #262626;
+  --neutral-900: #171717;
+  --neutral-950: #0A0A0A;
+
+  --success: #16A34A; --success-bg: #DCFCE7;
+  --warning: #F59E0B; --warning-bg: #FEF3C7;
+  --danger:  #DD393A; --danger-bg:  #FEE2E2;
+  --info:    #2B73DF; --info-bg:    #DBEAFE;
+
+  --text-primary: var(--neutral-950);
+  --text-secondary: var(--neutral-700);
+  --text-tertiary: var(--neutral-500);
+  --text-disabled: var(--neutral-400);
+  --text-inverse: var(--neutral-0);
+  --text-brand: var(--rap-red);
+
+  --surface-0: var(--neutral-0);
+  --surface-1: var(--neutral-50);
+  --surface-2: var(--neutral-75);
+  --surface-3: var(--neutral-100);
+  --surface-inverse: var(--neutral-950);
+
+  --border-subtle: var(--neutral-150);
+  --border-default: var(--neutral-200);
+  --border-strong: var(--neutral-400);
+  --border-focus: var(--rap-red);
+
+  --font-display: "Acumin Pro ExtraCondensed", "Barlow Condensed", "Barlow", system-ui, sans-serif;
+  --font-sans: "Barlow", "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug:  -0.01em;
+  --tracking-cta:    0.07em;
+  --tracking-caps:   0.1em;
+
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px; --space-24: 96px;
+
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+  --radius-xl: 16px; --radius-2xl: 24px; --radius-3xl: 40px;
+  --radius-pill: 9999px;
+
+  --shadow-xs: 0 1px 2px 0 rgba(16,24,40,0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(16,24,40,0.10), 0 1px 2px -1px rgba(16,24,40,0.06);
+  --shadow-md: 0 4px 8px -2px rgba(16,24,40,0.10), 0 2px 4px -2px rgba(16,24,40,0.06);
+  --shadow-lg: 0 12px 16px -4px rgba(16,24,40,0.08), 0 4px 6px -2px rgba(16,24,40,0.03);
+
+  --ring-brand: 0 0 0 4px rgba(205,27,50,0.18);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 320ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  background: var(--surface-1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.1;
+  letter-spacing: var(--tracking-snug);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Utility type classes — match DS reference */
+.type-display-xxl { font: 800 italic 96px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+.type-display-xl  { font: 800 italic 72px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+.type-display-lg  { font: 800 italic 56px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+.type-display-md  { font: 800 italic 40px/1.15 var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+.type-display-sm  { font: 800 italic 32px/1.15 var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+.type-display-xs  { font: 800 italic 24px/1.2  var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+
+/* type-h* utility classes always reset font-style/text-transform so they
+   can override the global <h1>-<h6> reset (which sets italic + uppercase). */
+.type-h1 { font: 700 24px/1.25 var(--font-sans); letter-spacing: var(--tracking-snug); font-style: normal; text-transform: none; }
+.type-h2 { font: 700 20px/1.25 var(--font-sans); letter-spacing: var(--tracking-snug); font-style: normal; text-transform: none; }
+.type-h3 { font: 600 18px/1.4  var(--font-sans); font-style: normal; text-transform: none; }
+.type-h4 { font: 600 16px/1.4  var(--font-sans); font-style: normal; text-transform: none; }
+
+.type-body-lg { font: 400 18px/1.55 var(--font-sans); }
+.type-body    { font: 400 16px/1.55 var(--font-sans); }
+.type-body-sm { font: 400 14px/1.55 var(--font-sans); }
+
+.type-label    { font: 600 14px/1.4 var(--font-sans); letter-spacing: 0.04em; }
+.type-label-sm { font: 600 12px/1.4 var(--font-sans); letter-spacing: 0.04em; text-transform: uppercase; }
+.type-eyebrow  { font: 700 12px/1.4 var(--font-sans); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--rap-red); }
+.type-mono     { font: 400 14px/1.4 var(--font-mono); }
+
+/* Custom scrollbar — subtle, design-system neutral */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--neutral-200); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--neutral-400); }
+
+/* ==========================================================================
+   All-time bests — animated metric icons.
+   Icons are stationary by default; the animation classes are only attached
+   on `group-hover` (see AnimatedBestIcon), so motion plays on tile hover and
+   resets to rest otherwise. transform-box:view-box lets transform-origin be
+   expressed in viewBox user units.
+   ========================================================================== */
+
+/* Longest Drive — ball traverses the full trajectory arc smoothly.
+   offset-path drives continuous motion along the bezier; opacity only
+   masks the loop seam so the reset jump isn't visible. */
+@keyframes pb-fly {
+  0%   { offset-distance: 0%;   opacity: 0; }
+  10%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+
+/* Fastest Ball — speed lines streak past, ball nudges forward. */
+@keyframes pb-streak {
+  0%   { transform: translateX(7px);  opacity: 0; }
+  35%  { opacity: 1; }
+  100% { transform: translateX(-5px); opacity: 0; }
+}
+@keyframes pb-nudge {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(1.4px); }
+}
+
+/* Fastest Swing — a stick-figure golfer swings: address → backswing →
+   impact → follow-through finish (club wrapped over the shoulder, matching
+   the reference) → back to address. Starts and ends at rest so there's no
+   jump when hover begins or ends. */
+@keyframes pb-golfswing {
+  0%   { transform: rotate(0deg); }     /* address */
+  12%  { transform: rotate(-82deg); }   /* top of backswing (club up & back) */
+  45%  { transform: rotate(2deg); }     /* impact */
+  74%  { transform: rotate(142deg); }   /* finish — club over the lead shoulder */
+  100% { transform: rotate(0deg); }     /* return to address */
+}
+
+/* Cleanest Strike — club head winds up, sweeps through contact, and the
+   ball flies cleanly out of frame. The club reaches vertical (rotate 0) at
+   45% and the ball launches at exactly that instant; both animations share
+   one duration so the keyframe positions line up in wall-clock time. */
+@keyframes pb-clubstrike {
+  0%   { transform: rotate(55deg); }   /* wind-up: head up-left */
+  30%  { transform: rotate(55deg); }
+  45%  { transform: rotate(0deg); }    /* vertical: contact */
+  55%  { transform: rotate(-45deg); }  /* follow through up-right */
+  72%  { transform: rotate(-45deg); }
+  100% { transform: rotate(55deg); }
+}
+@keyframes pb-cleanlaunch {
+  0%   { transform: translate(0, 0);        opacity: 0; }
+  12%  { opacity: 1; }
+  37%  { transform: translate(0, 0);        opacity: 1; }  /* launches ~0.1s before vertical */
+  80%  { transform: translate(20px, -11px); opacity: 1; }
+  100% { transform: translate(31px, -17px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pb-anim { animation: none !important; }
+}

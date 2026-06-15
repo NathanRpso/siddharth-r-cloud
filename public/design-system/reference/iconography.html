@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Iconography · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+    gap: 0;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--surface-0);
+  }
+  .icon-cell {
+    border-right: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 18px 10px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    transition: background var(--dur-base) var(--ease-out);
+    color: var(--neutral-900);
+  }
+  .icon-cell:hover { background: var(--neutral-50); }
+  .icon-cell img, .icon-cell svg { width: 24px; height: 24px; display: block; }
+  .icon-cell .name {
+    font: 500 10.5px/1.2 var(--font-mono);
+    color: var(--text-tertiary);
+    word-break: break-word;
+  }
+  .icon-cell.sport-green { color: var(--sport-golf); }
+  .icon-cell.sport-blue { color: var(--sport-baseball); }
+  .icon-cell.sport-yellow { color: #b89200; }
+
+  /* Style comparison */
+  .style-compare {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .style-cell {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 32px 24px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;
+  }
+  .style-cell .name { font: 700 italic 18px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
+  .style-cell .meta { font: 500 12px/1.4 var(--font-sans); color: var(--text-secondary); max-width: 28ch; }
+
+  /* Sizes */
+  .size-row {
+    display: flex; align-items: flex-end; gap: 40px;
+    padding: 32px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    background: var(--surface-0);
+    flex-wrap: wrap;
+  }
+  .size-row > div { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .size-row .lbl { font: 500 11px/1 var(--font-mono); color: var(--text-tertiary); }
+  .size-row img { display: block; color: var(--neutral-900); }
+
+  /* Usage in context */
+  .usage-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .usage-card {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    background: var(--surface-0);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .usage-card img { width: 24px; height: 24px; flex: none; }
+  .usage-card .u-label { font: 600 13px/1.2 var(--font-sans); color: var(--text-primary); }
+  .usage-card .u-hint { font: 400 11.5px/1.3 var(--font-mono); color: var(--text-tertiary); margin-top: 2px; }
+
+  /* Store badges */
+  .store-row {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    padding: 24px;
+    background: var(--neutral-950);
+    border-radius: var(--radius-xl);
+    align-items: center;
+  }
+  .store-row img { height: 48px; width: auto; }
+
+  /* Rules */
+  .bullet-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  .bullet-list li { display: flex; gap: 12px; align-items: flex-start; font: 400 14px/1.5 var(--font-sans); color: var(--text-secondary); }
+  .bullet-list li .marker {
+    flex: none; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--rap-red); color: #fff;
+    display: grid; place-items: center; margin-top: 1px;
+  }
+
+  /* Metric feature row */
+  .metric-hero {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--surface-0);
+  }
+  .metric-hero .mcell {
+    padding: 28px 18px 22px;
+    border-right: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex; flex-direction: column; gap: 10px;
+    color: var(--sport-golf);
+  }
+  .metric-hero .mcell img { width: 32px; height: 32px; }
+  .metric-hero .mcell .mname { font: 600 12px/1.2 var(--font-sans); color: var(--text-primary); letter-spacing: 0.01em; }
+  .metric-hero .mcell .munit { font: 500 10.5px/1 var(--font-mono); color: var(--text-tertiary); }
+
+  /* External note card */
+  .ext-note {
+    padding: 28px 24px;
+    border: 1px dashed var(--border-subtle);
+    border-radius: var(--radius-xl);
+    background: var(--neutral-50);
+    display: flex; gap: 20px; align-items: flex-start;
+  }
+  .ext-note .nmark { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--rap-red); color: #fff; display: grid; place-items: center; }
+  .ext-note h4 { font: 700 italic 18px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: 0.01em; color: var(--neutral-950); margin: 0 0 6px; }
+  .ext-note p { font: 400 13.5px/1.55 var(--font-sans); color: var(--text-secondary); margin: 0; max-width: 65ch; }
+</style>
+</head>
+<body>
+<main class="ds-page">
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Atoms · Foundation</div>
+      <h1 class="ds-title">Iconography</h1>
+      <p class="ds-sub">100 stroke icons drawn on a 24&nbsp;px grid plus 15 metric glyphs specific to Rapsodo's sport products. Inherit <code>currentColor</code> and sit on a 20 × 20 live area with 2&nbsp;px padding.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- Style comparison -->
+  <section class="ds-section" style="margin-top:0;">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Three roles</div>
+      <div class="ds-section-note">Stroke everywhere. Metric for data. Brand for sport products.</div>
+    </div>
+    <div class="style-compare">
+      <div class="style-cell">
+        <img src="../assets/icons/stroke/search.svg" width="48" height="48" alt="" />
+        <div class="name">Stroke</div>
+        <div class="meta">Nav, toolbars, content. 100-icon general set, stroke on a 20×20 grid.</div>
+      </div>
+      <div class="style-cell" style="color: var(--sport-golf); background: var(--sport-golf-50); border-color: var(--sport-golf-100);">
+        <img src="../assets/icons/metric/carry.svg?v=2" width="48" height="48" alt="" />
+        <div class="name" style="color: var(--sport-golf-900);">Metric</div>
+        <div class="meta">15 bespoke glyphs for ball/club tracking — carry, spin, launch, apex, smash.</div>
+      </div>
+      <div class="style-cell" style="background: var(--neutral-950); color: #fff; border-color: var(--neutral-950);">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h4v16H4zM12 4h4l3 8-3 8h-4l3-8z"/></svg>
+        <div class="name" style="color:#fff;">Brand</div>
+        <div class="meta" style="color:rgba(255,255,255,0.72);">Rapsodo wordmark &amp; product marks — treat as art, not icons.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sizes -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Sizes</div>
+      <div class="ds-section-note">24 is base. 16 for dense tables, 20 inline body, 32 for cards, 48+ for feature tiles.</div>
+    </div>
+    <div class="size-row">
+      <div><img src="../assets/icons/stroke/heart.svg" width="16" height="16" alt="" /><div class="lbl">16</div></div>
+      <div><img src="../assets/icons/stroke/heart.svg" width="20" height="20" alt="" /><div class="lbl">20</div></div>
+      <div><img src="../assets/icons/stroke/heart.svg" width="24" height="24" alt="" /><div class="lbl">24 · base</div></div>
+      <div><img src="../assets/icons/stroke/heart.svg" width="32" height="32" alt="" /><div class="lbl">32</div></div>
+      <div><img src="../assets/icons/stroke/heart.svg" width="40" height="40" alt="" /><div class="lbl">40</div></div>
+      <div><img src="../assets/icons/stroke/heart.svg" width="56" height="56" alt="" /><div class="lbl">56</div></div>
+      <div><img src="../assets/icons/stroke/heart.svg" width="72" height="72" alt="" /><div class="lbl">72</div></div>
+    </div>
+  </section>
+
+  <!-- Metric hero -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Metric glyphs · 15</div>
+      <div class="ds-section-note">Used across MLM2PRO &amp; MLM Tour sessions — 1:1 with Rapsodo's tracked shot data.</div>
+    </div>
+    <div class="metric-hero">
+      <div class="mcell"><img src="../assets/icons/metric/carry.svg?v=2" alt="" /><div class="mname">Carry</div><div class="munit">yds</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/total-carry.svg?v=2" alt="" /><div class="mname">Total carry</div><div class="munit">yds</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/side-carry.svg?v=2" alt="" /><div class="mname">Side carry</div><div class="munit">ft</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/club-speed.svg?v=2" alt="" /><div class="mname">Club speed</div><div class="munit">mph</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/ball-speed.svg?v=2" alt="" /><div class="mname">Ball speed</div><div class="munit">mph</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/smash-factor.svg?v=2" alt="" /><div class="mname">Smash</div><div class="munit">ratio</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/launch-direction.svg?v=2" alt="" /><div class="mname">Launch dir.</div><div class="munit">°</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/launch-angle.svg?v=2" alt="" /><div class="mname">Launch angle</div><div class="munit">°</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/descent-angle.svg?v=2" alt="" /><div class="mname">Descent</div><div class="munit">°</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/spin-rate.svg?v=2" alt="" /><div class="mname">Spin rate</div><div class="munit">rpm</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/spin-axis.svg?v=2" alt="" /><div class="mname">Spin axis</div><div class="munit">°</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/apex.svg?v=2" alt="" /><div class="mname">Apex</div><div class="munit">ft</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/shot-type.svg?v=2" alt="" /><div class="mname">Shot type</div><div class="munit">label</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/angle-of-attack.svg?v=2" alt="" /><div class="mname">Angle of attack</div><div class="munit">°</div></div>
+      <div class="mcell"><img src="../assets/icons/metric/club-path.svg?v=2" alt="" /><div class="mname">Club path</div><div class="munit">°</div></div>
+    </div>
+  </section>
+
+  <!-- Stroke library -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Stroke library · 100</div>
+      <div class="ds-section-note">General UI — grouped by function.</div>
+    </div>
+
+    <h3 class="ds-group-label">Navigation &amp; control</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><img src="../assets/icons/stroke/home.svg" alt="" /><div class="name">home</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/menu.svg" alt="" /><div class="name">menu</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/menu-alt-1.svg" alt="" /><div class="name">menu-alt</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/view-grid.svg" alt="" /><div class="name">view-grid</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/view-list.svg" alt="" /><div class="name">view-list</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/filter.svg" alt="" /><div class="name">filter</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/adjustments.svg" alt="" /><div class="name">adjustments</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/search.svg" alt="" /><div class="name">search</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/dots-horizontal.svg" alt="" /><div class="name">dots-horiz</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/dots-vertical.svg" alt="" /><div class="name">dots-vert</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/refresh.svg" alt="" /><div class="name">refresh</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/cog.svg" alt="" /><div class="name">cog</div></div>
+    </div>
+
+    <h3 class="ds-group-label">Arrows &amp; direction</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><img src="../assets/icons/stroke/arrow-up.svg" alt="" /><div class="name">arrow-up</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/arrow-down.svg" alt="" /><div class="name">arrow-down</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/arrow-left.svg" alt="" /><div class="name">arrow-left</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/arrow-right.svg" alt="" /><div class="name">arrow-right</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/chevron-up.svg" alt="" /><div class="name">chevron-up</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/chevron-down.svg" alt="" /><div class="name">chevron-down</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/chevron-left.svg" alt="" /><div class="name">chevron-left</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/chevron-right.svg" alt="" /><div class="name">chevron-right</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/trending-up.svg" alt="" /><div class="name">trending-up</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/trending-down.svg" alt="" /><div class="name">trending-down</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/external-link.svg" alt="" /><div class="name">external</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/link.svg" alt="" /><div class="name">link</div></div>
+    </div>
+
+    <h3 class="ds-group-label">State &amp; feedback</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><img src="../assets/icons/stroke/check.svg" alt="" /><div class="name">check</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/check-circle.svg" alt="" /><div class="name">check-circle</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/x.svg" alt="" /><div class="name">x</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/x-circle.svg" alt="" /><div class="name">x-circle</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/plus.svg" alt="" /><div class="name">plus</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/plus-circle.svg" alt="" /><div class="name">plus-circle</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/minus-circle.svg" alt="" /><div class="name">minus-circle</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/exclamation.svg" alt="" /><div class="name">exclaim</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/exclamation-circle.svg" alt="" /><div class="name">exclaim-circle</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/info-circle.svg" alt="" /><div class="name">info-circle</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/question-mark.svg" alt="" /><div class="name">question</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/badge-check.svg" alt="" /><div class="name">badge-check</div></div>
+    </div>
+
+    <h3 class="ds-group-label">User, messaging &amp; social</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><img src="../assets/icons/stroke/user.svg" alt="" /><div class="name">user</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/user-circle.svg" alt="" /><div class="name">user-circle</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/user-add.svg" alt="" /><div class="name">user-add</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/user-group.svg" alt="" /><div class="name">user-group</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/mail.svg" alt="" /><div class="name">mail</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/chat.svg" alt="" /><div class="name">chat</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/chat-alt.svg" alt="" /><div class="name">chat-alt</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/bell.svg" alt="" /><div class="name">bell</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/phone.svg" alt="" /><div class="name">phone</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/thumb-up.svg" alt="" /><div class="name">thumb-up</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/thumb-down.svg" alt="" /><div class="name">thumb-down</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/heart.svg" alt="" /><div class="name">heart</div></div>
+    </div>
+
+    <h3 class="ds-group-label">Content &amp; files</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><img src="../assets/icons/stroke/document.svg" alt="" /><div class="name">document</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/document-text.svg" alt="" /><div class="name">document-text</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/document-duplicate.svg" alt="" /><div class="name">doc-duplicate</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/clipboard.svg" alt="" /><div class="name">clipboard</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/folder.svg" alt="" /><div class="name">folder</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/upload.svg" alt="" /><div class="name">upload</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/download.svg" alt="" /><div class="name">download</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/share.svg" alt="" /><div class="name">share</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/pencil.svg" alt="" /><div class="name">pencil</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/pencil-alt.svg" alt="" /><div class="name">pencil-alt</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/trash.svg" alt="" /><div class="name">trash</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/bookmark.svg" alt="" /><div class="name">bookmark</div></div>
+    </div>
+
+    <h3 class="ds-group-label">Media &amp; time</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><img src="../assets/icons/stroke/camera.svg" alt="" /><div class="name">camera</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/photograph.svg" alt="" /><div class="name">photograph</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/video-camera.svg" alt="" /><div class="name">video-camera</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/play-circle.svg" alt="" /><div class="name">play</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/pause-circle.svg" alt="" /><div class="name">pause</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/microphone.svg" alt="" /><div class="name">microphone</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/eye.svg" alt="" /><div class="name">eye</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/eye-off.svg" alt="" /><div class="name">eye-off</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/calendar.svg" alt="" /><div class="name">calendar</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/clock.svg" alt="" /><div class="name">clock</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/sun.svg" alt="" /><div class="name">sun</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/moon.svg" alt="" /><div class="name">moon</div></div>
+    </div>
+
+    <h3 class="ds-group-label">Place &amp; globe</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><img src="../assets/icons/stroke/globe.svg" alt="" /><div class="name">globe</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/globe-alt.svg" alt="" /><div class="name">globe-alt</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/location-marker.svg" alt="" /><div class="name">location</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/map.svg" alt="" /><div class="name">map</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/flag.svg" alt="" /><div class="name">flag</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/briefcase.svg" alt="" /><div class="name">briefcase</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/office-building.svg" alt="" /><div class="name">office</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/desktop-computer.svg" alt="" /><div class="name">desktop</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/device-tablet.svg" alt="" /><div class="name">tablet</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/academic-cap.svg" alt="" /><div class="name">academic</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/gift.svg" alt="" /><div class="name">gift</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/star.svg" alt="" /><div class="name">star</div></div>
+    </div>
+
+    <h3 class="ds-group-label">Commerce, data &amp; meta</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><img src="../assets/icons/stroke/credit-card.svg" alt="" /><div class="name">credit-card</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/currency-dollar.svg" alt="" /><div class="name">currency-$</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/cash.svg" alt="" /><div class="name">cash</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/shopping-cart.svg" alt="" /><div class="name">cart</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/shopping-bag.svg" alt="" /><div class="name">bag</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/tag.svg" alt="" /><div class="name">tag</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/chart-bar.svg" alt="" /><div class="name">chart-bar</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/chart-pie.svg" alt="" /><div class="name">chart-pie</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/chart-square.svg" alt="" /><div class="name">chart-sq</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/lock-closed.svg" alt="" /><div class="name">lock</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/key.svg" alt="" /><div class="name">key</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/shield-check.svg" alt="" /><div class="name">shield-check</div></div>
+    </div>
+
+    <h3 class="ds-group-label">Dev &amp; misc</h3>
+    <div class="icon-grid">
+      <div class="icon-cell"><img src="../assets/icons/stroke/code.svg" alt="" /><div class="name">code</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/terminal.svg" alt="" /><div class="name">terminal</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/sparkles.svg" alt="" /><div class="name">sparkles</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/lightning-bolt.svg" alt="" /><div class="name">lightning</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/fire.svg" alt="" /><div class="name">fire</div></div>
+      <div class="icon-cell"><img src="../assets/icons/stroke/light-bulb.svg" alt="" /><div class="name">light-bulb</div></div>
+    </div>
+  </section>
+
+  <!-- Usage in context -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">In context</div>
+      <div class="ds-section-note">Icons lead metadata — match cap-height of adjacent text.</div>
+    </div>
+    <div class="usage-row">
+      <div class="usage-card"><img src="../assets/icons/stroke/calendar.svg" alt="" /><div><div class="u-label">Thu, Oct 24</div><div class="u-hint">date / calendar</div></div></div>
+      <div class="usage-card"><img src="../assets/icons/stroke/location-marker.svg" alt="" /><div><div class="u-label">Innisbrook, FL</div><div class="u-hint">location / marker</div></div></div>
+      <div class="usage-card"><img src="../assets/icons/stroke/user-group.svg" alt="" /><div><div class="u-label">4 players</div><div class="u-hint">group size</div></div></div>
+      <div class="usage-card"><img src="../assets/icons/stroke/clock.svg" alt="" /><div><div class="u-label">1h 42m session</div><div class="u-hint">duration</div></div></div>
+    </div>
+  </section>
+
+  <!-- Store badges -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Store badges</div>
+      <div class="ds-section-note">Official wordmarks for app-download CTAs — always on dark or photographic backgrounds.</div>
+    </div>
+    <div class="store-row">
+      <img src="../assets/icons/store/app-store.svg?v=2" alt="Download on the App Store" />
+      <img src="../assets/icons/store/google-play.svg?v=2" alt="Get it on Google Play" />
+      <img src="../assets/icons/store/galaxy-store.svg?v=2" alt="Galaxy Store" />
+    </div>
+  </section>
+
+  <!-- External libraries note -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Country flags, payment &amp; social</div>
+      <div class="ds-section-note">Use the source library directly — they don't round-trip as clean SVGs.</div>
+    </div>
+    <div class="ext-note">
+      <div class="nmark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+      </div>
+      <div>
+        <h4>Use the Figma library in-place</h4>
+        <p>Country flags (195), payment logos (40 — Visa/Mastercard/AMEX/Apple&nbsp;Pay/…) and social brand marks (25) live in <code>06. Icons</code>. Their source shapes are composed — stripes, masks, emblems — and don't export as clean standalone SVGs. When you need them, pull straight from the component library instead of rebuilding them here.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rules -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Rules</div>
+      <div class="ds-section-note">Don't redraw — copy from library.</div>
+    </div>
+    <ul class="bullet-list">
+      <li><span class="marker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Design on a <strong>24 × 24</strong> grid, 2&nbsp;px padding, 20&nbsp;×&nbsp;20 live area.</li>
+      <li><span class="marker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Stroke <strong>1.5–2&nbsp;px</strong>, rounded caps/joins. Library is drawn at ~1.5&nbsp;px.</li>
+      <li><span class="marker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Inherit <code>currentColor</code>. Never hardcode brand red into an icon SVG.</li>
+      <li><span class="marker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Match icon size to the cap-height of adjacent text (24&nbsp;px icon for 16&nbsp;px body).</li>
+      <li><span class="marker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Metric glyphs are domain-specific — only use on data screens &amp; sport dashboards.</li>
+    </ul>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="feedback.html">← Feedback</a>
+    <a href="logos-and-brand.html">Logos &amp; Brand →</a>
+  </nav>
+</main>
+</body>
+</html>

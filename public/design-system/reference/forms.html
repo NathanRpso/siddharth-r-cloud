@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Forms · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label {
+    font: 600 13px/1.2 var(--font-sans);
+    letter-spacing: 0.02em;
+    color: var(--neutral-900);
+  }
+  .field .help {
+    font: 500 12px/1.4 var(--font-sans);
+    color: var(--text-tertiary);
+  }
+  .field .err {
+    font: 600 12px/1.4 var(--font-sans);
+    color: var(--danger);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    background: #fff;
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-md);
+    font: 400 15px/1.2 var(--font-sans);
+    color: var(--neutral-900);
+    transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+  }
+  .input::placeholder { color: var(--neutral-400); }
+  .input:hover { border-color: var(--neutral-400); }
+  .input:focus { outline: none; border-color: var(--rap-red); box-shadow: var(--ring-brand); }
+  .input[aria-invalid="true"] { border-color: var(--danger); }
+  .input[aria-invalid="true"]:focus { box-shadow: 0 0 0 4px rgba(221,57,58,0.2); }
+  .input:disabled { background: var(--neutral-75); color: var(--neutral-500); cursor: not-allowed; }
+
+  textarea.input { height: auto; padding: 14px 16px; resize: vertical; min-height: 120px; line-height: 1.5; }
+
+  .input-group {
+    position: relative;
+  }
+  .input-group .input { padding-left: 44px; }
+  .input-group .ico {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px; color: var(--neutral-500);
+    pointer-events: none;
+  }
+
+  /* Select */
+  .select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235C616B' stroke-width='2.4' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 44px;
+  }
+
+  /* Checkbox / Radio */
+  .choice { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+  .choice input { position: absolute; opacity: 0; pointer-events: none; }
+  .box, .radio-dot {
+    flex: none;
+    width: 20px; height: 20px;
+    border: 1.5px solid var(--neutral-400);
+    background: #fff;
+    transition: all var(--dur-base) var(--ease-out);
+    display: grid; place-items: center;
+    color: #fff;
+  }
+  .box { border-radius: 4px; }
+  .radio-dot { border-radius: 50%; }
+  .choice:hover .box, .choice:hover .radio-dot { border-color: var(--neutral-700); }
+  .choice input:checked + .box { background: var(--rap-red); border-color: var(--rap-red); }
+  .choice input:checked + .radio-dot { border-color: var(--rap-red); border-width: 6px; }
+  .choice input:focus-visible + .box,
+  .choice input:focus-visible + .radio-dot { box-shadow: var(--ring-brand); }
+  .box svg { opacity: 0; }
+  .choice input:checked + .box svg { opacity: 1; }
+  .choice-label {
+    font: 500 14px/1.3 var(--font-sans);
+    color: var(--neutral-900);
+    user-select: none;
+  }
+  .choice input:disabled ~ .choice-label { color: var(--neutral-400); cursor: not-allowed; }
+  .choice input:disabled + .box, .choice input:disabled + .radio-dot { background: var(--neutral-75); border-color: var(--neutral-200); }
+
+  /* Switch */
+  .switch { position: relative; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+  .switch input { position: absolute; opacity: 0; pointer-events: none; }
+  .track {
+    width: 44px; height: 24px;
+    border-radius: 12px;
+    background: var(--neutral-300);
+    position: relative;
+    transition: background var(--dur-base) var(--ease-out);
+  }
+  .track::after {
+    content: '';
+    position: absolute; left: 2px; top: 2px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: var(--shadow-xs);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .switch input:checked + .track { background: var(--rap-red); }
+  .switch input:checked + .track::after { transform: translateX(20px); }
+  .switch input:focus-visible + .track { box-shadow: var(--ring-brand); }
+
+  /* Slider */
+  .slider {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px;
+    background: var(--neutral-200);
+    border-radius: 3px;
+    outline: none;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--rap-red);
+    border: 3px solid #fff;
+    box-shadow: var(--shadow-sm);
+    cursor: grab;
+  }
+  .slider::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--rap-red);
+    border: 3px solid #fff;
+    box-shadow: var(--shadow-sm);
+    cursor: grab;
+  }
+
+  /* Search */
+  .panel {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    background: var(--surface-0);
+  }
+  .form-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  }
+  .form-grid .full { grid-column: 1 / -1; }
+
+  /* Tags / chips (used in search) */
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--neutral-75);
+    border: 1px solid var(--border-subtle);
+    font: 600 12px/1.2 var(--font-sans);
+    color: var(--neutral-800);
+  }
+  .chip.brand { background: rgba(205,27,50,0.08); border-color: rgba(205,27,50,0.24); color: var(--rap-red); }
+
+  .stepper {
+    display: flex; align-items: center; gap: 0;
+    counter-reset: step;
+  }
+  .stepper .step {
+    display: flex; align-items: center; gap: 10px;
+    font: 600 13px/1 var(--font-sans); color: var(--text-tertiary);
+  }
+  .stepper .dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1.5px solid var(--neutral-200); background: #fff;
+    display: grid; place-items: center;
+    font: 700 12px/1 var(--font-sans);
+    color: var(--neutral-500);
+  }
+  .stepper .step.done .dot { background: var(--rap-red); border-color: var(--rap-red); color: #fff; }
+  .stepper .step.current .dot { border-color: var(--rap-red); color: var(--rap-red); }
+  .stepper .step.current { color: var(--neutral-900); }
+  .stepper .step.done { color: var(--neutral-900); }
+  .stepper .line {
+    width: 48px; height: 2px; background: var(--neutral-200); margin: 0 12px;
+  }
+  .stepper .step.done + .line { background: var(--rap-red); }
+</style>
+</head>
+<body>
+<main class="ds-page">
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Molecules</div>
+      <h1 class="ds-title">Forms</h1>
+      <p class="ds-sub">Inputs, selects, switches, sliders — everything that captures an answer. Red is reserved for focus and destructive, never decoration.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- TEXT INPUTS -->
+  <section class="ds-section" style="margin-top:0;">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Text inputs</div>
+      <div class="ds-section-note">48&nbsp;px default, 8&nbsp;px radius, red focus ring.</div>
+    </div>
+    <div class="panel">
+      <div class="form-grid">
+        <div class="field">
+          <label for="i1">Email address</label>
+          <input id="i1" class="input" type="email" placeholder="you@rapsodo.com" />
+          <div class="help">We send session summaries every Monday.</div>
+        </div>
+        <div class="field">
+          <label for="i2">Password</label>
+          <div class="input-group">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V8a4 4 0 1 1 8 0v3"/></svg>
+            <input id="i2" class="input" type="password" value="••••••••" />
+          </div>
+          <div class="help">At least 8 characters with a number.</div>
+        </div>
+        <div class="field">
+          <label for="i3">Session name — focused</label>
+          <input id="i3" class="input" type="text" value="Range morning · Aug 12" style="border-color:var(--rap-red);box-shadow:var(--ring-brand);" />
+        </div>
+        <div class="field">
+          <label for="i4">Serial number — error</label>
+          <input id="i4" class="input" aria-invalid="true" type="text" value="MLM2-X00-ERROR" />
+          <div class="err">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+            We don't recognise that serial — check the back of your unit.
+          </div>
+        </div>
+        <div class="field">
+          <label for="i5">Disabled</label>
+          <input id="i5" class="input" type="text" value="Organization · read-only" disabled />
+        </div>
+        <div class="field">
+          <label for="i6">Club type</label>
+          <select id="i6" class="input select">
+            <option>Driver</option><option>3-Wood</option><option>5-Iron</option><option>Pitching Wedge</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="i7">Session notes</label>
+          <textarea id="i7" class="input" placeholder="What did you work on? Any observations?"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHOICE -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Choice</div>
+      <div class="ds-section-note">Checkboxes, radios, switches.</div>
+    </div>
+    <div class="panel">
+      <div class="form-grid">
+        <div class="field">
+          <label>Stats to include</label>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+            <label class="choice">
+              <input type="checkbox" checked />
+              <span class="box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="choice-label">Ball speed</span>
+            </label>
+            <label class="choice">
+              <input type="checkbox" checked />
+              <span class="box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="choice-label">Launch angle</span>
+            </label>
+            <label class="choice">
+              <input type="checkbox" />
+              <span class="box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="choice-label">Spin rate</span>
+            </label>
+            <label class="choice">
+              <input type="checkbox" disabled />
+              <span class="box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <span class="choice-label">Smash factor (Pro only)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Units</label>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+            <label class="choice">
+              <input type="radio" name="units" checked />
+              <span class="radio-dot"></span>
+              <span class="choice-label">Imperial (mph, yds)</span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="units" />
+              <span class="radio-dot"></span>
+              <span class="choice-label">Metric (km/h, m)</span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="units" disabled />
+              <span class="radio-dot"></span>
+              <span class="choice-label">Mixed (team default)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field full">
+          <label>Preferences</label>
+          <div style="display: flex; gap: 32px; flex-wrap: wrap; margin-top: 8px;">
+            <label class="switch"><input type="checkbox" checked /><span class="track"></span><span class="choice-label">Auto-save sessions</span></label>
+            <label class="switch"><input type="checkbox" /><span class="track"></span><span class="choice-label">Share with coach</span></label>
+            <label class="switch"><input type="checkbox" checked /><span class="track"></span><span class="choice-label">Weekly email summary</span></label>
+            <label class="switch"><input type="checkbox" disabled /><span class="track"></span><span class="choice-label">Broadcast live (Pro)</span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDER + SEARCH -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Sliders &amp; search</div>
+      <div class="ds-section-note">Range control, search field, filter chips.</div>
+    </div>
+    <div class="panel">
+      <div class="form-grid">
+        <div class="field">
+          <label>Club speed range · <span style="color:var(--rap-red);">86 – 112&nbsp;mph</span></label>
+          <input type="range" class="slider" min="60" max="140" value="112" style="margin-top: 10px;" />
+          <div style="display:flex;justify-content:space-between;font:500 11px/1 var(--font-mono);color:var(--text-tertiary);margin-top:8px;"><span>60</span><span>100</span><span>140</span></div>
+        </div>
+        <div class="field">
+          <label for="search">Find a session</label>
+          <div class="input-group">
+            <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input id="search" class="input" type="text" placeholder="Sessions, clubs, tags" />
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+            <span class="chip brand">Last 7 days</span>
+            <span class="chip">Driver</span>
+            <span class="chip">Outdoor</span>
+            <span class="chip">Coach: Sam K.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEPPER -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Progress &amp; steppers</div>
+      <div class="ds-section-note">Used in onboarding &amp; checkout.</div>
+    </div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:32px;">
+      <div class="stepper">
+        <div class="step done"><div class="dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>Plan</div>
+        <div class="line"></div>
+        <div class="step done"><div class="dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>Account</div>
+        <div class="line"></div>
+        <div class="step current"><div class="dot">3</div>Payment</div>
+        <div class="line"></div>
+        <div class="step"><div class="dot">4</div>Confirm</div>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <div style="font:600 13px/1 var(--font-sans);color:var(--neutral-900);">Uploading session data</div>
+          <div style="font:700 13px/1 var(--font-mono);color:var(--rap-red);">68%</div>
+        </div>
+        <div style="height:8px;border-radius:4px;background:var(--neutral-150);overflow:hidden;">
+          <div style="height:100%;width:68%;background:var(--rap-red);border-radius:4px;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="buttons.html">← Buttons</a>
+    <a href="feedback.html">Feedback →</a>
+  </nav>
+</main>
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Controls · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px; }
+  .panel {
+    border: 1px solid var(--border-subtle); border-radius: var(--radius-xl);
+    padding: 28px; background: var(--surface-0);
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .panel.dark { background: var(--neutral-950); color: #fff; border-color: var(--neutral-800); }
+  .p-title { font: 700 italic 14px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; color: var(--neutral-900); }
+  .panel.dark .p-title { color: #fff; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; }
+  .col { display: flex; flex-direction: column; gap: 8px; }
+  .lbl-sm { font:600 11px/1 var(--font-sans); letter-spacing:0.1em; text-transform:uppercase; color: var(--text-tertiary); }
+
+  /* ─── SWITCH ─── */
+  .sw { --w: 44px; --h: 24px; --p: 3px; position: relative; display: inline-block; width: var(--w); height: var(--h); flex: none; }
+  .sw input { position:absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .sw .track {
+    position:absolute; inset: 0; border-radius: 999px; background: var(--neutral-300);
+    transition: background var(--dur-base) var(--ease-out);
+  }
+  .sw .thumb {
+    position:absolute; top: var(--p); left: var(--p);
+    width: calc(var(--h) - var(--p)*2); height: calc(var(--h) - var(--p)*2);
+    background: #fff; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .sw input:checked ~ .track { background: var(--rap-red); }
+  .sw input:checked ~ .thumb { transform: translateX(calc(var(--w) - var(--h))); }
+  .sw input:focus-visible ~ .track { box-shadow: 0 0 0 4px rgba(205,27,50,0.22); }
+  .sw.disabled .track { background: var(--neutral-100); }
+  .sw.disabled .thumb { background: var(--neutral-300); }
+  .sw.lg { --w: 56px; --h: 30px; --p: 4px; }
+  .sw.sm { --w: 36px; --h: 20px; --p: 2px; }
+
+  .swline { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border-subtle); }
+  .swline:last-child { border-bottom: none; }
+  .swline .t { font: 600 14px/1.2 var(--font-sans); color: var(--neutral-950); }
+  .swline .d { font: 400 12.5px/1.4 var(--font-sans); color: var(--text-secondary); margin-top: 2px; }
+
+  /* ─── PROGRESS ─── */
+  .bar { width: 100%; height: 8px; border-radius: 999px; background: var(--neutral-100); overflow: hidden; position: relative; }
+  .bar > i { display: block; height: 100%; background: var(--rap-red); border-radius: inherit; transition: width var(--dur-slow) var(--ease-out); }
+  .bar.thin { height: 4px; }
+  .bar.thick { height: 14px; }
+  .bar.striped > i {
+    background-image: linear-gradient(45deg, rgba(255,255,255,0.22) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0.22) 75%, transparent 75%);
+    background-size: 16px 16px;
+    animation: stripe 1s linear infinite;
+  }
+  @keyframes stripe { to { background-position: 16px 0; } }
+  .bar.indet > i { width: 40% !important; animation: indet 1.4s var(--ease-out) infinite; }
+  @keyframes indet { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+
+  .barrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; }
+  .barrow .num { font: 700 italic 20px/1 var(--font-display); color: var(--neutral-900); font-variant-numeric: tabular-nums; }
+  .barrow .meta { font: 600 11px/1 var(--font-sans); letter-spacing:0.08em; text-transform: uppercase; color: var(--text-tertiary); }
+
+  /* Circular progress */
+  .ring { --sz: 88px; --thick: 8px; --pct: 68; width: var(--sz); height: var(--sz); border-radius: 50%;
+    background:
+      conic-gradient(var(--rap-red) calc(var(--pct)*1%), var(--neutral-100) 0);
+    display: grid; place-items: center; position: relative;
+  }
+  .ring::before {
+    content:''; position: absolute; inset: var(--thick); border-radius: 50%; background: #fff;
+  }
+  .ring > span {
+    position: relative;
+    font: 800 italic 22px/1 var(--font-display); color: var(--neutral-950); font-variant-numeric: tabular-nums;
+  }
+  .ring.lg { --sz: 140px; --thick: 12px; }
+  .ring.lg > span { font-size: 34px; }
+  .ring.dark { background: conic-gradient(var(--rap-red) calc(var(--pct)*1%), rgba(255,255,255,0.15) 0); }
+  .ring.dark::before { background: var(--neutral-950); }
+  .ring.dark > span { color: #fff; }
+
+  /* Spinner */
+  .spin { width: 24px; height: 24px; border-radius: 50%;
+    border: 3px solid var(--neutral-100);
+    border-top-color: var(--rap-red);
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin.lg { width: 40px; height: 40px; border-width: 4px; }
+  .spin.sm { width: 16px; height: 16px; border-width: 2px; }
+
+  /* ─── SLIDER ─── */
+  .slider { --pct: 50%; position: relative; height: 28px; display: flex; align-items: center; }
+  .slider .track { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); height: 4px; background: var(--neutral-100); border-radius: 999px; }
+  .slider .fill { position: absolute; left: 0; top: 50%; transform: translateY(-50%); height: 4px; background: var(--rap-red); border-radius: 999px; width: var(--pct); }
+  .slider .thumb { position: absolute; left: var(--pct); top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 3px solid var(--rap-red); box-shadow: var(--shadow-sm); cursor: pointer; }
+  .slider .thumb:hover { box-shadow: 0 0 0 6px rgba(205,27,50,0.15); }
+  .slider .bubble {
+    position: absolute; left: var(--pct); top: -34px; transform: translateX(-50%);
+    background: var(--neutral-950); color: #fff; padding: 4px 8px; border-radius: 6px;
+    font: 700 12px/1 var(--font-sans); white-space: nowrap;
+  }
+  .slider .bubble::after { content:''; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); border: 4px solid transparent; border-top-color: var(--neutral-950); }
+
+  .slider.range .fill { left: var(--a); width: calc(var(--b) - var(--a)); }
+  .slider.range .thumb.b { left: var(--b); }
+  .slider.range .thumb.a { left: var(--a); }
+
+  .ticks { display: flex; justify-content: space-between; margin-top: 12px; font: 600 11px/1 var(--font-sans); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+
+  /* ─── TOOLTIPS ─── */
+  .tipwrap { position: relative; display: inline-flex; }
+  .tip {
+    position: absolute; background: var(--neutral-950); color: #fff;
+    padding: 8px 12px; border-radius: 6px;
+    font: 600 12px/1.35 var(--font-sans); white-space: nowrap;
+    box-shadow: var(--shadow-md);
+    z-index: 2;
+  }
+  .tip::after { content: ''; position: absolute; border: 6px solid transparent; }
+  .tip.top { bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); }
+  .tip.top::after { top: 100%; left: 50%; transform: translateX(-50%); border-top-color: var(--neutral-950); }
+  .tip.right { left: calc(100% + 10px); top: 50%; transform: translateY(-50%); }
+  .tip.right::after { right: 100%; top: 50%; transform: translateY(-50%); border-right-color: var(--neutral-950); }
+  .tip.bottom { top: calc(100% + 10px); left: 50%; transform: translateX(-50%); }
+  .tip.bottom::after { bottom: 100%; left: 50%; transform: translateX(-50%); border-bottom-color: var(--neutral-950); }
+  .tip.left { right: calc(100% + 10px); top: 50%; transform: translateY(-50%); }
+  .tip.left::after { left: 100%; top: 50%; transform: translateY(-50%); border-left-color: var(--neutral-950); }
+  .tip.red { background: var(--rap-red); }
+  .tip.red.top::after { border-top-color: var(--rap-red); }
+  .tip.rich { white-space: normal; max-width: 240px; padding: 12px 14px; line-height: 1.45; }
+  .tip.rich strong { display: block; font: 700 italic 13px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 4px; color: #fff; }
+  .tip.rich kbd { display: inline-block; background: rgba(255,255,255,0.12); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; margin-left: 6px; }
+
+  .btn-ghost {
+    background: var(--neutral-75); color: var(--neutral-950); border: 1px solid var(--border-subtle);
+    padding: 10px 16px; border-radius: 8px; font: 600 13px/1 var(--font-sans); letter-spacing: 0.04em; text-transform: uppercase;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-ghost:hover { border-color: var(--rap-red); color: var(--rap-red); }
+
+  /* ─── HIGHLIGHTS (annotations / highlight marks) ─── */
+  .hl { background: linear-gradient(to bottom, transparent 55%, rgba(205,27,50,0.32) 55%); padding: 0 2px; }
+  .hl-red { background: rgba(205,27,50,0.14); color: var(--rap-red-dark); padding: 1px 5px; border-radius: 3px; font-weight: 700; }
+  .hl-yellow { background: rgba(250,204,21,0.35); padding: 1px 5px; border-radius: 3px; font-weight: 600; color: var(--neutral-950); }
+  .hl-under { border-bottom: 2px solid var(--rap-red); padding-bottom: 1px; font-weight: 700; color: var(--rap-red); }
+  .hl-box {
+    display: inline-block; padding: 2px 8px; border: 1.5px solid var(--rap-red);
+    border-radius: 4px; color: var(--rap-red); font-weight: 700;
+    background: rgba(205,27,50,0.05);
+  }
+  .hl-strike { text-decoration: line-through; text-decoration-color: var(--rap-red); text-decoration-thickness: 2px; color: var(--text-tertiary); }
+  .hl-newtag { position: relative; }
+  .hl-newtag::after {
+    content: 'NEW';
+    position: absolute; top: -10px; right: -36px;
+    background: var(--rap-red); color: #fff;
+    padding: 2px 6px; border-radius: 4px;
+    font: 700 italic 9px/1 var(--font-display); letter-spacing: 0.04em;
+  }
+
+  .prose { font: 500 16px/1.6 var(--font-sans); color: var(--neutral-900); }
+  .prose p { margin: 0 0 12px; }
+
+  /* Progress label grid */
+  .pg-grid { display: grid; grid-template-columns: 100px 1fr 60px; align-items: center; gap: 14px; }
+  .pg-grid .name { font: 600 13px/1 var(--font-sans); color: var(--neutral-900); }
+  .pg-grid .v { font: 700 13px/1 var(--font-sans); color: var(--rap-red); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Loading dots */
+  .dots { display: inline-flex; gap: 5px; }
+  .dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--rap-red); animation: bob 1.2s var(--ease-out) infinite; }
+  .dots span:nth-child(2) { animation-delay: 0.15s; }
+  .dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bob { 0%,80%,100% { transform: scale(0.5); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+</style>
+</head>
+<body>
+
+<main class="ds-page">
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Molecules · Controls</div>
+      <h1 class="ds-title">Controls</h1>
+      <p class="ds-sub">Switches, progress, sliders, tooltips, highlights — the fine-motor control surface of the product.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- SWITCHES -->
+  <section class="ds-section">
+    <div class="ds-section-head"><div class="ds-section-title">Switches</div><div class="ds-section-note">Sizes sm · md · lg. Always paired with a label for the setting.</div></div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="p-title">Sizes &amp; states</div>
+        <div class="row">
+          <div class="col"><span class="lbl-sm">Small</span>
+            <label class="sw sm"><input type="checkbox" checked /><span class="track"></span><span class="thumb"></span></label></div>
+          <div class="col"><span class="lbl-sm">Medium</span>
+            <label class="sw"><input type="checkbox" checked /><span class="track"></span><span class="thumb"></span></label></div>
+          <div class="col"><span class="lbl-sm">Large</span>
+            <label class="sw lg"><input type="checkbox" checked /><span class="track"></span><span class="thumb"></span></label></div>
+          <div class="col"><span class="lbl-sm">Off</span>
+            <label class="sw"><input type="checkbox" /><span class="track"></span><span class="thumb"></span></label></div>
+          <div class="col"><span class="lbl-sm">Disabled</span>
+            <label class="sw disabled"><input type="checkbox" disabled /><span class="track"></span><span class="thumb"></span></label></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="p-title">Settings list</div>
+        <div>
+          <div class="swline">
+            <div><div class="t">Auto-upload sessions</div><div class="d">Pushes every session to the cloud over Wi-Fi.</div></div>
+            <label class="sw"><input type="checkbox" checked /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="swline">
+            <div><div class="t">Metric units</div><div class="d">Display speed as km/h, distance as meters.</div></div>
+            <label class="sw"><input type="checkbox" /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="swline">
+            <div><div class="t">Video overlay</div><div class="d">Draw spin &amp; trajectory on captured clips.</div></div>
+            <label class="sw"><input type="checkbox" checked /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+          <div class="swline">
+            <div><div class="t">Share with coach</div><div class="d">Requires a paired coach account.</div></div>
+            <label class="sw disabled"><input type="checkbox" disabled /><span class="track"></span><span class="thumb"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="ds-section">
+    <div class="ds-section-head"><div class="ds-section-title">Progress</div><div class="ds-section-note">Linear bars, striped, indeterminate, circular, spinners, and bobbing dots.</div></div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="p-title">Linear</div>
+        <div class="barrow">
+          <div class="bar"><i style="width:20%"></i></div>
+          <div class="num">20<span style="font-size:13px;font-weight:700;color:var(--text-tertiary);"> %</span></div>
+        </div>
+        <div class="barrow">
+          <div class="bar"><i style="width:62%"></i></div>
+          <div class="num">62<span style="font-size:13px;font-weight:700;color:var(--text-tertiary);"> %</span></div>
+        </div>
+        <div class="barrow">
+          <div class="bar thick striped"><i style="width:85%"></i></div>
+          <div class="num">85<span style="font-size:13px;font-weight:700;color:var(--text-tertiary);"> %</span></div>
+        </div>
+        <div style="margin-top:4px;"><div class="meta" style="margin-bottom:6px;">Indeterminate</div><div class="bar indet"><i></i></div></div>
+
+        <div style="margin-top: 20px;">
+          <div class="meta" style="margin-bottom: 12px;">Labeled (session upload)</div>
+          <div class="pg-grid">
+            <div class="name">Video</div><div class="bar"><i style="width:100%;"></i></div><div class="v">100%</div>
+            <div class="name">Metrics</div><div class="bar"><i style="width:72%;"></i></div><div class="v">72%</div>
+            <div class="name">Audio</div><div class="bar"><i style="width:34%;"></i></div><div class="v">34%</div>
+            <div class="name">Thumbnails</div><div class="bar"><i style="width:8%;"></i></div><div class="v">8%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="p-title">Circular &amp; spinners</div>
+        <div class="row" style="gap:32px;align-items:flex-end;">
+          <div class="col" style="align-items:center;">
+            <div class="ring lg" style="--pct:72;"><span>72%</span></div>
+            <span class="lbl-sm">Session</span>
+          </div>
+          <div class="col" style="align-items:center;">
+            <div class="ring" style="--pct:45;"><span>45%</span></div>
+            <span class="lbl-sm">Upload</span>
+          </div>
+          <div class="col" style="align-items:center;">
+            <div class="ring" style="--pct:100;"><span>✓</span></div>
+            <span class="lbl-sm">Done</span>
+          </div>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border-subtle);margin: 8px 0;" />
+        <div class="row" style="gap:36px;align-items:center;">
+          <div class="col" style="align-items:center;"><div class="spin sm"></div><span class="lbl-sm">16&thinsp;px</span></div>
+          <div class="col" style="align-items:center;"><div class="spin"></div><span class="lbl-sm">24&thinsp;px</span></div>
+          <div class="col" style="align-items:center;"><div class="spin lg"></div><span class="lbl-sm">40&thinsp;px</span></div>
+          <div class="col" style="align-items:center;"><div class="dots"><span></span><span></span><span></span></div><span class="lbl-sm">Dots</span></div>
+        </div>
+      </div>
+
+      <div class="panel dark" style="grid-column: 1 / -1;">
+        <div class="p-title">On dark surfaces</div>
+        <div class="row" style="gap:40px; align-items:center;">
+          <div class="ring lg dark" style="--pct:88;"><span>88</span></div>
+          <div style="flex:1; display:flex; flex-direction:column; gap:14px;">
+            <div class="bar thick"><i style="width:88%"></i></div>
+            <div class="bar striped"><i style="width:56%"></i></div>
+            <div class="bar indet"><i></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDERS -->
+  <section class="ds-section">
+    <div class="ds-section-head"><div class="ds-section-title">Sliders</div><div class="ds-section-note">Single-value and range. Value bubble appears on drag.</div></div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="p-title">Single · launch angle</div>
+        <div class="slider" style="--pct: 34%;">
+          <div class="track"></div><div class="fill"></div>
+          <div class="bubble">34°</div>
+          <div class="thumb"></div>
+        </div>
+        <div class="ticks"><span>0°</span><span>15°</span><span>30°</span><span>45°</span><span>60°</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="p-title">Single · club head speed</div>
+        <div class="slider" style="--pct: 72%;">
+          <div class="track"></div><div class="fill"></div>
+          <div class="bubble">108&thinsp;mph</div>
+          <div class="thumb"></div>
+        </div>
+        <div class="ticks"><span>60</span><span>80</span><span>100</span><span>120</span><span>140</span></div>
+      </div>
+
+      <div class="panel" style="grid-column: 1 / -1;">
+        <div class="p-title">Range · exit velocity filter</div>
+        <div class="slider range" style="--a: 22%; --b: 68%;">
+          <div class="track"></div><div class="fill"></div>
+          <div class="thumb a"></div>
+          <div class="thumb b"></div>
+          <div class="bubble" style="left: var(--a);">72&thinsp;mph</div>
+          <div class="bubble" style="left: var(--b);">104&thinsp;mph</div>
+        </div>
+        <div class="ticks"><span>50</span><span>70</span><span>90</span><span>110</span><span>130</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOLTIPS -->
+  <section class="ds-section">
+    <div class="ds-section-head"><div class="ds-section-title">Tooltips</div><div class="ds-section-note">Four sides, dark default, red accent, and rich multi-line variants.</div></div>
+
+    <div class="panel">
+      <div class="p-title">Placement · top · right · bottom · left</div>
+      <div class="row" style="gap: 64px; padding: 72px 32px 56px; justify-content: center;">
+        <div class="tipwrap">
+          <button class="btn-ghost">Top</button>
+          <div class="tip top">Spin rate 2,480 rpm</div>
+        </div>
+        <div class="tipwrap">
+          <button class="btn-ghost">Right</button>
+          <div class="tip right">Vertical break</div>
+        </div>
+        <div class="tipwrap">
+          <button class="btn-ghost">Bottom</button>
+          <div class="tip bottom">Save as preset</div>
+        </div>
+        <div class="tipwrap">
+          <button class="btn-ghost">Left</button>
+          <div class="tip left">Exit velocity</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top: 24px;">
+      <div class="panel">
+        <div class="p-title">Red · destructive action</div>
+        <div class="row" style="padding: 64px 16px 24px; justify-content: center;">
+          <div class="tipwrap">
+            <button class="btn-ghost" style="color: var(--rap-red); border-color: var(--rap-red);">Delete session</button>
+            <div class="tip red top">Can't be undone</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="p-title">Rich · keyboard hint</div>
+        <div class="row" style="padding: 72px 16px 24px; justify-content: center;">
+          <div class="tipwrap">
+            <button class="btn-ghost">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              Search
+            </button>
+            <div class="tip rich top">
+              <strong>Command palette</strong>
+              Jump to any session, pitcher or drill.
+              <kbd>⌘</kbd><kbd>K</kbd>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HIGHLIGHTS -->
+  <section class="ds-section">
+    <div class="ds-section-head"><div class="ds-section-title">Highlights &amp; Annotations</div><div class="ds-section-note">Inline emphasis marks — use sparingly, mostly for editorial copy, release notes, and onboarding.</div></div>
+
+    <div class="panel">
+      <div class="p-title">Inline styles</div>
+      <div class="prose">
+        <p>Rapsodo's MLM2&thinsp;PRO now captures <span class="hl">spin axis in 3D</span> — a first for portable launch monitors in this price tier.</p>
+        <p>We shipped <span class="hl-red">22 fixes</span> and <span class="hl-yellow">4 new drills</span> this week. The <span class="hl-under">video overlay</span> is also faster on low-end Android devices.</p>
+        <p>Heads-up: the <span class="hl-box">BETA</span> <span class="hl-newtag">Bullpen Cam</span> integration requires firmware&nbsp;2.4 or newer. Old sync method is <span class="hl-strike">deprecated</span>.</p>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top: 24px;">
+      <div class="panel">
+        <div class="p-title">Swatch reference</div>
+        <table style="width:100%; border-collapse: collapse; font: 500 13px/1.4 var(--font-sans);">
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:10px 0;"><span class="hl">Highlighted text</span></td><td style="color:var(--text-tertiary); font-family: var(--font-mono); font-size: 11px;">.hl</td></tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:10px 0;"><span class="hl-red">Red chip</span></td><td style="color:var(--text-tertiary); font-family: var(--font-mono); font-size: 11px;">.hl-red</td></tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:10px 0;"><span class="hl-yellow">Yellow chip</span></td><td style="color:var(--text-tertiary); font-family: var(--font-mono); font-size: 11px;">.hl-yellow</td></tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:10px 0;"><span class="hl-under">Underlined</span></td><td style="color:var(--text-tertiary); font-family: var(--font-mono); font-size: 11px;">.hl-under</td></tr>
+          <tr style="border-bottom:1px solid var(--border-subtle);"><td style="padding:10px 0;"><span class="hl-box">BADGE</span></td><td style="color:var(--text-tertiary); font-family: var(--font-mono); font-size: 11px;">.hl-box</td></tr>
+          <tr><td style="padding:10px 0;"><span class="hl-strike">Removed</span></td><td style="color:var(--text-tertiary); font-family: var(--font-mono); font-size: 11px;">.hl-strike</td></tr>
+        </table>
+      </div>
+      <div class="panel">
+        <div class="p-title">Do &amp; don't</div>
+        <div class="prose" style="font-size: 14px;">
+          <p><strong style="color: #16A34A;">DO</strong> — use <span class="hl-red">one highlight per paragraph</span> to pull out a single data point or name.</p>
+          <p><strong style="color: var(--rap-red);">DON'T</strong> — stack <span class="hl-yellow">too</span> <span class="hl-red">many</span> <span class="hl">at</span> <span class="hl-under">once</span>. It reads like a ransom note and drowns the real emphasis.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="../index.html">← Back to Design System</a>
+    <span style="color:var(--text-tertiary);">Source · <span class="ds-chip">19 Switches · 16 Progress · 17 Slider · 22 Tooltip · 11 Highlights</span></span>
+  </nav>
+</main>
+
+</body>
+</html>

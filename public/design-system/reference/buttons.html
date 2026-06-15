@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Buttons · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  /* ================================
+     Button system
+     ================================ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: var(--tracking-cta); /* 0.07em */
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color var(--dur-base) var(--ease-out),
+                color var(--dur-base) var(--ease-out),
+                border-color var(--dur-base) var(--ease-out),
+                box-shadow var(--dur-base) var(--ease-out),
+                transform var(--dur-fast) var(--ease-out);
+    white-space: nowrap;
+    user-select: none;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible { outline: none; box-shadow: var(--ring-brand); }
+
+  /* Sizes */
+  .btn--lg { height: 48px; padding: 0 24px; font-size: 16px; }
+  .btn--md { height: 40px; padding: 0 20px; font-size: 14px; }
+  .btn--sm { height: 32px; padding: 0 14px; font-size: 12px; gap: 6px; }
+
+  .btn .btn-ico {
+    width: 1.4em; height: 1.4em; flex: none;
+  }
+
+  /* Primary — Rapsodo Red */
+  .btn--primary { background: var(--rap-red); color: #fff; }
+  .btn--primary:hover { background: var(--rap-red-hover); }
+  .btn--primary:active { background: var(--rap-red-dark); }
+  .btn--primary[disabled], .btn--primary.is-disabled {
+    background: var(--neutral-150); color: var(--neutral-400); cursor: not-allowed;
+  }
+
+  /* Secondary — Dark */
+  .btn--secondary { background: var(--neutral-950); color: #fff; }
+  .btn--secondary:hover { background: var(--neutral-800); }
+  .btn--secondary:active { background: var(--neutral-850); }
+
+  /* Outline */
+  .btn--outline {
+    background: #fff; color: var(--neutral-950);
+    border-color: var(--neutral-950);
+  }
+  .btn--outline:hover { background: var(--neutral-950); color: #fff; }
+
+  /* Ghost */
+  .btn--ghost { background: transparent; color: var(--neutral-900); }
+  .btn--ghost:hover { background: var(--neutral-75); }
+
+  /* Link-style */
+  .btn--link {
+    background: transparent; color: var(--rap-red);
+    text-transform: none; letter-spacing: normal; padding: 0; height: auto;
+    border-radius: 0;
+  }
+  .btn--link:hover { color: var(--rap-red-hover); text-decoration: underline; text-underline-offset: 4px; }
+
+  /* Destructive inverted */
+  .btn--danger { background: var(--danger); color: #fff; }
+  .btn--danger:hover { background: #C22A2B; }
+
+  /* Icon only */
+  .btn--icon { padding: 0; width: 48px; }
+  .btn--icon.btn--md { width: 40px; }
+  .btn--icon.btn--sm { width: 32px; }
+
+  /* Quantity / stepper look */
+  .qty {
+    display: inline-flex; align-items: center;
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #fff;
+  }
+  .qty button {
+    all: unset;
+    width: 40px; height: 40px;
+    display: grid; place-items: center;
+    cursor: pointer;
+    color: var(--neutral-700);
+  }
+  .qty button:hover { background: var(--neutral-50); color: var(--neutral-900); }
+  .qty .val {
+    min-width: 40px;
+    text-align: center;
+    font: 700 14px/1 var(--font-sans);
+    color: var(--neutral-900);
+    border-left: 1px solid var(--border-subtle);
+    border-right: 1px solid var(--border-subtle);
+    padding: 0 8px;
+    height: 40px;
+    display: grid; place-items: center;
+  }
+
+  /* Showcase layout */
+  .btn-row {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  }
+  .btn-panel {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    background: var(--surface-0);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .btn-panel h3 {
+    font: 700 italic 16px/1.2 var(--font-display);
+    text-transform: uppercase; letter-spacing: 0.02em;
+    color: var(--neutral-900);
+    margin: 0;
+  }
+  .btn-panel .caption {
+    font: 500 12px/1.4 var(--font-sans);
+    color: var(--text-tertiary);
+    margin-top: -12px;
+  }
+
+  .states-grid {
+    display: grid;
+    grid-template-columns: 120px repeat(4, 1fr);
+    gap: 16px 24px;
+    align-items: center;
+  }
+  .states-grid .hdr {
+    font: 700 11px/1 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary);
+  }
+  .states-grid .lbl { font: 600 13px/1 var(--font-sans); color: var(--text-secondary); }
+
+  .hero-cta {
+    border-radius: var(--radius-2xl);
+    padding: 48px;
+    background: var(--neutral-950);
+    color: #fff;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 32px;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+    background-image: url('../assets/brand/plus-grid.svg');
+    background-size: 420px; background-position: right -60px bottom -60px; background-repeat: no-repeat; background-blend-mode: luminosity;
+  }
+  .hero-cta::before {
+    content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 0% 30%, rgba(205,27,50,0.18), transparent 55%);
+  }
+  .hero-cta > * { position: relative; z-index: 1; }
+  .hero-cta h2 {
+    font: 800 italic 56px/0.95 var(--font-display);
+    letter-spacing: -0.01em; text-transform: uppercase; color: #fff; margin:0;
+  }
+  .hero-cta p { font: 400 16px/1.55 var(--font-sans); color: rgba(255,255,255,0.75); margin-top:12px; max-width: 44ch; }
+  .hero-cta .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<main class="ds-page">
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Molecules</div>
+      <h1 class="ds-title">Buttons</h1>
+      <p class="ds-sub">Bold, wide-tracked, uppercase. Always 8&nbsp;px radius. Primary red is the one true call; everything else plays supporting roles.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- Hero context -->
+  <section class="hero-cta">
+    <div>
+      <div class="ds-eyebrow" style="color:var(--rap-red);">In the wild</div>
+      <h2>Ship faster.<br/>Hit harder.</h2>
+      <p>Primary red carries action. Secondary (white on black) supports. Link-style buttons step out of the way for quieter moments.</p>
+    </div>
+    <div class="actions" style="justify-content:flex-end;">
+      <button class="btn btn--primary btn--lg">Buy MLM2 Pro
+        <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn btn--outline btn--lg" style="background:transparent;color:#fff;border-color:rgba(255,255,255,0.5);">Watch demo</button>
+    </div>
+  </section>
+
+  <!-- Variants -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Variants · Large</div>
+      <div class="ds-section-note">Height 48, 16&nbsp;px text, 24&nbsp;px padding, 0.07em letter-spacing.</div>
+    </div>
+    <div class="btn-panel">
+      <div class="btn-row">
+        <button class="btn btn--primary btn--lg">Buy Now</button>
+        <button class="btn btn--secondary btn--lg">Learn More</button>
+        <button class="btn btn--outline btn--lg">Compare</button>
+        <button class="btn btn--ghost btn--lg">Skip</button>
+        <button class="btn btn--danger btn--lg">Delete Session</button>
+        <a class="btn btn--link btn--lg" href="#">View release notes →</a>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--primary btn--lg">
+          <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Start Session
+        </button>
+        <button class="btn btn--secondary btn--lg">
+          Download Data
+          <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg>
+        </button>
+        <button class="btn btn--outline btn--lg btn--icon" aria-label="Filter">
+          <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sizes -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Sizes</div>
+      <div class="ds-section-note">Large (48), Medium (40), Small (32).</div>
+    </div>
+    <div class="btn-panel">
+      <div class="btn-row">
+        <button class="btn btn--primary btn--lg">Large · 48</button>
+        <button class="btn btn--primary btn--md">Medium · 40</button>
+        <button class="btn btn--primary btn--sm">Small · 32</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--outline btn--lg">Large · 48</button>
+        <button class="btn btn--outline btn--md">Medium · 40</button>
+        <button class="btn btn--outline btn--sm">Small · 32</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn--secondary btn--lg btn--icon" aria-label="Play">
+          <svg class="btn-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="btn btn--secondary btn--md btn--icon" aria-label="Play">
+          <svg class="btn-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="btn btn--secondary btn--sm btn--icon" aria-label="Play">
+          <svg class="btn-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- States -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">States</div>
+      <div class="ds-section-note">Default, hover, pressed, disabled across every variant.</div>
+    </div>
+    <div class="btn-panel">
+      <div class="states-grid">
+        <div></div><div class="hdr">Default</div><div class="hdr">Hover</div><div class="hdr">Pressed</div><div class="hdr">Disabled</div>
+
+        <div class="lbl">Primary</div>
+        <div><button class="btn btn--primary btn--md">Primary</button></div>
+        <div><button class="btn btn--primary btn--md" style="background:var(--rap-red-hover);">Primary</button></div>
+        <div><button class="btn btn--primary btn--md" style="background:var(--rap-red-dark);transform:translateY(1px);">Primary</button></div>
+        <div><button class="btn btn--primary btn--md is-disabled" disabled>Primary</button></div>
+
+        <div class="lbl">Secondary</div>
+        <div><button class="btn btn--secondary btn--md">Secondary</button></div>
+        <div><button class="btn btn--secondary btn--md" style="background:var(--neutral-800);">Secondary</button></div>
+        <div><button class="btn btn--secondary btn--md" style="background:var(--neutral-850);transform:translateY(1px);">Secondary</button></div>
+        <div><button class="btn btn--secondary btn--md" style="background:var(--neutral-150);color:var(--neutral-400);cursor:not-allowed;">Secondary</button></div>
+
+        <div class="lbl">Outline</div>
+        <div><button class="btn btn--outline btn--md">Outline</button></div>
+        <div><button class="btn btn--outline btn--md" style="background:var(--neutral-950);color:#fff;">Outline</button></div>
+        <div><button class="btn btn--outline btn--md" style="background:var(--neutral-850);color:#fff;transform:translateY(1px);">Outline</button></div>
+        <div><button class="btn btn--outline btn--md" style="color:var(--neutral-400);border-color:var(--neutral-200);cursor:not-allowed;">Outline</button></div>
+
+        <div class="lbl">Ghost</div>
+        <div><button class="btn btn--ghost btn--md">Ghost</button></div>
+        <div><button class="btn btn--ghost btn--md" style="background:var(--neutral-75);">Ghost</button></div>
+        <div><button class="btn btn--ghost btn--md" style="background:var(--neutral-100);">Ghost</button></div>
+        <div><button class="btn btn--ghost btn--md" style="color:var(--neutral-400);cursor:not-allowed;">Ghost</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Button groups -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Groups &amp; Quantity</div>
+      <div class="ds-section-note">Stepper, segmented, pairs.</div>
+    </div>
+    <div class="btn-panel">
+      <div class="btn-row">
+        <div class="qty">
+          <button aria-label="Decrease">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+          </button>
+          <div class="val">2</div>
+          <button aria-label="Increase">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+
+        <!-- Segmented -->
+        <div style="display:inline-flex;border:1px solid var(--neutral-200);border-radius:var(--radius-md);overflow:hidden;background:#fff;">
+          <button class="btn btn--md" style="height:40px;border:none;border-right:1px solid var(--border-subtle);border-radius:0;background:var(--neutral-950);color:#fff;">Driver</button>
+          <button class="btn btn--md" style="height:40px;border:none;border-right:1px solid var(--border-subtle);border-radius:0;background:#fff;color:var(--neutral-900);">Iron</button>
+          <button class="btn btn--md" style="height:40px;border:none;border-radius:0;background:#fff;color:var(--neutral-900);">Wedge</button>
+        </div>
+
+        <!-- Pair -->
+        <div style="display:inline-flex;gap:0;">
+          <button class="btn btn--outline btn--md" style="border-top-right-radius:0;border-bottom-right-radius:0;border-right:none;">Cancel</button>
+          <button class="btn btn--primary btn--md" style="border-top-left-radius:0;border-bottom-left-radius:0;">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Anatomy -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Anatomy</div>
+      <div class="ds-section-note">Observed in source — don't tweak.</div>
+    </div>
+    <div class="btn-panel" style="padding: 56px; align-items: center; gap: 48px;">
+      <div style="display: flex; align-items: center; gap: 64px; flex-wrap: wrap;">
+        <div style="position: relative; display: inline-block;">
+          <button class="btn btn--primary btn--lg" style="pointer-events:none;">
+            <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Button CTA
+            <svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+
+          <!-- anatomy hints -->
+          <div style="position:absolute; top: -28px; left: 0; font: 700 10px/1 var(--font-mono); letter-spacing: 0.08em; color: var(--rap-red);">↕ 48px</div>
+          <div style="position:absolute; bottom: -28px; left: 0; font: 700 10px/1 var(--font-mono); letter-spacing: 0.08em; color: var(--rap-red);">↔ 24px pad</div>
+          <div style="position:absolute; top: 50%; right: -96px; transform: translateY(-50%); font: 700 10px/1 var(--font-mono); letter-spacing: 0.08em; color: var(--rap-red);">icon · 24px</div>
+        </div>
+
+        <div style="font: 500 13px/1.6 var(--font-mono); color: var(--text-secondary);">
+          <div><span style="color:var(--rap-red);">background</span> &nbsp;→ #CD1B32</div>
+          <div><span style="color:var(--rap-red);">radius</span> &nbsp;&nbsp;&nbsp;&nbsp;→ 8&nbsp;px</div>
+          <div><span style="color:var(--rap-red);">font</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Barlow Bold 16</div>
+          <div><span style="color:var(--rap-red);">tracking</span> &nbsp;→ 0.07em</div>
+          <div><span style="color:var(--rap-red);">transform</span> → UPPERCASE</div>
+          <div><span style="color:var(--rap-red);">gap</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ 16&nbsp;px icon↔label</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="spacing-radii-shadows.html">← Spacing</a>
+    <a href="forms.html">Forms →</a>
+  </nav>
+</main>
+</body>
+</html>

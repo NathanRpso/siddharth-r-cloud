@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Modals · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 28px; }
+  .panel {
+    border: 1px solid var(--border-subtle); border-radius: var(--radius-xl);
+    padding: 24px; background: var(--surface-0);
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .p-title { font: 700 italic 14px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; color: var(--neutral-900); }
+
+  /* Scene = dimmed overlay background */
+  .scene {
+    position: relative;
+    border-radius: var(--radius-2xl);
+    min-height: 360px;
+    padding: 32px;
+    display: grid; place-items: center;
+    overflow: hidden;
+    background:
+      linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+      url('../assets/brand/plus-grid.svg') center/360px no-repeat,
+      var(--neutral-900);
+  }
+  .scene.red {
+    background:
+      linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+      url('../assets/brand/plus-grid.svg') center/360px no-repeat,
+      var(--rap-red-dark);
+  }
+
+  /* MODAL shell */
+  .m {
+    background: #fff;
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    width: 100%; max-width: 480px;
+    overflow: hidden;
+    font-family: var(--font-sans);
+  }
+  .m.wide { max-width: 640px; }
+  .m.narrow { max-width: 360px; }
+  .m-hd { display: flex; align-items: flex-start; justify-content: space-between; padding: 24px 24px 8px; gap: 16px; }
+  .m-hd h3 {
+    font: 700 italic 22px/1.15 var(--font-display);
+    text-transform: uppercase; letter-spacing: 0.01em; color: var(--neutral-950);
+    margin: 0;
+  }
+  .m-hd .x {
+    all: unset; cursor: pointer; width: 28px; height: 28px;
+    display: grid; place-items: center; border-radius: 6px;
+    color: var(--neutral-600);
+  }
+  .m-hd .x:hover { background: var(--neutral-75); color: var(--rap-red); }
+
+  .m-bd { padding: 4px 24px 20px; color: var(--text-secondary); font: 400 14px/1.55 var(--font-sans); }
+  .m-bd p { margin: 0 0 8px; }
+  .m-ft {
+    padding: 16px 24px;
+    background: var(--neutral-50);
+    border-top: 1px solid var(--border-subtle);
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+  .m-ft.left { justify-content: space-between; }
+
+  /* Icon header (alert modals) */
+  .m-icon {
+    padding: 28px 24px 8px; display: flex; flex-direction: column; gap: 16px;
+    align-items: flex-start;
+  }
+  .m-icon .badge {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: grid; place-items: center;
+  }
+  .m-icon.danger  .badge { background: var(--danger-bg);  color: var(--danger); }
+  .m-icon.success .badge { background: var(--success-bg); color: var(--success); }
+  .m-icon.warning .badge { background: var(--warning-bg); color: var(--warning); }
+  .m-icon.info    .badge { background: var(--info-bg);    color: var(--info); }
+  .m-icon.brand   .badge { background: var(--rap-red); color: #fff; }
+  .m-icon h3 { font: 700 italic 22px/1.1 var(--font-display); text-transform:uppercase; letter-spacing:0.01em; color: var(--neutral-950); margin: 0; }
+
+  /* Buttons (local) */
+  .btn {
+    all: unset; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 40px; padding: 0 18px; border-radius: 8px;
+    font: 700 12px/1 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .btn.primary { background: var(--rap-red); color: #fff; }
+  .btn.primary:hover { background: var(--rap-red-hover); }
+  .btn.ghost { color: var(--neutral-800); border: 1px solid var(--border-default); }
+  .btn.ghost:hover { border-color: var(--rap-red); color: var(--rap-red); }
+  .btn.dark { background: var(--neutral-950); color: #fff; }
+  .btn.danger { background: var(--danger); color: #fff; }
+
+  /* Form */
+  .f-label {
+    display: block; margin-bottom: 6px;
+    font: 600 12px/1 var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--neutral-800);
+  }
+  .f-input {
+    width: 100%; height: 44px; padding: 0 14px;
+    border: 1px solid var(--border-default); border-radius: 8px;
+    font: 500 14px/1 var(--font-sans); background: #fff;
+  }
+  .f-textarea {
+    width: 100%; padding: 12px 14px; min-height: 88px;
+    border: 1px solid var(--border-default); border-radius: 8px;
+    font: 500 14px/1.5 var(--font-sans); background: #fff; resize: vertical;
+  }
+  .f-row { margin-bottom: 14px; }
+
+  /* Hero image */
+  .m-hero {
+    height: 160px;
+    background: linear-gradient(160deg, var(--neutral-950), var(--neutral-850));
+    position: relative; overflow: hidden;
+  }
+  .m-hero::before {
+    content:''; position:absolute; inset:0;
+    background-image: url('../assets/brand/plus-grid.svg');
+    background-size: 260px; background-position: center; background-repeat: no-repeat;
+    opacity: 0.12;
+  }
+  .m-hero::after {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(205,27,50,0.5), transparent 55%);
+  }
+  .m-hero .label {
+    position: absolute; top: 16px; left: 20px;
+    font: 700 10px/1 var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--rap-red);
+  }
+  .m-hero .title {
+    position: absolute; bottom: 20px; left: 20px;
+    font: 800 italic 32px/0.9 var(--font-display); text-transform: uppercase; letter-spacing: -0.01em;
+    color: #fff;
+  }
+
+  /* Sheet (mobile drawer) */
+  .sheet {
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -24px 48px -12px rgba(0,0,0,0.4);
+    width: 100%; max-width: 420px;
+    padding: 14px 0 24px;
+    align-self: end;
+  }
+  .sheet .handle {
+    width: 44px; height: 4px; border-radius: 2px; background: var(--neutral-250);
+    margin: 0 auto 18px;
+  }
+  .sheet h3 { padding: 0 24px; }
+  .sheet-list { margin-top: 12px; }
+  .sheet-list .row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 24px; cursor: pointer;
+  }
+  .sheet-list .row:hover { background: var(--neutral-50); }
+  .sheet-list .row svg { color: var(--neutral-700); flex: none; }
+  .sheet-list .row.danger { color: var(--danger); }
+  .sheet-list .row.danger svg { color: var(--danger); }
+  .sheet .scene-wrap { align-items: end; padding: 0; }
+</style>
+</head>
+<body>
+
+<main class="ds-page">
+
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Molecules · Overlays</div>
+      <h1 class="ds-title">Modals</h1>
+      <p class="ds-sub">Attention surfaces. 24&nbsp;px radius, shadow-xl, dismissible scrim. Four archetypes — confirm, form, info, hero — plus the mobile sheet.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- ARCHETYPES -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Archetypes</div>
+      <div class="ds-section-note">Each modal fits a different decision shape.</div>
+    </div>
+
+    <div class="grid-2">
+      <!-- CONFIRM DESTRUCTIVE -->
+      <div class="panel">
+        <div class="p-title">Confirm — Destructive</div>
+        <div class="scene">
+          <div class="m">
+            <div class="m-icon danger">
+              <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg></div>
+              <h3>Delete session?</h3>
+            </div>
+            <div class="m-bd">
+              <p><strong>"March 14 · Bullpen"</strong> and all of its captures, notes, and shared links will be permanently removed. This cannot be undone.</p>
+            </div>
+            <div class="m-ft">
+              <button class="btn ghost">Cancel</button>
+              <button class="btn danger">Delete session</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIRM SUCCESS -->
+      <div class="panel">
+        <div class="p-title">Confirm — Brand action</div>
+        <div class="scene">
+          <div class="m">
+            <div class="m-icon brand">
+              <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <h3>Session locked &amp; shared</h3>
+            </div>
+            <div class="m-bd">
+              <p>Jordan Lee now has coach access to this session. They&rsquo;ll be notified at jordan@example.com.</p>
+            </div>
+            <div class="m-ft left">
+              <button class="btn ghost">Copy link</button>
+              <button class="btn primary">Done</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div class="panel">
+        <div class="p-title">Form</div>
+        <div class="scene">
+          <div class="m wide">
+            <div class="m-hd">
+              <h3>Invite a coach</h3>
+              <button class="x" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div class="m-bd">
+              <p style="margin-bottom:20px;">Give someone permission to view and annotate this workspace&rsquo;s sessions.</p>
+              <div class="f-row">
+                <label class="f-label">Email address</label>
+                <input class="f-input" value="jordan@example.com"/>
+              </div>
+              <div class="f-row">
+                <label class="f-label">Role</label>
+                <select class="f-input"><option>Coach — full access</option><option>Player — read only</option></select>
+              </div>
+              <div class="f-row">
+                <label class="f-label">Note (optional)</label>
+                <textarea class="f-textarea" placeholder="Introduce them to the team…"></textarea>
+              </div>
+            </div>
+            <div class="m-ft">
+              <button class="btn ghost">Cancel</button>
+              <button class="btn primary">Send invite</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INFO -->
+      <div class="panel">
+        <div class="p-title">Info / Details</div>
+        <div class="scene">
+          <div class="m">
+            <div class="m-hd">
+              <h3>About exit velocity</h3>
+              <button class="x"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div class="m-bd">
+              <p>Exit velocity is the speed of the ball off the bat, measured in mph by the 3D Doppler unit.</p>
+              <p>We calibrate using your pre-session swings and average the peak readings to filter out mishits.</p>
+              <p style="font:500 italic 13px/1.4 var(--font-sans);color:var(--text-tertiary);margin-top:12px;">Last calibration &middot; Mar 14, 2026</p>
+            </div>
+            <div class="m-ft">
+              <button class="btn primary">Got it</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HERO / UPSELL -->
+      <div class="panel">
+        <div class="p-title">Hero &middot; Marketing</div>
+        <div class="scene red">
+          <div class="m wide">
+            <div class="m-hero">
+              <span class="label">New · 2026</span>
+              <div class="title">MLM2&thinsp;<span style="color:var(--rap-red);">PRO</span><br/>Updated</div>
+            </div>
+            <div class="m-bd" style="padding:20px 24px 12px;">
+              <p>Your launch monitor now reports carry in real time and stitches with TrackMan. Unlock all new shot shapes in the mobile app.</p>
+            </div>
+            <div class="m-ft left">
+              <button class="btn ghost">Maybe later</button>
+              <button class="btn dark">See what&rsquo;s new</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOADING / PROGRESS -->
+      <div class="panel">
+        <div class="p-title">Progress / Blocking</div>
+        <div class="scene">
+          <div class="m narrow">
+            <div class="m-icon info">
+              <div class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.2-8.55"/></svg></div>
+              <h3>Exporting video…</h3>
+            </div>
+            <div class="m-bd">
+              <p>Compiling 42 clips from March 14. About 20 seconds remaining.</p>
+              <div style="margin-top:14px;height:6px;background:var(--neutral-100);border-radius:3px;overflow:hidden;">
+                <div style="width:68%;height:100%;background:var(--rap-red);"></div>
+              </div>
+              <div style="font:500 italic 12px/1.4 var(--font-sans);color:var(--text-tertiary);margin-top:8px;">68%</div>
+            </div>
+            <div class="m-ft">
+              <button class="btn ghost">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SIZES -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Sizes</div>
+      <div class="ds-section-note">Narrow · 360 · default 480 · wide 640. Max height 90vh with body scroll.</div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+        <div style="flex:0 0 180px;">
+          <div style="width:100%;height:90px;border:1px dashed var(--rap-red);border-radius:12px;display:grid;place-items:center;font:700 italic 16px/1 var(--font-display);color:var(--rap-red);">sm · 360</div>
+          <div style="margin-top:8px;font:500 11px/1 var(--font-sans);color:var(--text-tertiary);letter-spacing:0.06em;text-transform:uppercase;">Alerts, confirms</div>
+        </div>
+        <div style="flex:0 0 240px;">
+          <div style="width:100%;height:90px;border:1px dashed var(--rap-red);border-radius:12px;display:grid;place-items:center;font:700 italic 16px/1 var(--font-display);color:var(--rap-red);">md · 480</div>
+          <div style="margin-top:8px;font:500 11px/1 var(--font-sans);color:var(--text-tertiary);letter-spacing:0.06em;text-transform:uppercase;">Default — most cases</div>
+        </div>
+        <div style="flex:0 0 320px;">
+          <div style="width:100%;height:90px;border:1px dashed var(--rap-red);border-radius:12px;display:grid;place-items:center;font:700 italic 16px/1 var(--font-display);color:var(--rap-red);">lg · 640</div>
+          <div style="margin-top:8px;font:500 11px/1 var(--font-sans);color:var(--text-tertiary);letter-spacing:0.06em;text-transform:uppercase;">Forms, hero</div>
+        </div>
+        <div style="flex:0 0 400px;">
+          <div style="width:100%;height:90px;border:1px dashed var(--rap-red);border-radius:12px;display:grid;place-items:center;font:700 italic 16px/1 var(--font-display);color:var(--rap-red);">xl · 800</div>
+          <div style="margin-top:8px;font:500 11px/1 var(--font-sans);color:var(--text-tertiary);letter-spacing:0.06em;text-transform:uppercase;">Multi-step, data</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOBILE SHEET -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Mobile Sheet</div>
+      <div class="ds-section-note">Bottom-anchored drawer. Handle, no X, 20&nbsp;px top-radius.</div>
+    </div>
+    <div class="panel">
+      <div class="scene" style="padding:0;align-items:end;min-height:520px;">
+        <div class="sheet">
+          <div class="handle"></div>
+          <h3 style="font:700 italic 20px/1 var(--font-display);text-transform:uppercase;letter-spacing:0.01em;color:var(--neutral-950);">Session actions</h3>
+          <div class="sheet-list">
+            <div class="row">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l7 -4M8.6 13.5l7 4"/></svg>
+              <span style="font:500 15px/1 var(--font-sans);">Share</span>
+            </div>
+            <div class="row">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              <span style="font:500 15px/1 var(--font-sans);">Duplicate</span>
+            </div>
+            <div class="row">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M5 10l7 7 7-7M5 21h14"/></svg>
+              <span style="font:500 15px/1 var(--font-sans);">Export</span>
+            </div>
+            <div class="row danger">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+              <span style="font:500 15px/1 var(--font-sans);">Delete session</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="../index.html">← Back to Design System</a>
+    <span style="color:var(--text-tertiary);">Source · <span class="ds-chip">03. Base.fig / 12.-Modals · 13.-Overlay</span></span>
+  </nav>
+</main>
+
+</body>
+</html>

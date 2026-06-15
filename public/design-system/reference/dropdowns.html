@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dropdowns · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .panel {
+    border: 1px solid var(--border-subtle); border-radius: var(--radius-xl);
+    padding: 28px; background: var(--surface-0);
+    display: flex; flex-direction: column; gap: 20px; position: relative;
+  }
+  .panel.sized { min-height: 360px; }
+  .p-title { font: 700 italic 14px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; color: var(--neutral-900); }
+
+  /* Trigger / Select */
+  .sel {
+    display: inline-flex; align-items: center; justify-content: space-between;
+    min-width: 240px; height: 44px; padding: 0 14px;
+    border: 1px solid var(--border-default); border-radius: var(--radius-md);
+    background: #fff; color: var(--neutral-900);
+    font: 500 14px/1 var(--font-sans); cursor: pointer;
+    gap: 12px;
+  }
+  .sel:hover { border-color: var(--neutral-500); }
+  .sel.focus { border-color: var(--rap-red); box-shadow: var(--ring-brand); }
+  .sel.sm { height: 36px; font-size: 13px; min-width: 180px; }
+  .sel.lg { height: 52px; font-size: 15px; min-width: 280px; }
+  .sel .chev { color: var(--neutral-500); transition: transform var(--dur-base) var(--ease-out); }
+  .sel.open .chev { transform: rotate(180deg); color: var(--rap-red); }
+  .sel .placeholder { color: var(--text-tertiary); }
+  .sel.disabled { background: var(--neutral-75); color: var(--text-disabled); cursor: not-allowed; border-color: var(--border-subtle); }
+
+  /* Menu */
+  .menu {
+    background: #fff;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 6px;
+    min-width: 240px;
+    font-family: var(--font-sans);
+  }
+  .menu.wide { min-width: 320px; }
+  .menu-head {
+    padding: 8px 12px 4px;
+    font: 700 10px/1 var(--font-sans); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-tertiary);
+  }
+  .menu-sep { height: 1px; background: var(--border-subtle); margin: 6px -6px; }
+  .mi {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 6px; cursor: pointer;
+    font: 500 14px/1.2 var(--font-sans); color: var(--neutral-900);
+  }
+  .mi:hover { background: var(--neutral-75); }
+  .mi .ico { width: 16px; height: 16px; color: var(--neutral-500); flex: none; }
+  .mi .grow { flex: 1; }
+  .mi .kbd {
+    font: 500 10px/1 var(--font-mono); color: var(--text-tertiary);
+    padding: 2px 6px; border: 1px solid var(--border-subtle); border-radius: 3px; background: var(--neutral-75);
+  }
+  .mi.active { background: rgba(205,27,50,0.08); color: var(--rap-red); font-weight: 600; }
+  .mi.active .ico { color: var(--rap-red); }
+  .mi.selected { color: var(--rap-red); font-weight: 700; }
+  .mi.danger { color: var(--danger); }
+  .mi.danger .ico { color: var(--danger); }
+  .mi.disabled { color: var(--text-disabled); cursor: not-allowed; }
+  .mi .check {
+    width: 16px; height: 16px; flex: none;
+    color: var(--rap-red);
+  }
+  .mi .trail { color: var(--text-tertiary); font: 500 12px/1 var(--font-sans); }
+
+  /* Search variant */
+  .menu-search {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    border-bottom: 1px solid var(--border-subtle); margin: -6px -6px 4px;
+  }
+  .menu-search input {
+    border: none; outline: none; flex: 1;
+    font: 500 14px/1 var(--font-sans); background: transparent;
+  }
+  .menu-search svg { color: var(--neutral-500); flex: none; }
+
+  /* Multi-select item (with checkbox) */
+  .mi .chk {
+    width: 16px; height: 16px; border-radius: 3px;
+    border: 1.5px solid var(--neutral-400); flex: none;
+    display: grid; place-items: center;
+  }
+  .mi .chk.on {
+    background: var(--rap-red); border-color: var(--rap-red);
+  }
+  .mi .chk.on svg { color: #fff; }
+
+  /* Dot */
+  .mi .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+  /* Grouped footer */
+  .menu-ft {
+    display: flex; justify-content: flex-end; gap: 6px;
+    padding: 8px 6px 0; border-top: 1px solid var(--border-subtle); margin-top: 6px;
+  }
+  .menu-ft button {
+    all: unset; cursor: pointer;
+    font: 700 11px/1 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 8px 12px; border-radius: 6px; color: var(--neutral-700);
+  }
+  .menu-ft button:hover { color: var(--rap-red); }
+  .menu-ft button.primary {
+    background: var(--rap-red); color: #fff;
+  }
+
+  /* User menu (richer) */
+  .user-head {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px 14px;
+    border-bottom: 1px solid var(--border-subtle); margin: -6px -6px 4px;
+  }
+  .user-head .av {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--rap-red); color: #fff;
+    display: grid; place-items: center;
+    font: 700 14px/1 var(--font-sans);
+  }
+  .user-head .name { font: 700 14px/1.2 var(--font-sans); color: var(--neutral-950); }
+  .user-head .sub  { font: 500 11px/1.2 var(--font-sans); color: var(--text-tertiary); letter-spacing: 0.04em; text-transform: uppercase; margin-top: 2px; }
+
+  /* Floating container wrap for absolute menus */
+  .float {
+    position: absolute; top: 88px; left: 28px;
+  }
+  .float.r { left: auto; right: 28px; }
+
+  .label {
+    font: 600 11px/1 var(--font-sans); letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-tertiary);
+    margin-bottom: 8px; display: block;
+  }
+</style>
+</head>
+<body>
+
+<main class="ds-page">
+
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Molecules · Disclosure</div>
+      <h1 class="ds-title">Dropdowns</h1>
+      <p class="ds-sub">Menu and select surfaces: 240&nbsp;px min width, 12&nbsp;px radius, lg shadow. Item rows are 40&nbsp;px with 10&nbsp;px icon and 10&nbsp;px label.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- TRIGGERS -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Triggers</div>
+      <div class="ds-section-note">Select &amp; button triggers. Chevron rotates on open.</div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;">
+        <div><span class="label">Empty</span>
+          <div class="sel"><span class="placeholder">All sessions</span>
+            <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div><span class="label">Filled</span>
+          <div class="sel">Pitching only
+            <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div><span class="label">Focused / open</span>
+          <div class="sel focus open">Pitching only
+            <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div><span class="label">Disabled</span>
+          <div class="sel disabled">Not available
+            <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end;margin-top:8px;">
+        <div><span class="label">Small · 36</span>
+          <div class="sel sm">Last 7 days <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+        <div><span class="label">Default · 44</span>
+          <div class="sel">Pitching only <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+        <div><span class="label">Large · 52</span>
+          <div class="sel lg">Select workspace <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENUS -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Menus</div>
+      <div class="ds-section-note">Action menus &mdash; icon + label + optional shortcut.</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel sized">
+        <div class="p-title">Action menu</div>
+        <div class="menu">
+          <div class="menu-head">Session</div>
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span class="grow">New session</span><span class="kbd">⌘N</span></div>
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M3 4h18v16H3z"/></svg><span class="grow">Schedule</span></div>
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><span class="grow">Duplicate</span><span class="kbd">⌘D</span></div>
+          <div class="menu-sep"></div>
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l7 -4M8.6 13.5l7 4"/></svg><span class="grow">Share</span></div>
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M5 10l7 7 7-7M5 21h14"/></svg><span class="grow">Export CSV</span></div>
+          <div class="menu-sep"></div>
+          <div class="mi danger"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg><span class="grow">Delete</span><span class="kbd">⌫</span></div>
+        </div>
+      </div>
+
+      <div class="panel sized">
+        <div class="p-title">With search</div>
+        <div class="menu wide">
+          <div class="menu-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input placeholder="Search sport…" value="bas"/>
+          </div>
+          <div class="mi"><span class="dot" style="background:var(--sport-baseball);"></span><span class="grow">Baseball</span><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="mi"><span class="dot" style="background:var(--sport-softball);"></span><span class="grow">Basketball (coming soon)</span><span class="trail">Soon</span></div>
+          <div class="mi"><span class="dot" style="background:var(--sport-champions);"></span><span class="grow">Baseball U23</span></div>
+        </div>
+      </div>
+
+      <div class="panel sized">
+        <div class="p-title">User menu</div>
+        <div class="menu">
+          <div class="user-head">
+            <div class="av">RH</div>
+            <div>
+              <div class="name">Jordan Lee</div>
+              <div class="sub">Admin · Rapsodo HQ</div>
+            </div>
+          </div>
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 21a6 6 0 0 1 12 0"/></svg><span class="grow">Profile</span></div>
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="grow">Settings</span><span class="kbd">⌘,</span></div>
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 1 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg><span class="grow">Help &amp; support</span></div>
+          <div class="menu-sep"></div>
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span class="grow">Sign out</span></div>
+        </div>
+      </div>
+
+      <div class="panel sized">
+        <div class="p-title">Multi-select</div>
+        <div class="menu wide">
+          <div class="menu-head">Filter by metric</div>
+          <div class="mi"><span class="chk on"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="grow">Exit velocity</span></div>
+          <div class="mi"><span class="chk on"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="grow">Launch angle</span></div>
+          <div class="mi"><span class="chk"></span><span class="grow">Spin rate</span></div>
+          <div class="mi"><span class="chk"></span><span class="grow">Release height</span></div>
+          <div class="mi"><span class="chk"></span><span class="grow">Carry distance</span></div>
+          <div class="menu-ft">
+            <button>Clear</button>
+            <button class="primary">Apply 2</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel sized">
+        <div class="p-title">Select options</div>
+        <div class="menu">
+          <div class="menu-head">Sort by</div>
+          <div class="mi selected"><svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="grow">Most recent</span></div>
+          <div class="mi"><span style="width:16px;flex:none;"></span><span class="grow">Oldest first</span></div>
+          <div class="mi"><span style="width:16px;flex:none;"></span><span class="grow">Highest velo</span></div>
+          <div class="mi"><span style="width:16px;flex:none;"></span><span class="grow">Session length</span></div>
+        </div>
+      </div>
+
+      <div class="panel sized">
+        <div class="p-title">States</div>
+        <div class="menu">
+          <div class="mi"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="grow">Default row</span></div>
+          <div class="mi active"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="grow">Active row</span></div>
+          <div class="mi" style="background:var(--neutral-75);"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="grow">Hover row</span></div>
+          <div class="mi disabled"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span class="grow">Disabled row</span></div>
+          <div class="mi danger"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2"/></svg><span class="grow">Destructive row</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="../index.html">← Back to Design System</a>
+    <span style="color:var(--text-tertiary);">Source · <span class="ds-chip">03. Base.fig / 09.-Dropdowns</span></span>
+  </nav>
+</main>
+
+</body>
+</html>

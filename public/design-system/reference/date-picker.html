@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Date Picker · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+
+  .panel {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    background: var(--surface-0);
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .p-title { font: 700 italic 14px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; color: var(--neutral-900); }
+  .p-sub { font: 500 italic 12px/1.4 var(--font-sans); color: var(--text-tertiary); margin-top: -12px; }
+
+  /* ==========================================================================
+     CALENDAR
+     ========================================================================== */
+  .cal {
+    width: 320px;
+    background: #fff;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: 20px 20px 16px;
+    font-family: var(--font-sans);
+  }
+  .cal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .cal-title {
+    font: 700 italic 20px/1 var(--font-display);
+    text-transform: uppercase; letter-spacing: 0.02em;
+    color: var(--neutral-950);
+  }
+  .cal-title .y { color: var(--rap-red); }
+  .cal-nav {
+    display: flex; gap: 4px;
+  }
+  .cal-nav button {
+    all: unset; cursor: pointer;
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    border-radius: 6px;
+    color: var(--neutral-700);
+  }
+  .cal-nav button:hover { background: var(--neutral-75); color: var(--rap-red); }
+
+  .cal-dows {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    font: 700 10px/1 var(--font-sans); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-tertiary);
+    text-align: center; margin-bottom: 8px;
+  }
+  .cal-dows span { padding: 6px 0; }
+
+  .cal-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  }
+  .day {
+    height: 36px; display: grid; place-items: center;
+    font: 500 13px/1 var(--font-sans); color: var(--neutral-900);
+    border-radius: 6px; cursor: pointer; position: relative;
+    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+  .day:hover { background: var(--neutral-75); }
+  .day.muted { color: var(--neutral-400); }
+  .day.today { font-weight: 700; color: var(--rap-red); }
+  .day.today::after {
+    content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    width: 4px; height: 4px; border-radius: 50%; background: var(--rap-red);
+  }
+  .day.sel { background: var(--rap-red); color: #fff; font-weight: 700; }
+  .day.sel:hover { background: var(--rap-red-hover); }
+  .day.disabled { color: var(--neutral-250); cursor: not-allowed; text-decoration: line-through; }
+  .day.disabled:hover { background: transparent; }
+
+  /* Range states */
+  .day.in-range {
+    background: rgba(205,27,50,0.08); color: var(--neutral-900);
+    border-radius: 0;
+  }
+  .day.range-start { background: var(--rap-red); color:#fff; border-radius: 6px 0 0 6px; font-weight:700; }
+  .day.range-end   { background: var(--rap-red); color:#fff; border-radius: 0 6px 6px 0; font-weight:700; }
+  .day.in-range + .day.range-end { }
+
+  /* Color coding (training load, etc) */
+  .day .dotrow {
+    position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 2px;
+  }
+  .day .dotrow i {
+    width: 4px; height: 4px; border-radius: 50%; display:block;
+  }
+  .day .dotrow .g { background: #22C55E; }
+  .day .dotrow .a { background: var(--warning); }
+  .day .dotrow .r { background: var(--danger); }
+  .day .dotrow .b { background: var(--sport-softball); }
+
+  /* Footer buttons */
+  .cal-ft {
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-subtle);
+    display: flex; gap: 8px; justify-content: flex-end;
+  }
+  .cal-ft button {
+    all: unset; cursor: pointer;
+    font: 700 11px/1 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 8px 14px; border-radius: 6px;
+    color: var(--neutral-700); border: 1px solid var(--border-subtle);
+  }
+  .cal-ft button:hover { color: var(--rap-red); border-color: var(--rap-red); }
+  .cal-ft button.primary {
+    background: var(--rap-red); color: #fff; border-color: var(--rap-red);
+  }
+  .cal-ft button.primary:hover { background: var(--rap-red-hover); border-color: var(--rap-red-hover); }
+
+  /* Two-up calendar */
+  .cal-pair { display: flex; gap: 0; }
+  .cal-pair .cal { border-radius: 0; border-right: none; box-shadow: none; }
+  .cal-pair .cal:first-child { border-top-left-radius: var(--radius-xl); border-bottom-left-radius: var(--radius-xl); }
+  .cal-pair .cal:last-child  { border-top-right-radius: var(--radius-xl); border-bottom-right-radius: var(--radius-xl); border-right: 1px solid var(--border-subtle); }
+  .cal-pair-wrap {
+    display: inline-block;
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
+  }
+
+  /* Date inputs */
+  .date-input {
+    display: inline-flex; align-items: center; gap: 10px;
+    height: 44px; padding: 0 14px;
+    border: 1px solid var(--border-default); border-radius: var(--radius-md);
+    background: #fff; color: var(--neutral-900);
+    font: 500 14px/1 var(--font-sans);
+    min-width: 200px; cursor: pointer;
+  }
+  .date-input:hover { border-color: var(--neutral-500); }
+  .date-input.focus { border-color: var(--rap-red); box-shadow: var(--ring-brand); }
+  .date-input svg { color: var(--neutral-500); flex: none; }
+  .date-input .placeholder { color: var(--text-tertiary); }
+
+  .date-range {
+    display: inline-flex; align-items: center;
+    border: 1px solid var(--border-default); border-radius: var(--radius-md);
+    background: #fff; padding: 0 6px;
+  }
+  .date-range .leg {
+    display: inline-flex; align-items: center; gap: 10px;
+    height: 44px; padding: 0 14px;
+    font: 500 14px/1 var(--font-sans); color: var(--neutral-900); cursor: pointer;
+  }
+  .date-range .leg.active { color: var(--rap-red); font-weight: 700; }
+  .date-range .arrow { color: var(--neutral-400); padding: 0 4px; }
+
+  /* Month picker */
+  .month-pick {
+    width: 280px; background: #fff; border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); padding: 20px;
+  }
+  .month-pick .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .month-pick .m {
+    height: 44px; display: grid; place-items: center;
+    font: 600 13px/1 var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--neutral-900); border-radius: 6px; cursor: pointer;
+  }
+  .month-pick .m:hover { background: var(--neutral-75); }
+  .month-pick .m.sel { background: var(--rap-red); color: #fff; }
+  .month-pick .m.muted { color: var(--neutral-400); }
+
+  /* Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font: 500 12px/1 var(--font-sans); color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 8px; height: 8px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<main class="ds-page">
+
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Molecules · Pickers</div>
+      <h1 class="ds-title">Date&nbsp;Picker</h1>
+      <p class="ds-sub">Calendar-based date and range selection. One month, two-up, month-only, and color-coded variants for training calendars.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- TRIGGER INPUTS -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Triggers</div>
+      <div class="ds-section-note">The input that opens the calendar.</div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;">
+        <div>
+          <div style="font:600 11px/1 var(--font-sans);letter-spacing:0.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Empty</div>
+          <div class="date-input">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span class="placeholder">Select a date</span>
+          </div>
+        </div>
+        <div>
+          <div style="font:600 11px/1 var(--font-sans);letter-spacing:0.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Filled</div>
+          <div class="date-input">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Mar 14, 2026
+          </div>
+        </div>
+        <div>
+          <div style="font:600 11px/1 var(--font-sans);letter-spacing:0.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Focused</div>
+          <div class="date-input focus">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            Mar 14, 2026
+          </div>
+        </div>
+        <div>
+          <div style="font:600 11px/1 var(--font-sans);letter-spacing:0.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:6px;">Range</div>
+          <div class="date-range">
+            <span class="leg active">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              Mar 10
+            </span>
+            <span class="arrow">→</span>
+            <span class="leg">Mar 18</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SINGLE CALENDAR -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Single Month</div>
+      <div class="ds-section-note">Default picker. 36&nbsp;px day cells, today marked with red dot, selection in Rapsodo Red.</div>
+    </div>
+    <div class="grid-2">
+      <div class="panel" style="align-items:flex-start;">
+        <div class="p-title">Default</div>
+        <div class="cal">
+          <div class="cal-head">
+            <div class="cal-title">March <span class="y">2026</span></div>
+            <div class="cal-nav">
+              <button aria-label="Previous month"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+              <button aria-label="Next month"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+            </div>
+          </div>
+          <div class="cal-dows"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+          <div class="cal-grid" id="cal-default"></div>
+          <div class="cal-ft">
+            <button>Today</button>
+            <button>Cancel</button>
+            <button class="primary">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="align-items:flex-start;">
+        <div class="p-title">With session color coding</div>
+        <div class="cal">
+          <div class="cal-head">
+            <div class="cal-title">March <span class="y">2026</span></div>
+            <div class="cal-nav">
+              <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+              <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+            </div>
+          </div>
+          <div class="cal-dows"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+          <div class="cal-grid" id="cal-dots"></div>
+          <div style="margin-top:12px;">
+            <div class="legend">
+              <span><i class="g" style="background:#22C55E;"></i>Light</span>
+              <span><i class="a" style="background:var(--warning);"></i>Moderate</span>
+              <span><i class="r" style="background:var(--danger);"></i>Max</span>
+              <span><i class="b" style="background:var(--sport-softball);"></i>Video review</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TWO-UP RANGE -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Range · Two Months</div>
+      <div class="ds-section-note">Used for date-range filters — reports, schedules, booking windows.</div>
+    </div>
+    <div class="panel" style="align-items:flex-start;">
+      <div class="p-title">Date range</div>
+      <div class="cal-pair-wrap">
+        <div class="cal-pair">
+          <div class="cal" style="box-shadow:none;border-right:none;">
+            <div class="cal-head">
+              <div class="cal-title">March <span class="y">2026</span></div>
+              <div class="cal-nav">
+                <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+              </div>
+            </div>
+            <div class="cal-dows"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            <div class="cal-grid" id="cal-range-1"></div>
+          </div>
+          <div class="cal" style="box-shadow:none;">
+            <div class="cal-head">
+              <div class="cal-title">April <span class="y">2026</span></div>
+              <div class="cal-nav">
+                <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+              </div>
+            </div>
+            <div class="cal-dows"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            <div class="cal-grid" id="cal-range-2"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;font:500 13px/1 var(--font-sans);color:var(--text-secondary);">
+        <strong style="color:var(--rap-red);font:700 13px/1 var(--font-sans);">9 days selected</strong>
+        · Mar 10 → Apr 1 · 2026
+      </div>
+    </div>
+  </section>
+
+  <!-- MONTH / YEAR -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Month &amp; Year</div>
+      <div class="ds-section-note">For reports spanning full months.</div>
+    </div>
+    <div class="grid-2">
+      <div class="panel" style="align-items:flex-start;">
+        <div class="p-title">Month picker</div>
+        <div class="month-pick">
+          <div class="cal-head">
+            <div class="cal-title">2026</div>
+            <div class="cal-nav">
+              <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+              <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="m">Jan</div><div class="m">Feb</div><div class="m sel">Mar</div>
+            <div class="m">Apr</div><div class="m">May</div><div class="m">Jun</div>
+            <div class="m">Jul</div><div class="m">Aug</div><div class="m">Sep</div>
+            <div class="m muted">Oct</div><div class="m muted">Nov</div><div class="m muted">Dec</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel" style="align-items:flex-start;">
+        <div class="p-title">Year picker</div>
+        <div class="month-pick">
+          <div class="cal-head">
+            <div class="cal-title">2020&nbsp;–&nbsp;<span class="y">2031</span></div>
+            <div class="cal-nav">
+              <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+              <button><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+            </div>
+          </div>
+          <div class="grid">
+            <div class="m muted">2020</div><div class="m">2021</div><div class="m">2022</div>
+            <div class="m">2023</div><div class="m">2024</div><div class="m">2025</div>
+            <div class="m sel">2026</div><div class="m">2027</div><div class="m">2028</div>
+            <div class="m">2029</div><div class="m">2030</div><div class="m muted">2031</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="../index.html">← Back to Design System</a>
+    <span style="color:var(--text-tertiary);">Source · <span class="ds-chip">03. Base.fig / 08.-Date-Picker</span></span>
+  </nav>
+</main>
+
+<script>
+(function() {
+  // Helpers: build a Monday-first 6x7 grid for a given year/month.
+  function buildGrid(el, year, month, opts) {
+    opts = opts || {};
+    const first = new Date(year, month, 1);
+    // Monday = 0
+    const lead = (first.getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    const prevDays = new Date(year, month, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < lead; i++) cells.push({ d: prevDays - lead + 1 + i, muted: true });
+    for (let d = 1; d <= daysInMonth; d++) cells.push({ d: d });
+    while (cells.length < 42) cells.push({ d: cells.length - lead - daysInMonth + 1, muted: true });
+
+    let html = '';
+    for (const c of cells) {
+      let cls = 'day';
+      if (c.muted) cls += ' muted';
+      if (opts.today === c.d && !c.muted) cls += ' today';
+      if (opts.selected && opts.selected.indexOf(c.d) >= 0 && !c.muted) cls += ' sel';
+      if (opts.disabled && opts.disabled.indexOf(c.d) >= 0 && !c.muted) cls += ' disabled';
+
+      // Range
+      if (opts.range && !c.muted) {
+        const [s, e] = opts.range;
+        if (c.d === s) cls += ' range-start';
+        else if (c.d === e) cls += ' range-end';
+        else if (c.d > s && c.d < e) cls += ' in-range';
+      }
+
+      // Color dots
+      let dots = '';
+      if (opts.dots && !c.muted && opts.dots[c.d]) {
+        dots = '<span class="dotrow">' + opts.dots[c.d].split('').map(k => '<i class="' + k + '"></i>').join('') + '</span>';
+      }
+
+      html += `<div class="${cls}">${c.d}${dots}</div>`;
+    }
+    el.innerHTML = html;
+  }
+
+  buildGrid(document.getElementById('cal-default'), 2026, 2, {
+    today: 14, selected: [14]
+  });
+
+  buildGrid(document.getElementById('cal-dots'), 2026, 2, {
+    today: 14, selected: [14],
+    dots: {
+      2: 'g', 3: 'a', 5: 'r', 6: 'b',
+      9: 'g', 10: 'a', 11: 'a', 12: 'r', 13: 'b',
+      16: 'g', 17: 'a', 19: 'r',
+      23: 'g', 24: 'g', 26: 'a', 27: 'b'
+    }
+  });
+
+  buildGrid(document.getElementById('cal-range-1'), 2026, 2, {
+    today: 14, range: [10, 31]
+  });
+  buildGrid(document.getElementById('cal-range-2'), 2026, 3, {
+    range: [0, 1], disabled: [15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]
+  });
+})();
+</script>
+</body>
+</html>

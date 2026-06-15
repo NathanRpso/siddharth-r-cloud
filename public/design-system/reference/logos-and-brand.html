@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Logos &amp; Brand · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  .logo-hero {
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    background: var(--neutral-950);
+    color: #fff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 380px;
+  }
+  .logo-hero .left {
+    padding: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 24px;
+    background-image: url('../assets/brand/dot-grid.svg');
+    background-size: 420px; background-position: right -60px top -60px; background-repeat: no-repeat;
+  }
+  .logo-hero h2 {
+    font: 800 italic 64px/0.92 var(--font-display);
+    text-transform: uppercase; letter-spacing: -0.01em; margin: 0;
+  }
+  .logo-hero h2 em { color: var(--rap-red); font-style: italic; }
+  .logo-hero p { font: 400 16px/1.55 var(--font-sans); color: rgba(255,255,255,0.75); max-width: 44ch; }
+
+  .logo-hero .right {
+    background: var(--rap-red);
+    display: grid; place-items: center;
+    padding: 40px;
+    position: relative;
+  }
+  .logo-hero .right img { width: 60%; max-width: 380px; height: auto; filter: brightness(0) invert(1); }
+
+  .lockup-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .lockup {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    background: var(--surface-0);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .lockup .frame {
+    height: 180px;
+    display: grid; place-items: center;
+    padding: 32px;
+    background: var(--surface-0);
+  }
+  .lockup.black .frame { background: var(--neutral-950); }
+  .lockup.red .frame { background: var(--rap-red); }
+  .lockup.grey .frame { background: var(--neutral-75); }
+  .lockup .frame img { max-width: 80%; max-height: 100%; height: auto; }
+  .lockup .frame img.on-dark { filter: brightness(0) invert(1); }
+  .lockup .frame img.on-red { filter: brightness(0) invert(1); }
+  .lockup .meta {
+    padding: 16px 20px; border-top: 1px solid var(--border-subtle);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .lockup .name { font: 700 13px/1 var(--font-sans); color: var(--text-primary); }
+  .lockup .token { font: 500 11px/1 var(--font-mono); color: var(--text-tertiary); }
+
+  .clear-space {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 56px;
+    background: var(--surface-0);
+    display: grid; place-items: center;
+  }
+  .clear-space .box {
+    position: relative;
+    padding: 56px;
+    outline: 1px dashed var(--rap-red);
+    outline-offset: 0;
+  }
+  .clear-space .box::before,
+  .clear-space .box::after {
+    content: '× R'; position: absolute; color: var(--rap-red);
+    font: 700 10px/1 var(--font-mono); letter-spacing: 0.08em;
+  }
+  .clear-space .box::before { top: 20px; left: 50%; transform: translateX(-50%); }
+  .clear-space .box::after { bottom: 20px; left: 50%; transform: translateX(-50%); }
+  .clear-space .inner {
+    outline: 1px dashed var(--neutral-300);
+    padding: 24px;
+  }
+  .clear-space img { width: 240px; height: auto; display: block; }
+
+  .dont-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .dont {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--surface-0);
+    display: flex; flex-direction: column;
+  }
+  .dont .box {
+    height: 140px; display: grid; place-items: center; padding: 16px;
+    background: var(--neutral-50);
+  }
+  .dont .box img { max-width: 70%; height: auto; }
+  .dont .caption {
+    padding: 14px 16px; display: flex; align-items: center; gap: 8px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .dont .caption .mark {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--danger); color: #fff;
+    display: grid; place-items: center; flex: none;
+  }
+  .dont .caption .text {
+    font: 500 12px/1.35 var(--font-sans); color: var(--text-secondary);
+  }
+
+  .element-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .element {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background: var(--neutral-950);
+    color: #fff;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .element .swatch-area {
+    flex: 1; position: relative; overflow: hidden;
+  }
+  .element img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.8;
+    filter: invert(1);
+  }
+  .element.red { background: var(--rap-red); }
+  .element.red img { filter: invert(1) brightness(0) invert(1); opacity: 0.5; }
+  .element.light { background: var(--neutral-75); color: var(--neutral-900); }
+  .element.light img { filter: none; opacity: 0.5; }
+  .element .label {
+    padding: 12px 14px; border-top: 1px solid rgba(255,255,255,0.1);
+    font: 700 11px/1.2 var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase;
+    background: rgba(0,0,0,0.25); backdrop-filter: blur(8px);
+  }
+  .element.light .label { background: rgba(255,255,255,0.5); border-top-color: var(--border-subtle); color: var(--neutral-900); }
+
+  .voice {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    background: var(--surface-0);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .voice h4 { font: 700 italic 14px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 12px; }
+  .voice ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .voice li { font: 400 14px/1.45 var(--font-sans); color: var(--text-secondary); padding-left: 22px; position: relative; }
+  .voice .yes h4 { color: var(--success); }
+  .voice .yes li::before { content: ''; position: absolute; left: 0; top: 9px; width: 12px; height: 2px; background: var(--success); }
+  .voice .no h4 { color: var(--danger); }
+  .voice .no li::before { content: ''; position: absolute; left: 0; top: 5px; width: 12px; height: 12px; border: 2px solid var(--danger); border-radius: 50%; }
+
+  @media (max-width: 820px) {
+    .logo-hero, .voice { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main class="ds-page">
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Brand</div>
+      <h1 class="ds-title">Logos &amp; Brand</h1>
+      <p class="ds-sub">The master wordmark, the R-mark, product lockups for each sport, clear-space, and the geometric elements that build every Rapsodo surface.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="logo-hero">
+    <div class="left">
+      <div class="ds-eyebrow" style="color:var(--rap-red);">Master wordmark</div>
+      <h2>One<br/><em>voice.</em><br/>Two styles.</h2>
+      <p>The Rapsodo wordmark is the signature — lowercase, italic, forward-leaning. Use it small and confident. Never outline it, stretch it, or drop shadows on it.</p>
+    </div>
+    <div class="right">
+      <img src="../assets/logos/rapsodo-wordmark.svg" alt="Rapsodo wordmark" />
+    </div>
+  </section>
+
+  <!-- R-MARK -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">R-mark</div>
+      <div class="ds-section-note">The standalone symbol. Use when the wordmark is too wide or when the brand is already established in context.</div>
+    </div>
+    <div class="lockup-grid">
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-r-mark.svg" alt="R-mark on white" style="max-height:110px;"/></div>
+        <div class="meta"><span class="name">R-mark / Black</span><span class="token">on white</span></div>
+      </div>
+      <div class="lockup black">
+        <div class="frame"><img class="on-dark" src="../assets/logos/rapsodo-r-mark.svg" alt="R-mark on black" style="max-height:110px;"/></div>
+        <div class="meta"><span class="name">R-mark / White</span><span class="token">on black</span></div>
+      </div>
+      <div class="lockup red">
+        <div class="frame"><img class="on-red" src="../assets/logos/rapsodo-r-mark.svg" alt="R-mark on red" style="max-height:110px;"/></div>
+        <div class="meta"><span class="name">R-mark / White</span><span class="token">on Rapsodo red</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-bigR.svg" alt="Big R poster mark" style="max-height:120px;"/></div>
+        <div class="meta"><span class="name">Big&nbsp;R</span><span class="token">poster / badge</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT LOCKUPS -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Product lockups</div>
+      <div class="ds-section-note">Sport wordmarks sit to the right of the Rapsodo mark. Black on light; white on dark. Never colored.</div>
+    </div>
+    <div class="lockup-grid">
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-golf-text.svg?v=1776667401421" alt="Rapsodo Golf" style="max-height:52px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Golf</span><span class="token">horizontal</span></div>
+      </div>
+      <div class="lockup black">
+        <div class="frame"><img class="on-dark" src="../assets/logos/rapsodo-golf-text.svg?v=1776667401421" alt="Rapsodo Golf reversed" style="max-height:52px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Golf</span><span class="token">reversed</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-baseball-text.svg?v=1776667401421" alt="Rapsodo Baseball" style="max-height:42px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Baseball</span><span class="token">horizontal</span></div>
+      </div>
+      <div class="lockup black">
+        <div class="frame"><img class="on-dark" src="../assets/logos/rapsodo-baseball-text.svg?v=1776667401421" alt="Rapsodo Baseball reversed" style="max-height:42px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Baseball</span><span class="token">reversed</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-softball-text.svg?v=1776667401421" alt="Rapsodo Softball" style="max-height:42px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Softball</span><span class="token">horizontal</span></div>
+      </div>
+      <div class="lockup black">
+        <div class="frame"><img class="on-dark" src="../assets/logos/rapsodo-softball-text.svg?v=1776667401421" alt="Rapsodo Softball reversed" style="max-height:42px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Softball</span><span class="token">reversed</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STACKED / BOTTOM LOCKUPS -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Stacked &amp; bottom lockups</div>
+      <div class="ds-section-note">When the layout is tall or square, drop the sport wordmark below the Rapsodo mark.</div>
+    </div>
+    <div class="lockup-grid">
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-golf-bottom.svg?v=1776667401421" alt="Rapsodo Golf bottom lockup" style="max-height:92px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Golf</span><span class="token">wordmark · bottom</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-golf-stacked.svg?v=1776667401421" alt="Rapsodo Golf stacked" style="max-height:62px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Golf</span><span class="token">R-mark · right</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-golf-stacked-bottom.svg?v=1776667401421" alt="Rapsodo Golf stacked bottom" style="max-height:72px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Golf</span><span class="token">R-mark · stacked</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-baseball-stacked.svg?v=1776667401421" alt="Rapsodo Baseball stacked" style="max-height:62px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Baseball</span><span class="token">stacked</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-softball-stacked.svg?v=1776667401421" alt="Rapsodo Softball stacked" style="max-height:62px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · Softball</span><span class="token">stacked</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-mlm-pro.svg" alt="Rapsodo MLM2 Pro" style="max-height:132px;"/></div>
+        <div class="meta"><span class="name">Rapsodo · MLM2&nbsp;Pro</span><span class="token">product mark</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT MARKS -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Product marks</div>
+      <div class="ds-section-note">Specific hardware &amp; program marks. Pair with the master Rapsodo wordmark above or as a helper.</div>
+    </div>
+    <div class="lockup-grid">
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/fig/champions-logo.svg" alt="Rapsodo Champions shield" style="max-height:140px;"/></div>
+        <div class="meta"><span class="name">Champions</span><span class="token">shield · symbol</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/fig/diamond-sports-text.svg" alt="Rapsodo Diamond Sports wordmark" style="max-height:40px;"/></div>
+        <div class="meta"><span class="name">Diamond Sports</span><span class="token">text wordmark</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/fig/diamond-sports-symbol-outline.svg" alt="Diamond Sports symbol outline" style="max-height:72px;"/></div>
+        <div class="meta"><span class="name">Diamond Sports</span><span class="token">symbol · outline</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame">
+          <svg viewBox="0 0 99 62" style="height:72px;width:auto;color:#000;" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+            <path fill-rule="evenodd" d="M 31.908 12.718 L 54.572 0.004 L 54.568 0 L 72.263 12.682 L 49.566 25.385 L 31.908 12.718 Z M 58.113 31.5 L 80.777 18.786 L 80.781 18.786 L 98.468 31.465 L 75.771 44.167 L 58.113 31.5 Z M 22.665 17.837 L 0 30.551 L 17.659 43.218 L 40.355 30.515 L 22.668 17.837 L 22.665 17.837 Z M 26.205 49.333 L 48.869 36.619 L 48.873 36.619 L 66.56 49.298 L 43.864 62 L 26.205 49.333 Z"/>
+          </svg>
+        </div>
+        <div class="meta"><span class="name">Diamond Sports</span><span class="token">symbol · filled</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <img src="../assets/logos/rapsodo-wordmark.svg" alt="" style="height:18px;width:auto;opacity:0.85;"/>
+            <img src="../assets/logos/fig/mlm-pro.svg" alt="MLM2 PRO" style="max-height:100px;width:auto;"/>
+          </div>
+        </div>
+        <div class="meta"><span class="name">MLM2&nbsp;PRO</span><span class="token">helper · Rapsodo · bottom</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/fig/mlm-pro-2.svg" alt="Rapsodo MLM2 PRO horizontal" style="max-height:54px;"/></div>
+        <div class="meta"><span class="name">MLM2&nbsp;PRO</span><span class="token">Rapsodo · right</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/fig/mlm-pro-3.svg" alt="Rapsodo MLM2 PRO stacked" style="max-height:120px;"/></div>
+        <div class="meta"><span class="name">MLM2&nbsp;PRO</span><span class="token">Rapsodo · bottom</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+            <div style="font-family:var(--font-display);font-weight:800;font-style:italic;font-size:26px;letter-spacing:0.01em;color:#000;line-height:1;">RAPSODO <span style="color:#4270B7;">BASEBALL</span></div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-family:var(--font-display);font-weight:900;font-style:italic;font-size:38px;line-height:1;color:#000;letter-spacing:0.01em;">PRO</span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:92px;height:56px;border:3px solid #4270B7;border-radius:8px;font-family:var(--font-display);font-weight:900;font-style:italic;font-size:28px;color:#4270B7;letter-spacing:0.02em;">3.0</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta"><span class="name">Baseball PRO&nbsp;3.0</span><span class="token">product · stacked</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="font-family:var(--font-display);font-weight:800;font-style:italic;font-size:24px;letter-spacing:0.01em;color:#000;line-height:1;">RAPSODO <span style="color:#2B73DF;">BASEBALL</span> <span style="color:#000;">PRO</span></div>
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:78px;height:50px;border:3px solid #2B73DF;border-radius:7px;font-family:var(--font-display);font-weight:900;font-style:italic;font-size:24px;color:#2B73DF;letter-spacing:0.02em;">2.0</span>
+          </div>
+        </div>
+        <div class="meta"><span class="name">Baseball PRO&nbsp;2.0</span><span class="token">product · horizontal</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CO-BRANDING -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Co-branding</div>
+      <div class="ds-section-note">Partner lockups use a diagonal hairline divider — never a vertical bar. Rapsodo mark sits to the left.</div>
+    </div>
+    <div class="lockup-grid">
+      <div class="lockup">
+        <div class="frame">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <img src="../assets/logos/rapsodo-golf-text.svg?v=1776667401421" alt="Rapsodo Golf" style="height:44px;width:auto;"/>
+            <div style="width:1px;height:60px;background:#000;transform:rotate(28deg);transform-origin:center;"></div>
+            <img src="../assets/logos/fig/callaway.svg" alt="Callaway" style="height:54px;width:auto;"/>
+          </div>
+        </div>
+        <div class="meta"><span class="name">Rapsodo Golf × Callaway</span><span class="token">co-brand · diagonal divider</span></div>
+      </div>
+      <div class="lockup">
+        <div class="frame">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <img src="../assets/logos/rapsodo-wordmark.svg" alt="Rapsodo" style="height:28px;width:auto;"/>
+            <div style="width:1px;height:48px;background:#000;transform:rotate(28deg);"></div>
+            <div style="display:flex;flex-direction:column;line-height:1;">
+              <span style="font-family:var(--font-display);font-weight:800;font-style:italic;font-size:22px;color:#000;letter-spacing:0.02em;">PARTNER</span>
+              <span style="font:500 10px/1.2 var(--font-mono);color:var(--text-tertiary);letter-spacing:0.06em;margin-top:4px;text-transform:uppercase;">placeholder</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta"><span class="name">Rapsodo × Partner</span><span class="token">co-brand · template</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORDMARK LOCKUPS -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Wordmark on backgrounds</div>
+      <div class="ds-section-note">Master wordmark only — no sport. Use for corporate and cross-product surfaces.</div>
+    </div>
+    <div class="lockup-grid">
+      <div class="lockup">
+        <div class="frame"><img src="../assets/logos/rapsodo-wordmark.svg" alt="Rapsodo wordmark on white"/></div>
+        <div class="meta"><span class="name">Wordmark / Black</span><span class="token">on white</span></div>
+      </div>
+      <div class="lockup black">
+        <div class="frame"><img class="on-dark" src="../assets/logos/rapsodo-wordmark.svg" alt="Rapsodo wordmark on black"/></div>
+        <div class="meta"><span class="name">Wordmark / White</span><span class="token">on black</span></div>
+      </div>
+      <div class="lockup red">
+        <div class="frame"><img class="on-red" src="../assets/logos/rapsodo-wordmark.svg" alt="Rapsodo wordmark on red"/></div>
+        <div class="meta"><span class="name">Wordmark / White</span><span class="token">on Rapsodo red</span></div>
+      </div>
+      <div class="lockup grey">
+        <div class="frame"><img src="../assets/logos/rapsodo-wordmark.svg" alt="Rapsodo wordmark on light grey"/></div>
+        <div class="meta"><span class="name">Wordmark / Black</span><span class="token">on neutral&nbsp;75</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLEAR SPACE -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Clear space</div>
+      <div class="ds-section-note">The cap-height of the R on all four sides is the minimum.</div>
+    </div>
+    <div class="clear-space">
+      <div class="box">
+        <div class="inner">
+          <img src="../assets/logos/rapsodo-wordmark.svg" alt="Clear space demonstration" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MISUSE -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Don't</div>
+      <div class="ds-section-note">The wordmark is a system. Break the system and it stops meaning Rapsodo.</div>
+    </div>
+    <div class="dont-grid">
+      <div class="dont">
+        <div class="box"><img style="transform: scaleY(1.6);" src="../assets/logos/rapsodo-wordmark.svg" alt=""/></div>
+        <div class="caption"><span class="mark"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><span class="text">Don't stretch or squish.</span></div>
+      </div>
+      <div class="dont">
+        <div class="box" style="background: linear-gradient(135deg, #ff0088, #00aaff);"><img src="../assets/logos/rapsodo-wordmark.svg" style="filter:brightness(0) invert(1);" alt=""/></div>
+        <div class="caption"><span class="mark"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><span class="text">Don't place on off-brand gradients.</span></div>
+      </div>
+      <div class="dont">
+        <div class="box"><img style="transform: rotate(-14deg);" src="../assets/logos/rapsodo-wordmark.svg" alt=""/></div>
+        <div class="caption"><span class="mark"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><span class="text">Don't rotate. The italic is the angle.</span></div>
+      </div>
+      <div class="dont">
+        <div class="box"><img style="filter: drop-shadow(0 6px 10px rgba(0,0,0,0.4));" src="../assets/logos/rapsodo-wordmark.svg" alt=""/></div>
+        <div class="caption"><span class="mark"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><span class="text">Don't drop-shadow or bevel.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BRAND ELEMENTS -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Brand elements</div>
+      <div class="ds-section-note">Geometric systems — dots, plusses, concentric circles. Use as backgrounds, accents, and texture.</div>
+    </div>
+    <div class="element-grid">
+      <div class="element"><div class="swatch-area"><img src="../assets/brand/dot-grid.svg" alt=""/></div><div class="label">dot-grid</div></div>
+      <div class="element red"><div class="swatch-area"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 638 628" preserveAspectRatio="xMidYMid slice" style="color:rgba(255,255,255,0.35);"><defs><pattern id="pg1" width="56.08" height="55.13" patternUnits="userSpaceOnUse"><path d="M 10.14 0 h 1 v 9.64 h 9.64 v 1 h -9.64 v 9.64 h -1 v -9.64 h -9.64 v -1 h 9.64 Z" fill="currentColor"/></pattern></defs><rect width="638" height="628" fill="url(#pg1)"/></svg></div><div class="label">plus-grid · on red</div></div>
+      <div class="element"><div class="swatch-area"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 107.843 107.843" style="width:60%;height:auto;color:var(--rap-red);"><path d="M 16.285 32.571 C 25.279 32.571 32.571 25.279 32.571 16.285 C 32.571 7.291 25.279 0 16.285 0 C 7.291 0 0 7.291 0 16.285 C 0 25.279 7.291 32.571 16.285 32.571 Z M 16.285 70.206 C 25.279 70.206 32.571 62.915 32.571 53.921 C 32.571 44.927 25.279 37.636 16.285 37.636 C 7.291 37.636 0 44.927 0 53.921 C 0 62.915 7.291 70.206 16.285 70.206 Z M 70.206 53.921 C 70.206 62.915 62.915 70.206 53.921 70.206 C 44.927 70.206 37.636 62.915 37.636 53.921 C 37.636 44.927 44.927 37.636 53.921 37.636 C 62.915 37.636 70.206 44.927 70.206 53.921 Z M 53.921 107.843 C 62.915 107.843 70.206 100.552 70.206 91.558 C 70.206 82.564 62.915 75.272 53.921 75.272 C 44.927 75.272 37.636 82.564 37.636 91.558 C 37.636 100.552 44.927 107.843 53.921 107.843 Z M 107.843 91.558 C 107.843 100.552 100.552 107.843 91.558 107.843 C 82.563 107.843 75.272 100.552 75.272 91.558 C 75.272 82.564 82.563 75.272 91.558 75.272 C 100.552 75.272 107.843 82.564 107.843 91.558 Z" fill="currentColor" fill-rule="evenodd"/></svg></div><div class="label">circles · concentric</div></div>
+      <div class="element light"><div class="swatch-area"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108.527 108.805" style="width:60%;height:auto;color:var(--rap-red);"><path d="M 92.241 32.571 C 101.236 32.571 108.527 25.279 108.527 16.285 C 108.527 7.291 101.236 0 92.241 0 C 83.247 0 75.956 7.291 75.956 16.285 C 75.956 25.279 83.247 32.571 92.241 32.571 Z M 16.285 108.805 C 25.279 108.805 32.571 101.514 32.571 92.52 C 32.571 83.526 25.279 76.234 16.285 76.234 C 7.291 76.234 0 83.526 0 92.52 C 0 101.514 7.291 108.805 16.285 108.805 Z M 108.527 54.402 C 108.527 63.396 101.236 70.687 92.241 70.687 C 83.247 70.687 75.956 63.396 75.956 54.402 C 75.956 45.408 83.247 38.117 92.241 38.117 C 101.236 38.117 108.527 45.408 108.527 54.402 Z M 54.605 108.805 C 63.599 108.805 70.89 101.514 70.89 92.52 C 70.89 83.526 63.599 76.234 54.605 76.234 C 45.611 76.234 38.319 83.526 38.319 92.52 C 38.319 101.514 45.611 108.805 54.605 108.805 Z M 108.527 92.52 C 108.527 101.514 101.236 108.805 92.241 108.805 C 83.247 108.805 75.956 101.514 75.956 92.52 C 75.956 83.526 83.247 76.234 92.241 76.234 C 101.236 76.234 108.527 83.526 108.527 92.52 Z" fill="currentColor" fill-rule="evenodd"/></svg></div><div class="label">circles · offset</div></div>
+      <div class="element"><div class="swatch-area"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108.527 108.805" style="width:60%;height:auto;color:var(--rap-red);"><path d="M 108.527 16.285 C 108.527 25.279 101.236 32.571 92.241 32.571 C 83.247 32.571 75.956 25.279 75.956 16.285 C 75.956 7.291 83.247 0 92.241 0 C 101.236 0 108.527 7.291 108.527 16.285 Z M 32.571 92.52 C 32.571 101.514 25.279 108.805 16.285 108.805 C 7.291 108.805 0 101.514 0 92.52 C 0 83.526 7.291 76.234 16.285 76.234 C 25.279 76.234 32.571 83.526 32.571 92.52 Z M 55.01 32.571 C 64.004 32.571 71.296 25.279 71.296 16.285 C 71.296 7.291 64.004 0 55.01 0 C 46.016 0 38.725 7.291 38.725 16.285 C 38.725 25.279 46.016 32.571 55.01 32.571 Z M 108.527 54.402 C 108.527 63.396 101.236 70.687 92.241 70.687 C 83.247 70.687 75.956 63.396 75.956 54.402 C 75.956 45.408 83.247 38.117 92.241 38.117 C 101.236 38.117 108.527 45.408 108.527 54.402 Z M 54.605 108.805 C 63.599 108.805 70.89 101.514 70.89 92.52 C 70.89 83.526 63.599 76.234 54.605 76.234 C 45.611 76.234 38.319 83.526 38.319 92.52 C 38.319 101.514 45.611 108.805 54.605 108.805 Z M 32.571 54.884 C 32.571 63.878 25.279 71.169 16.285 71.169 C 7.291 71.169 0 63.878 0 54.884 C 0 45.89 7.291 38.599 16.285 38.599 C 25.279 38.599 32.571 45.89 32.571 54.884 Z" fill="currentColor" fill-rule="evenodd"/></svg></div><div class="label">circles · quarter</div></div>
+    </div>
+  </section>
+
+  <!-- VOICE -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Voice</div>
+      <div class="ds-section-note">How Rapsodo talks in copy.</div>
+    </div>
+    <div class="voice">
+      <div class="yes">
+        <h4>Do</h4>
+        <ul>
+          <li>Write like a coach — direct, confident, specific.</li>
+          <li>Lead with the stat. "312&nbsp;yd carry" before "great drive."</li>
+          <li>Name the player and the moment. "Dialed-in on the 7-iron."</li>
+          <li>Short sentences. Short paragraphs. Momentum.</li>
+        </ul>
+      </div>
+      <div class="no">
+        <h4>Don't</h4>
+        <ul>
+          <li>Don't be breathy or motivational. No "unleash your potential."</li>
+          <li>Don't use exclamation marks for emphasis.</li>
+          <li>Don't hide behind jargon — ball-flight physics stays in the help doc, not the CTA.</li>
+          <li>Don't use emoji in brand voice.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="iconography.html">← Iconography</a>
+    <a href="product-cards.html">Product cards →</a>
+  </nav>
+</main>
+</body>
+</html>

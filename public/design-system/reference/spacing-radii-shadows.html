@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Spacing, Radii &amp; Shadows · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  .spacing-table {
+    display: grid;
+    grid-template-columns: 120px 100px 1fr;
+    gap: 0;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+  .spacing-row {
+    display: contents;
+  }
+  .spacing-row > div {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+  }
+  .spacing-row:last-child > div { border-bottom: none; }
+  .spacing-row .token {
+    font: 700 12px/1 var(--font-mono);
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+  }
+  .spacing-row .size {
+    font: 500 13px/1 var(--font-mono);
+    color: var(--text-tertiary);
+  }
+  .spacing-row .bar {
+    background: var(--rap-red);
+    height: 16px;
+    border-radius: 2px;
+  }
+  .spacing-row.header > div {
+    font: 700 11px/1 var(--font-sans);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    background: var(--neutral-50);
+  }
+
+  .radius-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  .radius-card {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+    background: var(--surface-0);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .radius-box {
+    height: 100px;
+    background: var(--rap-red);
+    position: relative;
+  }
+  .radius-card .meta {
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .radius-card .name {
+    font: 700 14px/1 var(--font-sans); color: var(--text-primary);
+  }
+  .radius-card .val {
+    font: 500 12px/1 var(--font-mono); color: var(--text-tertiary);
+  }
+  .radius-card .tok {
+    font: 500 11px/1 var(--font-mono); color: var(--text-tertiary);
+  }
+
+  .shadow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    padding: 32px;
+    background: var(--neutral-50);
+    border-radius: var(--radius-2xl);
+  }
+  .shadow-card {
+    background: var(--surface-0);
+    border-radius: var(--radius-xl);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    text-align: center;
+    min-height: 140px;
+    justify-content: center;
+  }
+  .shadow-card .name { font: 700 14px/1 var(--font-sans); color: var(--text-primary); }
+  .shadow-card .tok { font: 500 11px/1 var(--font-mono); color: var(--text-tertiary); }
+
+  .layout-demo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .layout-demo .left,
+  .layout-demo .right {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-subtle);
+    padding: 24px;
+    background: var(--surface-0);
+  }
+  .bad-label { color: var(--danger); font:700 11px/1 var(--font-sans); letter-spacing:0.12em; text-transform:uppercase; }
+  .good-label { color: var(--success); font:700 11px/1 var(--font-sans); letter-spacing:0.12em; text-transform:uppercase; }
+
+  .demo-card {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--surface-0);
+  }
+  .demo-stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .demo-stat { text-align: center; padding: 16px 12px; border-right: 1px solid var(--border-subtle); }
+  .demo-stat:last-child { border-right: none; }
+  .demo-stat .v { font: 800 italic 28px/1 var(--font-display); letter-spacing:-0.01em; color: var(--neutral-900); }
+  .demo-stat .l { font: 600 10px/1 var(--font-sans); letter-spacing:0.12em; text-transform:uppercase; color: var(--text-tertiary); margin-top:6px; }
+</style>
+</head>
+<body>
+<main class="ds-page">
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Atoms · Foundation</div>
+      <h1 class="ds-title">Spacing · Radii · Shadows</h1>
+      <p class="ds-sub">A 4-pixel base. Bold radii on cards and panels. Shadows are restrained — flatness is the default, elevation is rare and intentional.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- SPACING -->
+  <section class="ds-section" style="margin-top:0;">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Spacing scale</div>
+      <div class="ds-section-note">4-pt base. Use the token, not the pixel value.</div>
+    </div>
+    <div class="spacing-table">
+      <div class="spacing-row header"><div>Token</div><div>Size</div><div>Scale</div></div>
+      <div class="spacing-row"><div class="token">--space-1</div><div class="size">4 px</div><div><div class="bar" style="width:4px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-2</div><div class="size">8 px</div><div><div class="bar" style="width:8px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-3</div><div class="size">12 px</div><div><div class="bar" style="width:12px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-4</div><div class="size">16 px</div><div><div class="bar" style="width:16px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-5</div><div class="size">20 px</div><div><div class="bar" style="width:20px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-6</div><div class="size">24 px</div><div><div class="bar" style="width:24px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-8</div><div class="size">32 px</div><div><div class="bar" style="width:32px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-10</div><div class="size">40 px</div><div><div class="bar" style="width:40px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-12</div><div class="size">48 px</div><div><div class="bar" style="width:48px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-16</div><div class="size">64 px</div><div><div class="bar" style="width:64px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-20</div><div class="size">80 px</div><div><div class="bar" style="width:80px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-24</div><div class="size">96 px</div><div><div class="bar" style="width:96px;"></div></div></div>
+      <div class="spacing-row"><div class="token">--space-32</div><div class="size">128 px</div><div><div class="bar" style="width:128px;"></div></div></div>
+    </div>
+  </section>
+
+  <!-- Layout rhythm demo -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Rhythm in practice</div>
+      <div class="ds-section-note">Cards use 24 inside, 16 between. Sections breathe at 80.</div>
+    </div>
+
+    <div class="layout-demo">
+      <div class="left">
+        <div class="bad-label">Off-brand · random spacing</div>
+        <div class="demo-card" style="margin-top:12px; padding: 18px 13px 11px 21px;">
+          <div style="font: 800 italic 28px/1 var(--font-display); text-transform:uppercase;">MLM2 Pro</div>
+          <div style="font:400 14px/1.4 var(--font-sans); color:var(--text-secondary); margin-top:3px;">Portable launch monitor</div>
+          <div class="demo-stat-row" style="margin-top:9px;">
+            <div class="demo-stat"><div class="v">149</div><div class="l">MPH</div></div>
+            <div class="demo-stat"><div class="v">18°</div><div class="l">Angle</div></div>
+            <div class="demo-stat"><div class="v">312</div><div class="l">Carry</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="good-label">On-brand · 4-pt scale</div>
+        <div class="demo-card" style="margin-top:12px; padding: 24px;">
+          <div style="font: 800 italic 28px/1 var(--font-display); text-transform:uppercase;">MLM2 Pro</div>
+          <div style="font:400 14px/1.4 var(--font-sans); color:var(--text-secondary); margin-top:8px;">Portable launch monitor</div>
+          <div class="demo-stat-row" style="margin-top:24px;">
+            <div class="demo-stat"><div class="v">149</div><div class="l">MPH</div></div>
+            <div class="demo-stat"><div class="v">18°</div><div class="l">Angle</div></div>
+            <div class="demo-stat"><div class="v">312</div><div class="l">Carry</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RADII -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Radii</div>
+      <div class="ds-section-note">Radii scale with surface size — bigger thing, bigger round.</div>
+    </div>
+    <div class="radius-grid">
+      <div class="radius-card">
+        <div class="radius-box" style="border-radius:2px;"></div>
+        <div class="meta"><div class="name">XS</div><div class="val">2&nbsp;px</div></div>
+        <div class="tok">--radius-xs · chips, tags</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-box" style="border-radius:4px;"></div>
+        <div class="meta"><div class="name">SM</div><div class="val">4&nbsp;px</div></div>
+        <div class="tok">--radius-sm · inputs</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-box" style="border-radius:8px;"></div>
+        <div class="meta"><div class="name">MD</div><div class="val">8&nbsp;px</div></div>
+        <div class="tok">--radius-md · buttons</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-box" style="border-radius:12px;"></div>
+        <div class="meta"><div class="name">LG</div><div class="val">12&nbsp;px</div></div>
+        <div class="tok">--radius-lg · alerts</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-box" style="border-radius:16px;"></div>
+        <div class="meta"><div class="name">XL</div><div class="val">16&nbsp;px</div></div>
+        <div class="tok">--radius-xl · cards</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-box" style="border-radius:24px;"></div>
+        <div class="meta"><div class="name">2XL</div><div class="val">24&nbsp;px</div></div>
+        <div class="tok">--radius-2xl · modals</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-box" style="border-radius:40px;"></div>
+        <div class="meta"><div class="name">3XL</div><div class="val">40&nbsp;px</div></div>
+        <div class="tok">--radius-3xl · panels</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-box" style="border-radius:9999px;"></div>
+        <div class="meta"><div class="name">Pill</div><div class="val">∞</div></div>
+        <div class="tok">--radius-pill · avatars</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHADOWS -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Shadows</div>
+      <div class="ds-section-note">Downward shadows are the default. Use elevation like punctuation.</div>
+    </div>
+    <div class="shadow-grid">
+      <div class="shadow-card" style="box-shadow: none; border: 1px dashed var(--border-default);">
+        <div class="name">None</div>
+        <div class="tok">flat · default</div>
+      </div>
+      <div class="shadow-card" style="box-shadow: var(--shadow-xs);">
+        <div class="name">XS</div>
+        <div class="tok">--shadow-xs</div>
+      </div>
+      <div class="shadow-card" style="box-shadow: var(--shadow-sm);">
+        <div class="name">SM</div>
+        <div class="tok">--shadow-sm · cards</div>
+      </div>
+      <div class="shadow-card" style="box-shadow: var(--shadow-md);">
+        <div class="name">MD</div>
+        <div class="tok">--shadow-md · hover</div>
+      </div>
+      <div class="shadow-card" style="box-shadow: var(--shadow-lg);">
+        <div class="name">LG</div>
+        <div class="tok">--shadow-lg · popovers</div>
+      </div>
+      <div class="shadow-card" style="box-shadow: var(--shadow-xl);">
+        <div class="name">XL</div>
+        <div class="tok">--shadow-xl · modals</div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="typography.html">← Typography</a>
+    <a href="buttons.html">Buttons →</a>
+  </nav>
+</main>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Avatars · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  /* ==========================================================================
+     AVATAR — Atomic token
+     Sizes: xs 24, sm 32, md 40, lg 48, xl 64, 2xl 96
+     Types: image, initials, icon
+     Presence: online, away, busy, offline
+     ========================================================================== */
+  .av {
+    position: relative; flex: none;
+    display: inline-grid; place-items: center;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    overflow: visible;
+    color: #fff;
+    background: var(--neutral-700);
+    font: 700 14px/1 var(--font-sans); letter-spacing: 0.02em;
+    user-select: none;
+  }
+  .av img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display:block; }
+  .av .init { position: relative; z-index: 1; }
+
+  /* Sizes */
+  .av.xs  { width: 24px; height: 24px; font-size: 10px; }
+  .av.sm  { width: 32px; height: 32px; font-size: 12px; }
+  .av.md  { width: 40px; height: 40px; font-size: 14px; }
+  .av.lg  { width: 48px; height: 48px; font-size: 16px; }
+  .av.xl  { width: 64px; height: 64px; font-size: 22px; }
+  .av.xxl { width: 96px; height: 96px; font-size: 32px; }
+
+  /* Color tokens (initials) */
+  .av.red    { background: var(--rap-red); }
+  .av.black  { background: var(--neutral-950); }
+  .av.navy   { background: var(--sport-baseball); }
+  .av.blue   { background: var(--sport-softball); }
+  .av.slate  { background: var(--neutral-700); }
+  .av.olive  { background: var(--sport-golf-mlm2); }
+  .av.sand   { background: var(--sport-golf-sand); color: var(--neutral-950); }
+  .av.cream  { background: var(--neutral-75); color: var(--neutral-950); border: 1px solid var(--border-subtle); }
+
+  /* Squared variant (seen in Figma) */
+  .av.sq   { border-radius: 8px; }
+  .av.sq img { border-radius: 8px; }
+  .av.xxl.sq { border-radius: 16px; }
+  .av.xxl.sq img { border-radius: 16px; }
+
+  /* Presence dot */
+  .av .pres {
+    position: absolute; right: -2px; bottom: -2px;
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid #fff;
+    background: var(--neutral-400);
+  }
+  .av.xs .pres, .av.sm .pres { width: 8px; height: 8px; border-width: 1.5px; right: -1px; bottom: -1px; }
+  .av.lg .pres { width: 14px; height: 14px; }
+  .av.xl .pres { width: 16px; height: 16px; right: 2px; bottom: 2px; }
+  .av.xxl .pres { width: 22px; height: 22px; right: 4px; bottom: 4px; border-width: 3px; }
+
+  .av.online  .pres { background: #22C55E; }
+  .av.away    .pres { background: var(--warning); }
+  .av.busy    .pres { background: var(--danger); }
+  .av.offline .pres { background: var(--neutral-400); }
+
+  /* Icon avatar */
+  .av .ico { width: 50%; height: 50%; color: inherit; }
+
+  /* Dark background tile for photo-less light avatars */
+  .dark-cell { background: var(--neutral-950); }
+
+  /* ==========================================================================
+     GRID LAYOUT
+     ========================================================================== */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+
+  .panel {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    background: var(--surface-0);
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .panel.dark { background: var(--neutral-950); color: #fff; border-color: var(--neutral-850); }
+  .panel.dark .p-title { color: #fff; }
+  .panel.dark .p-sub { color: rgba(255,255,255,0.55); }
+
+  .p-title {
+    font: 700 italic 14px/1 var(--font-display);
+    text-transform: uppercase; letter-spacing: 0.02em; color: var(--neutral-900);
+  }
+  .p-sub {
+    font: 500 italic 12px/1.4 var(--font-sans); color: var(--text-tertiary);
+    margin-top: -12px;
+  }
+
+  .row {
+    display: flex; align-items: flex-end; flex-wrap: wrap; gap: 20px;
+  }
+  .row .lbl {
+    font: 500 10px/1 var(--font-mono); color: var(--text-tertiary);
+    letter-spacing: 0.04em; text-transform: uppercase;
+    margin-top: 8px; display: block; text-align: center;
+  }
+  .row-item { display: flex; flex-direction: column; align-items: center; }
+
+  /* Avatar group / stack */
+  .stack { display: inline-flex; }
+  .stack .av { border: 2px solid #fff; margin-left: -12px; }
+  .stack .av:first-child { margin-left: 0; }
+  .stack .av.xs { margin-left: -8px; border-width: 1.5px; }
+  .stack .av.sm { margin-left: -10px; border-width: 2px; }
+  .stack .av.lg { margin-left: -14px; border-width: 2.5px; }
+  .stack .plus {
+    display: inline-grid; place-items: center;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--neutral-75); color: var(--neutral-800);
+    font: 700 13px/1 var(--font-sans);
+    border: 2px solid #fff;
+    margin-left: -12px;
+  }
+
+  .panel.dark .stack .av { border-color: var(--neutral-950); }
+  .panel.dark .stack .plus { background: var(--neutral-850); color: #fff; border-color: var(--neutral-950); }
+
+  /* Profile card composition */
+  .pcard {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px; border-radius: 12px; background: var(--neutral-50);
+    border: 1px solid var(--border-subtle);
+  }
+  .pcard .name { font: 700 15px/1.2 var(--font-sans); color: var(--neutral-950); }
+  .pcard .role { font: 500 12px/1.3 var(--font-sans); color: var(--text-tertiary); letter-spacing: 0.03em; text-transform: uppercase; }
+  .pcard .meta { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+  .pcard .tag { font: 700 10px/1 var(--font-sans); letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; background: var(--rap-red); color: #fff; align-self: flex-start; }
+
+  /* Comment thread demo */
+  .thread { display: flex; flex-direction: column; gap: 18px; }
+  .msg { display: flex; gap: 12px; align-items: flex-start; }
+  .msg .bubble {
+    padding: 10px 14px; border-radius: 14px 14px 14px 2px;
+    background: var(--neutral-75); font: 400 14px/1.5 var(--font-sans); color: var(--neutral-900);
+    max-width: 80%;
+  }
+  .msg .meta { font: 600 11px/1 var(--font-sans); color: var(--text-tertiary); margin-bottom: 4px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .msg.mine { flex-direction: row-reverse; }
+  .msg.mine .bubble { background: var(--neutral-950); color: #fff; border-radius: 14px 14px 2px 14px; }
+  .msg.mine .meta { text-align: right; }
+
+  /* Size legend table */
+  .sizes-table {
+    width: 100%; border-collapse: collapse;
+    font: 500 13px/1.4 var(--font-sans);
+  }
+  .sizes-table th, .sizes-table td {
+    padding: 12px 8px; border-bottom: 1px solid var(--border-subtle);
+    text-align: left; vertical-align: middle;
+  }
+  .sizes-table th {
+    font: 700 10px/1 var(--font-sans); letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-tertiary);
+  }
+  .sizes-table td.tok { font: 500 12px/1 var(--font-mono); color: var(--neutral-700); }
+
+  /* Photo avatars (pure CSS portraits) — used since we have no image assets */
+  .photo {
+    display: block; width: 100%; height: 100%; border-radius: 50%;
+    position: relative; overflow: hidden;
+  }
+  .photo.sq { border-radius: 8px; }
+  .photo::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 50% 36%, var(--face, #EABE9A) 0 22%, transparent 23%),
+      radial-gradient(ellipse at 50% 82%, var(--shirt, #171717) 0 45%, transparent 46%),
+      linear-gradient(180deg, var(--bg1, #B8D3FF), var(--bg2, #7AA5F5));
+  }
+  .photo.p1 { --face:#EDBC8C; --shirt:#10298E; --bg1:#FFE8CE; --bg2:#F7A97A; }
+  .photo.p2 { --face:#C68860; --shirt:#CD1B32; --bg1:#2B73DF; --bg2:#10298E; }
+  .photo.p3 { --face:#F2C7A0; --shirt:#0A0A0A; --bg1:#F5F5F5; --bg2:#9CA3AF; }
+  .photo.p4 { --face:#9A6A4A; --shirt:#A3FC9C; --bg1:#171717; --bg2:#404040; }
+  .photo.p5 { --face:#EDB088; --shirt:#F16322; --bg1:#B8AC85; --bg2:#6A624D; }
+  .photo.p6 { --face:#D8A77E; --shirt:#CD1B32; --bg1:#FFE8CE; --bg2:#F7A97A; }
+  .photo.p7 { --face:#F2D1A8; --shirt:#10298E; --bg1:#A3FC9C; --bg2:#6A8A4A; }
+  .photo.p8 { --face:#B08460; --shirt:#FFFFFF; --bg1:#CD1B32; --bg2:#7A1020; }
+
+</style>
+</head>
+<body>
+
+<main class="ds-page">
+
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Atoms · Identity</div>
+      <h1 class="ds-title">Avatars</h1>
+      <p class="ds-sub">Round by default. Image, initials, or icon. Six sizes on a 4&nbsp;pt ladder. A presence dot in the lower-right when status matters — online, away, busy, offline.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- SIZES -->
+  <!-- ============================================================ -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Size Scale</div>
+      <div class="ds-section-note">24 · 32 · 40 · 48 · 64 · 96</div>
+    </div>
+
+    <div class="panel">
+      <div class="p-title">Image · Initials · Icon</div>
+      <div class="row" style="gap:28px;">
+        <div class="row-item"><div class="av xs"><div class="photo p1"></div></div><div class="lbl">xs · 24</div></div>
+        <div class="row-item"><div class="av sm"><div class="photo p2"></div></div><div class="lbl">sm · 32</div></div>
+        <div class="row-item"><div class="av md"><div class="photo p3"></div></div><div class="lbl">md · 40</div></div>
+        <div class="row-item"><div class="av lg"><div class="photo p4"></div></div><div class="lbl">lg · 48</div></div>
+        <div class="row-item"><div class="av xl"><div class="photo p5"></div></div><div class="lbl">xl · 64</div></div>
+        <div class="row-item"><div class="av xxl"><div class="photo p6"></div></div><div class="lbl">2xl · 96</div></div>
+      </div>
+
+      <div class="row" style="gap:28px;">
+        <div class="row-item"><div class="av xs red"><span class="init">RH</span></div><div class="lbl">initials</div></div>
+        <div class="row-item"><div class="av sm red"><span class="init">RH</span></div><div class="lbl">initials</div></div>
+        <div class="row-item"><div class="av md red"><span class="init">RH</span></div><div class="lbl">initials</div></div>
+        <div class="row-item"><div class="av lg red"><span class="init">RH</span></div><div class="lbl">initials</div></div>
+        <div class="row-item"><div class="av xl red"><span class="init">RH</span></div><div class="lbl">initials</div></div>
+        <div class="row-item"><div class="av xxl red"><span class="init">RH</span></div><div class="lbl">initials</div></div>
+      </div>
+
+      <div class="row" style="gap:28px;">
+        <div class="row-item"><div class="av xs cream"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">icon</div></div>
+        <div class="row-item"><div class="av sm cream"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">icon</div></div>
+        <div class="row-item"><div class="av md cream"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">icon</div></div>
+        <div class="row-item"><div class="av lg cream"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">icon</div></div>
+        <div class="row-item"><div class="av xl cream"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">icon</div></div>
+        <div class="row-item"><div class="av xxl cream"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg></div><div class="lbl">icon</div></div>
+      </div>
+
+      <table class="sizes-table">
+        <thead>
+          <tr><th>Token</th><th>Px</th><th>Font</th><th>Presence</th><th>Common use</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="tok">av.xs</td>  <td>24</td><td>10 / 700</td><td>8&nbsp;px</td> <td>Inline with text, activity feeds</td></tr>
+          <tr><td class="tok">av.sm</td>  <td>32</td><td>12 / 700</td><td>8&nbsp;px</td> <td>Lists, tables, comments</td></tr>
+          <tr><td class="tok">av.md</td>  <td>40</td><td>14 / 700</td><td>12&nbsp;px</td><td>Default — nav, header, menus</td></tr>
+          <tr><td class="tok">av.lg</td>  <td>48</td><td>16 / 700</td><td>14&nbsp;px</td><td>Profile cards</td></tr>
+          <tr><td class="tok">av.xl</td>  <td>64</td><td>22 / 700</td><td>16&nbsp;px</td><td>Profile summary</td></tr>
+          <tr><td class="tok">av.xxl</td> <td>96</td><td>32 / 700</td><td>22&nbsp;px</td><td>Profile page hero</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- COLOR TOKENS -->
+  <!-- ============================================================ -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Initial Colors</div>
+      <div class="ds-section-note">Derived from brand palette. Assign deterministically by name-hash.</div>
+    </div>
+    <div class="panel">
+      <div class="row" style="gap:24px;">
+        <div class="row-item"><div class="av lg red"><span class="init">RH</span></div><div class="lbl">red</div></div>
+        <div class="row-item"><div class="av lg black"><span class="init">MK</span></div><div class="lbl">black</div></div>
+        <div class="row-item"><div class="av lg navy"><span class="init">AT</span></div><div class="lbl">navy</div></div>
+        <div class="row-item"><div class="av lg blue"><span class="init">SL</span></div><div class="lbl">blue</div></div>
+        <div class="row-item"><div class="av lg slate"><span class="init">JP</span></div><div class="lbl">slate</div></div>
+        <div class="row-item"><div class="av lg olive"><span class="init">DR</span></div><div class="lbl">olive</div></div>
+        <div class="row-item"><div class="av lg sand"><span class="init">EV</span></div><div class="lbl">sand</div></div>
+        <div class="row-item"><div class="av lg cream"><span class="init">LO</span></div><div class="lbl">cream</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- PRESENCE STATUS -->
+  <!-- ============================================================ -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Presence Status</div>
+      <div class="ds-section-note">Bottom-right dot with 2px surface ring so it punches through overlaps.</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="p-title">On light surface</div>
+        <div class="row" style="gap:28px;">
+          <div class="row-item">
+            <div class="av lg online"><div class="photo p1"></div><span class="pres"></span></div>
+            <div class="lbl">online · #22C55E</div>
+          </div>
+          <div class="row-item">
+            <div class="av lg away"><div class="photo p2"></div><span class="pres"></span></div>
+            <div class="lbl">away · warning</div>
+          </div>
+          <div class="row-item">
+            <div class="av lg busy"><div class="photo p3"></div><span class="pres"></span></div>
+            <div class="lbl">busy · danger</div>
+          </div>
+          <div class="row-item">
+            <div class="av lg offline"><div class="photo p4"></div><span class="pres"></span></div>
+            <div class="lbl">offline · neutral</div>
+          </div>
+        </div>
+        <div class="row" style="gap:28px;">
+          <div class="row-item"><div class="av sm online red"><span class="init">RH</span><span class="pres"></span></div><div class="lbl">sm</div></div>
+          <div class="row-item"><div class="av md online navy"><span class="init">AT</span><span class="pres"></span></div><div class="lbl">md</div></div>
+          <div class="row-item"><div class="av xl online"><div class="photo p5"></div><span class="pres"></span></div><div class="lbl">xl</div></div>
+          <div class="row-item"><div class="av xxl online"><div class="photo p6"></div><span class="pres"></span></div><div class="lbl">2xl</div></div>
+        </div>
+      </div>
+
+      <div class="panel dark">
+        <div class="p-title">On dark surface</div>
+        <div class="row" style="gap:28px;">
+          <div class="row-item">
+            <div class="av lg online" style="--ring:var(--neutral-950);"><div class="photo p7"></div><span class="pres" style="border-color:var(--neutral-950);"></span></div>
+            <div class="lbl" style="color:rgba(255,255,255,0.6);">online</div>
+          </div>
+          <div class="row-item">
+            <div class="av lg away"><div class="photo p8"></div><span class="pres" style="border-color:var(--neutral-950);"></span></div>
+            <div class="lbl" style="color:rgba(255,255,255,0.6);">away</div>
+          </div>
+          <div class="row-item">
+            <div class="av lg busy"><div class="photo p1"></div><span class="pres" style="border-color:var(--neutral-950);"></span></div>
+            <div class="lbl" style="color:rgba(255,255,255,0.6);">busy</div>
+          </div>
+          <div class="row-item">
+            <div class="av lg offline"><div class="photo p2"></div><span class="pres" style="border-color:var(--neutral-950);"></span></div>
+            <div class="lbl" style="color:rgba(255,255,255,0.6);">offline</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SHAPE VARIANTS -->
+  <!-- ============================================================ -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Shape Variants</div>
+      <div class="ds-section-note">Round for people, square for teams, organizations &amp; products.</div>
+    </div>
+    <div class="panel">
+      <div class="row" style="gap:28px;">
+        <div class="row-item"><div class="av lg"><div class="photo p1"></div></div><div class="lbl">round · default</div></div>
+        <div class="row-item"><div class="av lg sq"><div class="photo p2 sq"></div></div><div class="lbl">square · 8 radius</div></div>
+        <div class="row-item"><div class="av xl sq"><div class="photo p3 sq"></div></div><div class="lbl">square · xl</div></div>
+        <div class="row-item"><div class="av xxl sq"><div class="photo p4 sq"></div></div><div class="lbl">square · 2xl</div></div>
+        <div class="row-item">
+          <div class="av xl sq" style="background:var(--sport-baseball);color:#fff;font-family:var(--font-display);font-weight:800;font-style:italic;font-size:20px;letter-spacing:0.02em;">
+            <span class="init">RAP</span>
+          </div>
+          <div class="lbl">team mark</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- GROUPS / STACKS -->
+  <!-- ============================================================ -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Groups &amp; Stacks</div>
+      <div class="ds-section-note">Overlap −12 on md. Show up to 4 + overflow counter.</div>
+    </div>
+
+    <div class="grid-3">
+      <div class="panel">
+        <div class="p-title">Small stack</div>
+        <div class="stack">
+          <div class="av sm"><div class="photo p1"></div></div>
+          <div class="av sm"><div class="photo p2"></div></div>
+          <div class="av sm"><div class="photo p3"></div></div>
+          <div class="av sm red"><span class="init">+4</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="p-title">Default stack</div>
+        <div class="stack">
+          <div class="av md"><div class="photo p4"></div></div>
+          <div class="av md"><div class="photo p5"></div></div>
+          <div class="av md"><div class="photo p6"></div></div>
+          <div class="av md"><div class="photo p7"></div></div>
+          <div class="plus">+12</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="p-title">Large stack</div>
+        <div class="stack">
+          <div class="av lg"><div class="photo p8"></div></div>
+          <div class="av lg"><div class="photo p1"></div></div>
+          <div class="av lg"><div class="photo p2"></div></div>
+          <div class="av lg navy"><span class="init">+8</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- COMPOSITIONS -->
+  <!-- ============================================================ -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">In&nbsp;Context</div>
+      <div class="ds-section-note">Live compositions using avatar atoms.</div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="p-title">Profile cards</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="pcard">
+            <div class="av lg online"><div class="photo p1"></div><span class="pres"></span></div>
+            <div class="meta">
+              <div class="name">Jordan Lee</div>
+              <div class="role">Hitting Coach · Dallas</div>
+            </div>
+            <span class="tag">Pro</span>
+          </div>
+          <div class="pcard">
+            <div class="av lg"><div class="photo p3"></div></div>
+            <div class="meta">
+              <div class="name">Maya Kowalski</div>
+              <div class="role">Player · HS Junior</div>
+            </div>
+          </div>
+          <div class="pcard">
+            <div class="av lg busy"><div class="photo p7"></div><span class="pres"></span></div>
+            <div class="meta">
+              <div class="name">Anthony Torres</div>
+              <div class="role">Pitching Analyst</div>
+            </div>
+          </div>
+          <div class="pcard">
+            <div class="av lg olive"><span class="init">DR</span></div>
+            <div class="meta">
+              <div class="name">D. Rodriguez</div>
+              <div class="role">Guest</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="p-title">Comment thread</div>
+        <div class="thread">
+          <div class="msg">
+            <div class="av md online"><div class="photo p2"></div><span class="pres"></span></div>
+            <div>
+              <div class="meta">Simone · 2 min</div>
+              <div class="bubble">Exit velo is up 4&nbsp;mph from last week. Nice work on keeping the barrel through the zone.</div>
+            </div>
+          </div>
+          <div class="msg">
+            <div class="av md olive"><span class="init">DR</span></div>
+            <div>
+              <div class="meta">Diego · 1 min</div>
+              <div class="bubble">Launch angle is finally where we want it. Let&rsquo;s push it another cage tomorrow.</div>
+            </div>
+          </div>
+          <div class="msg mine">
+            <div class="av md red"><span class="init">ME</span></div>
+            <div>
+              <div class="meta">You · just now</div>
+              <div class="bubble">Locked in. See you at 9.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="p-title">Table row</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:10px 8px;border-bottom:1px solid var(--border-subtle);">
+            <div style="display:flex;align-items:center;gap:12px;"><div class="av sm"><div class="photo p1"></div></div><div style="font:600 14px/1.2 var(--font-sans);">Jordan Lee</div></div>
+            <span style="font:500 12px/1 var(--font-mono);color:var(--text-tertiary);">admin</span>
+            <span style="font:500 13px/1 var(--font-sans);color:var(--neutral-700);">Mar 14</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:10px 8px;border-bottom:1px solid var(--border-subtle);">
+            <div style="display:flex;align-items:center;gap:12px;"><div class="av sm navy"><span class="init">AT</span></div><div style="font:600 14px/1.2 var(--font-sans);">Anthony Torres</div></div>
+            <span style="font:500 12px/1 var(--font-mono);color:var(--text-tertiary);">coach</span>
+            <span style="font:500 13px/1 var(--font-sans);color:var(--neutral-700);">Mar 13</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:10px 8px;border-bottom:1px solid var(--border-subtle);">
+            <div style="display:flex;align-items:center;gap:12px;"><div class="av sm"><div class="photo p5"></div></div><div style="font:600 14px/1.2 var(--font-sans);">Eleanor Voss</div></div>
+            <span style="font:500 12px/1 var(--font-mono);color:var(--text-tertiary);">player</span>
+            <span style="font:500 13px/1 var(--font-sans);color:var(--neutral-700);">Mar 11</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:10px 8px;">
+            <div style="display:flex;align-items:center;gap:12px;"><div class="av sm"><div class="photo p6"></div></div><div style="font:600 14px/1.2 var(--font-sans);">Maya Kowalski</div></div>
+            <span style="font:500 12px/1 var(--font-mono);color:var(--text-tertiary);">player</span>
+            <span style="font:500 13px/1 var(--font-sans);color:var(--neutral-700);">Mar 10</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel dark">
+        <div class="p-title">Nav · Workspace switcher</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--neutral-850);border-radius:10px;">
+            <div class="av md sq" style="background:var(--rap-red);color:#fff;font-family:var(--font-display);font-weight:800;font-style:italic;letter-spacing:0.02em;"><span class="init">RAP</span></div>
+            <div style="flex:1;">
+              <div style="font:700 14px/1.2 var(--font-sans);color:#fff;">Rapsodo HQ</div>
+              <div style="font:500 11px/1.2 var(--font-sans);color:rgba(255,255,255,0.55);letter-spacing:0.04em;text-transform:uppercase;">4 teams · 22 members</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;">
+            <div class="av md sq" style="background:var(--sport-baseball);color:#fff;font-family:var(--font-display);font-weight:800;font-style:italic;"><span class="init">ARK</span></div>
+            <div style="flex:1;">
+              <div style="font:700 14px/1.2 var(--font-sans);color:#fff;">Arkansas Razorbacks</div>
+              <div style="font:500 11px/1.2 var(--font-sans);color:rgba(255,255,255,0.55);letter-spacing:0.04em;text-transform:uppercase;">College · Baseball</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;">
+            <div class="av md sq" style="background:var(--sport-golf);color:#fff;font-family:var(--font-display);font-weight:800;font-style:italic;"><span class="init">PGA</span></div>
+            <div style="flex:1;">
+              <div style="font:700 14px/1.2 var(--font-sans);color:#fff;">PGA West Academy</div>
+              <div style="font:500 11px/1.2 var(--font-sans);color:rgba(255,255,255,0.55);letter-spacing:0.04em;text-transform:uppercase;">Golf · Coach access</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- GUIDELINES -->
+  <!-- ============================================================ -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Guidelines</div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="p-title" style="color:#16A34A;">Do</div>
+        <ul style="margin:0;padding-left:20px;font:400 14px/1.6 var(--font-sans);color:var(--neutral-800);">
+          <li>Fall back to initials when no photo is available — never default placeholder silhouettes.</li>
+          <li>Use first&nbsp;+&nbsp;last initials, uppercase, tracked to 0.02em.</li>
+          <li>Hash the display name to a fixed color so the same user stays the same color.</li>
+          <li>Pair presence dots with aria-labels (e.g. <span class="ds-chip">aria-label=&quot;Online&quot;</span>).</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <div class="p-title" style="color:var(--danger);">Don&rsquo;t</div>
+        <ul style="margin:0;padding-left:20px;font:400 14px/1.6 var(--font-sans);color:var(--neutral-800);">
+          <li>Stretch non-square photos — always <span class="ds-chip">object-fit: cover</span>.</li>
+          <li>Use brand red for non-featured users — reserve red for the current session or admin.</li>
+          <li>Show presence at xs&nbsp;/&nbsp;sm unless the row is &gt; 32&nbsp;px tall.</li>
+          <li>Skip the 2&nbsp;px surface ring on the presence dot — it will disappear into a photo.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="../index.html">← Back to Design System</a>
+    <span style="color:var(--text-tertiary);">Source · <span class="ds-chip">03. Base.fig / 03.-Avatars</span></span>
+  </nav>
+</main>
+
+</body>
+</html>

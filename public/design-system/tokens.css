@@ -1,0 +1,273 @@
+/* ==========================================================================
+   Rapsodo Design System — Tokens
+   Reconstructed from 03. Base.fig (internal Figma file)
+   ========================================================================== */
+
+/* Brand fonts — uploaded from Rapsodo ------------------------------------- */
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 100; font-display: swap; src: url("fonts/Barlow-Thin.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 300; font-display: swap; src: url("fonts/Barlow-Light.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/Barlow-Regular.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/Barlow-Medium.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/Barlow-SemiBold.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/Barlow-Bold.ttf") format("truetype"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 800; font-display: swap; src: url("fonts/Barlow-ExtraBold.ttf") format("truetype"); }
+
+@font-face { font-family: "Acumin Pro ExtraCondensed"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/Acumin_Pro_ExtraCond_Semibold.otf") format("opentype"); }
+@font-face { font-family: "Acumin Pro ExtraCondensed"; font-style: italic; font-weight: 600; font-display: swap; src: url("fonts/Acumin_Pro_ExtraCond_Semibold_Italic.otf") format("opentype"); }
+@font-face { font-family: "Acumin Pro ExtraCondensed"; font-style: italic; font-weight: 700; font-display: swap; src: url("fonts/Acumin-Pro-ExtraCond-Bold-Italic.ttf") format("truetype"); }
+@font-face { font-family: "Acumin Pro ExtraCondensed"; font-style: italic; font-weight: 800; font-display: swap; src: url("fonts/Acumin-Pro-ExtraCond-Bold-Italic.ttf") format("truetype"); }
+
+:root {
+  /* --------------------------------------------------------------------
+     COLOR — Brand
+     -------------------------------------------------------------------- */
+  --rap-red:           #CD1B32;   /* Rapsodo Red — primary action */
+  --rap-red-hover:     #B81729;
+  --rap-red-dark:      #A41E22;   /* deep brand */
+  --rap-red-deep:      #C8102E;   /* alt deep red */
+  --rap-black:         #000000;
+  --rap-white:         #FFFFFF;
+
+  /* Product sport accents (from 01. Color Primitives — base 500) */
+  --sport-golf:        #1BE377;   /* Golf 500 — vivid green */
+  --sport-golf-400:    #1AFF84;   /* Golf 400 "Bright Green" */
+  --sport-golf-600:    #1CB864;   /* Golf 600 */
+  --sport-golf-700:    #1D804A;   /* Golf 700 — deep green */
+  --sport-golf-mlm2:   #6A624D;   /* MLM2PRO warm olive (legacy) */
+  --sport-golf-sand:   #B8AC85;
+  --sport-baseball:    #2B73DF;   /* Baseball 500 — cobalt */
+  --sport-baseball-400:#4081E2;   /* Baseball 400 */
+  --sport-baseball-700:#1A4586;   /* Baseball 700 — deep navy */
+  --sport-baseball-900:#102240;   /* Baseball 900 — ink navy */
+  --sport-softball:    #F5E907;   /* Softball 500 — bright yellow */
+  --sport-softball-400:#F7F207;   /* Softball 400 */
+  --sport-softball-700:#7A7407;   /* Softball 700 — olive */
+  --sport-champions:   #0068A3;   /* Champions — blue (legacy) */
+  --sport-accent-lime: #A3FC9C;   /* Secondary Bright Green */
+
+  /* --------------------------------------------------------------------
+     COLOR — Neutral ramp
+     Derived from observed greys in the Figma file.
+     -------------------------------------------------------------------- */
+  --neutral-0:     #FFFFFF;
+  --neutral-25:    #FCFCFC;
+  --neutral-50:    #F7F7F7;
+  --neutral-75:    #F5F5F5;
+  --neutral-100:   #EDEDED;
+  --neutral-150:   #E4E5E9;
+  --neutral-200:   #DFDFDF;
+  --neutral-250:   #DADADA;
+  --neutral-300:   #F2F4F7;   /* cool border */
+  --neutral-400:   #9CA3AF;
+  --neutral-500:   #8D94A2;
+  --neutral-600:   #737373;
+  --neutral-700:   #5C616B;
+  --neutral-800:   #404040;
+  --neutral-850:   #262626;
+  --neutral-900:   #171717;
+  --neutral-950:   #0A0A0A;
+
+  /* --------------------------------------------------------------------
+     COLOR — Semantic
+     -------------------------------------------------------------------- */
+  --success:       #16A34A;
+  --success-bg:    #DCFCE7;
+  --warning:       #F59E0B;
+  --warning-bg:    #FEF3C7;
+  --danger:        #DD393A;
+  --danger-bg:     #FEE2E2;
+  --info:          #2B73DF;
+  --info-bg:       #DBEAFE;
+
+  /* --------------------------------------------------------------------
+     COLOR — Text (role-based)
+     -------------------------------------------------------------------- */
+  --text-primary:     var(--neutral-950);
+  --text-secondary:   var(--neutral-700);
+  --text-tertiary:    var(--neutral-500);
+  --text-disabled:    var(--neutral-400);
+  --text-inverse:     var(--neutral-0);
+  --text-brand:       var(--rap-red);
+  --text-link:        var(--rap-red);
+
+  /* Surfaces */
+  --surface-0:        var(--neutral-0);
+  --surface-1:        var(--neutral-50);
+  --surface-2:        var(--neutral-75);
+  --surface-3:        var(--neutral-100);
+  --surface-inverse:  var(--neutral-950);
+
+  /* Borders */
+  --border-subtle:    var(--neutral-150);
+  --border-default:   var(--neutral-200);
+  --border-strong:    var(--neutral-400);
+  --border-focus:     var(--rap-red);
+
+  /* --------------------------------------------------------------------
+     TYPOGRAPHY
+     Primary: Barlow (UI, body, labels)
+     Display: "Acumin Pro ExtraCondensed Bold Italic" in source — 
+              web fallback uses Barlow Condensed Italic Black.
+     -------------------------------------------------------------------- */
+  --font-display:  "Acumin Pro ExtraCondensed", "Barlow Condensed", "Barlow", system-ui, sans-serif;
+  --font-sans:     "Barlow", "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono:     "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  /* Display scale — Acumin ExtraCondensed Bold Italic, observed: 40/36/32/28/24/16/12 */
+  --display-xxl: 96px;  /* hero */
+  --display-xl:  72px;
+  --display-lg:  56px;
+  --display-md:  40px;
+  --display-sm:  32px;
+  --display-xs:  24px;
+
+  /* Text scale — Barlow */
+  --text-2xl:  24px;
+  --text-xl:   20px;
+  --text-lg:   18px;
+  --text-md:   16px;
+  --text-sm:   14px;
+  --text-xs:   12px;
+  --text-2xs:  10px;
+
+  /* Line heights */
+  --lh-tight:   1.1;
+  --lh-snug:    1.25;
+  --lh-normal:  1.4;
+  --lh-relaxed: 1.55;
+  --lh-loose:   1.7;
+
+  /* Weights */
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+  --fw-extra:    800;
+
+  /* Letter spacing */
+  --tracking-tight: -0.02em;
+  --tracking-snug:  -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-cta:    0.07em;   /* button letter-spacing from Figma */
+  --tracking-caps:   0.1em;
+
+  /* --------------------------------------------------------------------
+     SPACING — 4px base
+     -------------------------------------------------------------------- */
+  --space-0:   0;
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+  --space-24:  96px;
+  --space-32:  128px;
+
+  /* --------------------------------------------------------------------
+     RADIUS
+     -------------------------------------------------------------------- */
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   8px;    /* buttons */
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-2xl:  24px;   /* cards */
+  --radius-3xl:  40px;   /* large card panels */
+  --radius-pill: 9999px;
+
+  /* --------------------------------------------------------------------
+     SHADOW — Observed ramp (downward)
+     -------------------------------------------------------------------- */
+  --shadow-xs:    0 1px 2px 0 rgba(16,24,40,0.05);
+  --shadow-sm:    0 1px 3px 0 rgba(16,24,40,0.10), 0 1px 2px -1px rgba(16,24,40,0.06);
+  --shadow-md:    0 4px 8px -2px rgba(16,24,40,0.10), 0 2px 4px -2px rgba(16,24,40,0.06);
+  --shadow-lg:    0 12px 16px -4px rgba(16,24,40,0.08), 0 4px 6px -2px rgba(16,24,40,0.03);
+  --shadow-xl:    0 20px 24px -4px rgba(16,24,40,0.08), 0 8px 8px -4px rgba(16,24,40,0.03);
+
+  /* Upward (for dropdowns, floating toolbars) */
+  --shadow-up-sm: 0 -1px 3px 0 rgba(16,24,40,0.10);
+  --shadow-up-md: 0 -4px 8px -2px rgba(16,24,40,0.10);
+  --shadow-up-lg: 0 -12px 16px -4px rgba(16,24,40,0.08);
+
+  /* Brand focus glow */
+  --ring-brand:   0 0 0 4px rgba(205,27,50,0.18);
+  --ring-focus:   0 0 0 3px rgba(43,115,223,0.30);
+
+  /* --------------------------------------------------------------------
+     MOTION
+     -------------------------------------------------------------------- */
+  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:  120ms;
+  --dur-base:  200ms;
+  --dur-slow:  320ms;
+}
+
+/* ==========================================================================
+   Base resets & typography defaults
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--lh-relaxed);
+  color: var(--text-primary);
+  background: var(--surface-0);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-style: italic;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-snug);
+  text-transform: uppercase;
+}
+
+p { margin: 0; }
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* ==========================================================================
+   Utility type classes (useful for the preview pages and real apps)
+   ========================================================================== */
+.type-display-xxl { font: 800 italic var(--display-xxl)/var(--lh-tight) var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+.type-display-xl  { font: 800 italic var(--display-xl)/var(--lh-tight) var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+.type-display-lg  { font: 800 italic var(--display-lg)/var(--lh-tight) var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+.type-display-md  { font: 800 italic var(--display-md)/var(--lh-snug) var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+.type-display-sm  { font: 800 italic var(--display-sm)/var(--lh-snug) var(--font-display); text-transform: uppercase; letter-spacing: var(--tracking-snug); }
+
+.type-h1 { font: 700 var(--text-2xl)/var(--lh-snug) var(--font-sans); letter-spacing: var(--tracking-snug); }
+.type-h2 { font: 700 var(--text-xl)/var(--lh-snug) var(--font-sans); letter-spacing: var(--tracking-snug); text-transform: none; }
+.type-h3 { font: 600 var(--text-lg)/var(--lh-normal) var(--font-sans); text-transform: none; }
+.type-h4 { font: 600 var(--text-md)/var(--lh-normal) var(--font-sans); text-transform: none; }
+
+.type-body-lg { font: 400 var(--text-lg)/var(--lh-relaxed) var(--font-sans); }
+.type-body    { font: 400 var(--text-md)/var(--lh-relaxed) var(--font-sans); }
+.type-body-sm { font: 400 var(--text-sm)/var(--lh-relaxed) var(--font-sans); }
+
+.type-label     { font: 600 var(--text-sm)/var(--lh-normal) var(--font-sans); letter-spacing: var(--tracking-wide); }
+.type-label-sm  { font: 600 var(--text-xs)/var(--lh-normal) var(--font-sans); letter-spacing: var(--tracking-wide); text-transform: uppercase; }
+.type-eyebrow   { font: 700 var(--text-xs)/var(--lh-normal) var(--font-sans); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--rap-red); }
+
+.type-caption  { font: 500 italic var(--text-sm)/var(--lh-normal) var(--font-sans); color: var(--text-tertiary); }
+.type-mono     { font: 400 var(--text-sm)/var(--lh-normal) var(--font-mono); }

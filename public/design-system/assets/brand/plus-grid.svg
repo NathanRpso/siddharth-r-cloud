@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="638" height="628" viewBox="0 0 638 628" fill="none">
+  <defs>
+    <pattern id="p" width="56.08" height="55.13" patternUnits="userSpaceOnUse" x="10.64" y="0">
+      <path d="M 0.5 0 h 1 v 9.64 h 9.64 v 1 h -9.64 v 9.64 h -1 v -9.64 h -9.64 v -1 h 9.64 Z" fill="currentColor"></path>
+    </pattern>
+  </defs>
+  <rect width="638" height="628" fill="url(#p)"></rect>
+</svg>

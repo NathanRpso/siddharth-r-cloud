@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Colors · Rapsodo Design System</title>
+<link rel="stylesheet" href="../preview.css" />
+<style>
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .swatch {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-0);
+    transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+  }
+  .swatch:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .swatch-fill {
+    height: 128px;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+    color: inherit;
+  }
+  .swatch-fill.on-dark { color: #fff; }
+  .swatch-fill.on-light { color: var(--neutral-900); }
+  .swatch-hex {
+    font: 700 12px/1 var(--font-mono);
+    letter-spacing: 0.02em;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.32);
+    color: #fff;
+    backdrop-filter: blur(6px);
+  }
+  .on-light .swatch-hex { background: rgba(255,255,255,0.72); color: var(--neutral-900); }
+  .swatch-meta {
+    padding: 14px 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .swatch-name {
+    font: 700 14px/1.2 var(--font-sans);
+    color: var(--text-primary);
+  }
+  .swatch-token {
+    font: 500 11px/1.2 var(--font-mono);
+    color: var(--text-tertiary);
+  }
+
+  .hero-swatch {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    background: var(--rap-red);
+    color: #fff;
+    min-height: 360px;
+  }
+  .hero-swatch .left {
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .hero-swatch .kicker {
+    font: 700 12px/1 var(--font-sans);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+  .hero-swatch h2 {
+    font: 800 italic 72px/0.92 var(--font-display);
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .hero-swatch p {
+    font: 500 16px/1.5 var(--font-sans);
+    max-width: 44ch;
+    opacity: 0.92;
+  }
+  .hero-swatch .right {
+    background: var(--neutral-950);
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-content: center;
+  }
+  .hero-chip {
+    border-radius: var(--radius-md);
+    padding: 16px 14px;
+    font: 700 11px/1.2 var(--font-mono);
+    letter-spacing: 0.04em;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .hero-chip span {
+    font: 500 10px/1 var(--font-sans);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  .sport-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .sport-card {
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 168px;
+    overflow: hidden;
+    position: relative;
+  }
+  .sport-card .sport-name {
+    font: 800 italic 32px/0.95 var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  .sport-card .sport-token {
+    font: 500 11px/1 var(--font-mono);
+    letter-spacing: 0.02em;
+    opacity: 0.85;
+  }
+  .sport-card .sport-hex {
+    font: 700 13px/1 var(--font-mono);
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.24);
+    align-self: flex-start;
+  }
+  .sport-card::after {
+    content: '';
+    position: absolute;
+    right: -40px; bottom: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.22);
+  }
+
+  /* Sport ramp (full 50–900) */
+  .sport-ramp {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: #fff;
+    padding: 22px 22px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .sport-ramp + .sport-ramp { margin-top: 20px; }
+  .sport-ramp-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .sport-ramp-label {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .sport-ramp-dot {
+    width: 40px; height: 40px; border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+    flex: 0 0 40px;
+  }
+  .sport-ramp-title {
+    font: 700 italic 20px/1.05 var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    color: var(--neutral-950);
+  }
+  .sport-ramp-sub {
+    font: 400 12.5px/1.4 var(--font-sans);
+    color: var(--neutral-600);
+    margin-top: 4px;
+  }
+  .sport-ramp-token {
+    font: 600 11px/1 var(--font-mono);
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--neutral-75);
+    color: var(--neutral-700);
+    letter-spacing: 0.02em;
+  }
+  .sport-ramp-row {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+  }
+  .ramp-chip {
+    border-radius: 8px;
+    padding: 14px 10px 12px;
+    min-height: 96px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .ramp-chip.base {
+    outline: 2px solid rgba(0,0,0,0.12);
+    outline-offset: 2px;
+  }
+  .ramp-chip.base::after {
+    content: '';
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+  }
+  .ramp-step {
+    font: 600 11px/1 var(--font-sans);
+    letter-spacing: 0.02em;
+    opacity: 0.92;
+  }
+  .ramp-hex {
+    font: 600 11px/1 var(--font-mono);
+    letter-spacing: 0.02em;
+    opacity: 0.82;
+  }
+
+  .semantic-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .semantic-card {
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid var(--border-subtle);
+  }
+  .semantic-dot {
+    width: 36px; height: 36px; border-radius: 50%;
+  }
+
+  .neutral-strip {
+    display: grid;
+    grid-template-columns: repeat(18, 1fr);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+  }
+  .neutral-strip div {
+    height: 64px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    font: 600 9px/1 var(--font-mono);
+    color: rgba(0,0,0,0.6);
+  }
+  .neutral-strip div.dark { color: rgba(255,255,255,0.8); }
+</style>
+</head>
+<body>
+<main class="ds-page">
+  <header class="ds-head">
+    <div>
+      <div class="ds-eyebrow">Atoms · Foundation</div>
+      <h1 class="ds-title">Colors</h1>
+      <p class="ds-sub">Rapsodo Red is the lone primary. Everything else — neutrals, sport accents, semantic colors — is in service of making the red, the content, and the data read clearly.</p>
+    </div>
+    <nav class="ds-breadcrumb"><a href="../index.html">← Design&nbsp;System</a></nav>
+  </header>
+
+  <!-- HERO: Rapsodo Red -->
+  <section class="hero-swatch" aria-label="Primary brand colour">
+    <div class="left">
+      <div class="kicker">Primary / Brand</div>
+      <div>
+        <h2>Rapsodo<br/>Red</h2>
+        <p>The single loudest voice in the system. Reserved for primary CTAs, the brand R-mark, and destructive confirmations. Pair with deep black (#000) and warm neutrals; never on tinted backgrounds.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="ds-chip" style="background:rgba(255,255,255,0.14);color:#fff;border-color:rgba(255,255,255,0.24);">--rap-red</span>
+        <span class="ds-chip" style="background:rgba(255,255,255,0.14);color:#fff;border-color:rgba(255,255,255,0.24);">#CD1B32</span>
+        <span class="ds-chip" style="background:rgba(255,255,255,0.14);color:#fff;border-color:rgba(255,255,255,0.24);">rgb(205 27 50)</span>
+      </div>
+    </div>
+    <div class="right">
+      <div class="hero-chip" style="background:#CD1B32;"><span>Default</span>#CD1B32</div>
+      <div class="hero-chip" style="background:#B81729;"><span>Hover</span>#B81729</div>
+      <div class="hero-chip" style="background:#A41E22;"><span>Dark</span>#A41E22</div>
+      <div class="hero-chip" style="background:#C8102E;"><span>Deep</span>#C8102E</div>
+    </div>
+  </section>
+
+  <!-- Neutrals -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Neutrals</div>
+      <div class="ds-section-note">18-step ramp. Text, surfaces, borders.</div>
+    </div>
+    <div class="neutral-strip" aria-label="Neutral ramp">
+      <div style="background:#FFFFFF;">0</div>
+      <div style="background:#FCFCFC;">25</div>
+      <div style="background:#F7F7F7;">50</div>
+      <div style="background:#F5F5F5;">75</div>
+      <div style="background:#EDEDED;">100</div>
+      <div style="background:#E4E5E9;">150</div>
+      <div style="background:#DFDFDF;">200</div>
+      <div style="background:#DADADA;">250</div>
+      <div style="background:#F2F4F7;">300</div>
+      <div style="background:#9CA3AF;">400</div>
+      <div style="background:#8D94A2;">500</div>
+      <div class="dark" style="background:#737373;">600</div>
+      <div class="dark" style="background:#5C616B;">700</div>
+      <div class="dark" style="background:#404040;">800</div>
+      <div class="dark" style="background:#262626;">850</div>
+      <div class="dark" style="background:#171717;">900</div>
+      <div class="dark" style="background:#0A0A0A;">950</div>
+      <div class="dark" style="background:#000000;">black</div>
+    </div>
+
+    <div class="swatch-grid" style="margin-top:24px;">
+      <div class="swatch"><div class="swatch-fill on-light" style="background:#FFFFFF;border-bottom:1px solid var(--border-default);"><span class="swatch-hex">#FFFFFF</span></div><div class="swatch-meta"><div class="swatch-name">White</div><div class="swatch-token">--neutral-0</div></div></div>
+      <div class="swatch"><div class="swatch-fill on-light" style="background:#F7F7F7;"><span class="swatch-hex">#F7F7F7</span></div><div class="swatch-meta"><div class="swatch-name">Surface 50</div><div class="swatch-token">--neutral-50</div></div></div>
+      <div class="swatch"><div class="swatch-fill on-light" style="background:#EDEDED;"><span class="swatch-hex">#EDEDED</span></div><div class="swatch-meta"><div class="swatch-name">Surface 100</div><div class="swatch-token">--neutral-100</div></div></div>
+      <div class="swatch"><div class="swatch-fill on-light" style="background:#DFDFDF;"><span class="swatch-hex">#DFDFDF</span></div><div class="swatch-meta"><div class="swatch-name">Border 200</div><div class="swatch-token">--neutral-200</div></div></div>
+      <div class="swatch"><div class="swatch-fill on-light" style="background:#8D94A2;"><span class="swatch-hex">#8D94A2</span></div><div class="swatch-meta"><div class="swatch-name">Text tertiary</div><div class="swatch-token">--neutral-500</div></div></div>
+      <div class="swatch"><div class="swatch-fill on-dark" style="background:#5C616B;"><span class="swatch-hex">#5C616B</span></div><div class="swatch-meta"><div class="swatch-name">Text secondary</div><div class="swatch-token">--neutral-700</div></div></div>
+      <div class="swatch"><div class="swatch-fill on-dark" style="background:#404040;"><span class="swatch-hex">#404040</span></div><div class="swatch-meta"><div class="swatch-name">Neutral 800</div><div class="swatch-token">--neutral-800</div></div></div>
+      <div class="swatch"><div class="swatch-fill on-dark" style="background:#171717;"><span class="swatch-hex">#171717</span></div><div class="swatch-meta"><div class="swatch-name">Near-black</div><div class="swatch-token">--neutral-900</div></div></div>
+      <div class="swatch"><div class="swatch-fill on-dark" style="background:#000000;"><span class="swatch-hex">#000000</span></div><div class="swatch-meta"><div class="swatch-name">Rapsodo Black</div><div class="swatch-token">--rap-black</div></div></div>
+    </div>
+  </section>
+
+  <!-- Sport / product accents -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Sport Palettes</div>
+      <div class="ds-section-note">Three sport-primary ramps (50 – 900) from <strong>01. Color Primitives</strong>. Each sport uses the 500 as its base; the ramp drives tints, surfaces, and dark variants. Only one sport accent per screen.</div>
+    </div>
+
+    <!-- Golf ramp (green) -->
+    <div class="sport-ramp" data-sport="golf">
+      <div class="sport-ramp-head">
+        <div class="sport-ramp-label">
+          <span class="sport-ramp-dot" style="background:#1BE377;"></span>
+          <div>
+            <div class="sport-ramp-title">Primary Golf</div>
+            <div class="sport-ramp-sub">Green. Base 500 · bright green ball</div>
+          </div>
+        </div>
+        <div class="sport-ramp-token">--sport-golf</div>
+      </div>
+      <div class="sport-ramp-row">
+        <div class="ramp-chip"      style="background:#E1FFEF;color:#0a0a0a;"><span class="ramp-step">50</span><span class="ramp-hex">#E1FFEF</span></div>
+        <div class="ramp-chip"      style="background:#BAFFDA;color:#0a0a0a;"><span class="ramp-step">100</span><span class="ramp-hex">#BAFFDA</span></div>
+        <div class="ramp-chip"      style="background:#8CFFC1;color:#0a0a0a;"><span class="ramp-step">200</span><span class="ramp-hex">#8CFFC1</span></div>
+        <div class="ramp-chip"      style="background:#5FFFA9;color:#0a0a0a;"><span class="ramp-step">300</span><span class="ramp-hex">#5FFFA9</span></div>
+        <div class="ramp-chip"      style="background:#1AFF84;color:#0a0a0a;"><span class="ramp-step">400</span><span class="ramp-hex">#1AFF84</span></div>
+        <div class="ramp-chip base"  style="background:#1BE377;color:#0a0a0a;"><span class="ramp-step">500</span><span class="ramp-hex">#1BE377</span></div>
+        <div class="ramp-chip"      style="background:#1CB864;color:#fff;"><span class="ramp-step">600</span><span class="ramp-hex">#1CB864</span></div>
+        <div class="ramp-chip"      style="background:#1D804A;color:#fff;"><span class="ramp-step">700</span><span class="ramp-hex">#1D804A</span></div>
+        <div class="ramp-chip"      style="background:#1E5537;color:#fff;"><span class="ramp-step">800</span><span class="ramp-hex">#1E5537</span></div>
+        <div class="ramp-chip"      style="background:#1F2B24;color:#fff;"><span class="ramp-step">900</span><span class="ramp-hex">#1F2B24</span></div>
+      </div>
+    </div>
+
+    <!-- Baseball ramp (blue / cobalt) -->
+    <div class="sport-ramp" data-sport="baseball">
+      <div class="sport-ramp-head">
+        <div class="sport-ramp-label">
+          <span class="sport-ramp-dot" style="background:#2B73DF;"></span>
+          <div>
+            <div class="sport-ramp-title">Primary Baseball</div>
+            <div class="sport-ramp-sub">Blue. Base 500 · cobalt</div>
+          </div>
+        </div>
+        <div class="sport-ramp-token">--sport-baseball</div>
+      </div>
+      <div class="sport-ramp-row">
+        <div class="ramp-chip"      style="background:#EAF1FC;color:#0a0a0a;"><span class="ramp-step">50</span><span class="ramp-hex">#EAF1FC</span></div>
+        <div class="ramp-chip"      style="background:#BFD5F5;color:#0a0a0a;"><span class="ramp-step">100</span><span class="ramp-hex">#BFD5F5</span></div>
+        <div class="ramp-chip"      style="background:#95B9EF;color:#0a0a0a;"><span class="ramp-step">200</span><span class="ramp-hex">#95B9EF</span></div>
+        <div class="ramp-chip"      style="background:#6B9DE9;color:#0a0a0a;"><span class="ramp-step">300</span><span class="ramp-hex">#6B9DE9</span></div>
+        <div class="ramp-chip"      style="background:#4081E2;color:#fff;"><span class="ramp-step">400</span><span class="ramp-hex">#4081E2</span></div>
+        <div class="ramp-chip base"  style="background:#2B73DF;color:#fff;"><span class="ramp-step">500</span><span class="ramp-hex">#2B73DF</span></div>
+        <div class="ramp-chip"      style="background:#225CB2;color:#fff;"><span class="ramp-step">600</span><span class="ramp-hex">#225CB2</span></div>
+        <div class="ramp-chip"      style="background:#1A4586;color:#fff;"><span class="ramp-step">700</span><span class="ramp-hex">#1A4586</span></div>
+        <div class="ramp-chip"      style="background:#112E59;color:#fff;"><span class="ramp-step">800</span><span class="ramp-hex">#112E59</span></div>
+        <div class="ramp-chip"      style="background:#102240;color:#fff;"><span class="ramp-step">900</span><span class="ramp-hex">#102240</span></div>
+      </div>
+    </div>
+
+    <!-- Softball ramp (yellow) -->
+    <div class="sport-ramp" data-sport="softball">
+      <div class="sport-ramp-head">
+        <div class="sport-ramp-label">
+          <span class="sport-ramp-dot" style="background:#F5E907;"></span>
+          <div>
+            <div class="sport-ramp-title">Primary Softball</div>
+            <div class="sport-ramp-sub">Yellow. Base 500 · bright yellow. Generally used with dark backgrounds.</div>
+          </div>
+        </div>
+        <div class="sport-ramp-token">--sport-softball</div>
+      </div>
+      <div class="sport-ramp-row">
+        <div class="ramp-chip"      style="background:#FDFEE9;color:#0a0a0a;"><span class="ramp-step">50</span><span class="ramp-hex">#FDFEE9</span></div>
+        <div class="ramp-chip"      style="background:#FBFAB5;color:#0a0a0a;"><span class="ramp-step">100</span><span class="ramp-hex">#FBFAB5</span></div>
+        <div class="ramp-chip"      style="background:#F9F264;color:#0a0a0a;"><span class="ramp-step">200</span><span class="ramp-hex">#F9F264</span></div>
+        <div class="ramp-chip"      style="background:#F7F007;color:#0a0a0a;"><span class="ramp-step">300</span><span class="ramp-hex">#F7F007</span></div>
+        <div class="ramp-chip"      style="background:#F7F207;color:#0a0a0a;"><span class="ramp-step">400</span><span class="ramp-hex">#F7F207</span></div>
+        <div class="ramp-chip base"  style="background:#F5E907;color:#0a0a0a;"><span class="ramp-step">500</span><span class="ramp-hex">#F5E907</span></div>
+        <div class="ramp-chip"      style="background:#D2C706;color:#0a0a0a;"><span class="ramp-step">600</span><span class="ramp-hex">#D2C706</span></div>
+        <div class="ramp-chip"      style="background:#7A7407;color:#fff;"><span class="ramp-step">700</span><span class="ramp-hex">#7A7407</span></div>
+        <div class="ramp-chip"      style="background:#4E4A07;color:#fff;"><span class="ramp-step">800</span><span class="ramp-hex">#4E4A07</span></div>
+        <div class="ramp-chip"      style="background:#2F3203;color:#fff;"><span class="ramp-step">900</span><span class="ramp-hex">#2F3203</span></div>
+      </div>
+    </div>
+
+    <!-- Secondary accents -->
+    <div class="sport-ramp" data-sport="secondary" style="margin-top:32px;">
+      <div class="sport-ramp-head">
+        <div class="sport-ramp-label">
+          <span class="sport-ramp-dot" style="background:linear-gradient(135deg,#A3FC9C 0%,#799CE2 50%,#FFDB5B 100%);"></span>
+          <div>
+            <div class="sport-ramp-title">Secondary brand palette</div>
+            <div class="sport-ramp-sub">Sparingly used for charts, highlights, and key moments.</div>
+          </div>
+        </div>
+        <div class="sport-ramp-token">secondary</div>
+      </div>
+      <div class="sport-ramp-row" style="grid-template-columns:repeat(8,1fr);">
+        <div class="ramp-chip" style="background:#BCD879;color:#0a0a0a;"><span class="ramp-step">Medium Green</span><span class="ramp-hex">#BCD879</span></div>
+        <div class="ramp-chip" style="background:#DCF0A4;color:#0a0a0a;"><span class="ramp-step">Light Green</span><span class="ramp-hex">#DCF0A4</span></div>
+        <div class="ramp-chip" style="background:#A3FC9C;color:#0a0a0a;"><span class="ramp-step">Bright Green</span><span class="ramp-hex">#A3FC9C</span></div>
+        <div class="ramp-chip" style="background:#799CE2;color:#fff;"><span class="ramp-step">Blue</span><span class="ramp-hex">#799CE2</span></div>
+        <div class="ramp-chip" style="background:#FFDB5B;color:#0a0a0a;"><span class="ramp-step">Amber</span><span class="ramp-hex">#FFDB5B</span></div>
+        <div class="ramp-chip" style="background:#EEEDE9;color:#0a0a0a;"><span class="ramp-step">Beige 100</span><span class="ramp-hex">#EEEDE9</span></div>
+        <div class="ramp-chip" style="background:#DFDFDF;color:#0a0a0a;"><span class="ramp-step">Beige 200</span><span class="ramp-hex">#DFDFDF</span></div>
+        <div class="ramp-chip" style="background:#A19C9B;color:#fff;"><span class="ramp-step">Beige 300</span><span class="ramp-hex">#A19C9B</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Semantic -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Semantic</div>
+      <div class="ds-section-note">System feedback. Never use brand red for a generic error.</div>
+    </div>
+    <div class="semantic-row">
+      <div class="semantic-card">
+        <div class="semantic-dot" style="background:#16A34A;"></div>
+        <div>
+          <div class="ds-card-value">Success</div>
+          <div class="swatch-token" style="font:500 11px/1.2 var(--font-mono);color:var(--text-tertiary);margin-top:2px;">--success · #16A34A</div>
+        </div>
+        <div style="background:#DCFCE7;border-radius:var(--radius-sm);padding:8px 10px;font:500 12px/1.3 var(--font-sans);color:#166534;">Shot saved to session.</div>
+      </div>
+      <div class="semantic-card">
+        <div class="semantic-dot" style="background:#F59E0B;"></div>
+        <div>
+          <div class="ds-card-value">Warning</div>
+          <div class="swatch-token" style="font:500 11px/1.2 var(--font-mono);color:var(--text-tertiary);margin-top:2px;">--warning · #F59E0B</div>
+        </div>
+        <div style="background:#FEF3C7;border-radius:var(--radius-sm);padding:8px 10px;font:500 12px/1.3 var(--font-sans);color:#78350F;">Calibration is 6 weeks old.</div>
+      </div>
+      <div class="semantic-card">
+        <div class="semantic-dot" style="background:#DD393A;"></div>
+        <div>
+          <div class="ds-card-value">Danger</div>
+          <div class="swatch-token" style="font:500 11px/1.2 var(--font-mono);color:var(--text-tertiary);margin-top:2px;">--danger · #DD393A</div>
+        </div>
+        <div style="background:#FEE2E2;border-radius:var(--radius-sm);padding:8px 10px;font:500 12px/1.3 var(--font-sans);color:#7F1D1D;">Radar lost signal.</div>
+      </div>
+      <div class="semantic-card">
+        <div class="semantic-dot" style="background:#2B73DF;"></div>
+        <div>
+          <div class="ds-card-value">Info</div>
+          <div class="swatch-token" style="font:500 11px/1.2 var(--font-mono);color:var(--text-tertiary);margin-top:2px;">--info · #2B73DF</div>
+        </div>
+        <div style="background:#DBEAFE;border-radius:var(--radius-sm);padding:8px 10px;font:500 12px/1.3 var(--font-sans);color:#1E3A8A;">New firmware available.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guidelines -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <div class="ds-section-title">Usage rules</div>
+      <div class="ds-section-note">The short list.</div>
+    </div>
+    <div class="ds-grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+      <div class="ds-card">
+        <div class="ds-card-label">Do</div>
+        <div class="ds-card-value">One red per screen</div>
+        <p class="type-body-sm" style="color:var(--text-secondary);margin-top:8px;">Primary CTA, data accent, or R-mark — pick one. Red loses power when repeated.</p>
+      </div>
+      <div class="ds-card">
+        <div class="ds-card-label">Do</div>
+        <div class="ds-card-value">Black for depth</div>
+        <p class="type-body-sm" style="color:var(--text-secondary);margin-top:8px;">Full black (#000) and near-black (#171717) are the default heavy voice — not a dark grey.</p>
+      </div>
+      <div class="ds-card">
+        <div class="ds-card-label">Don't</div>
+        <div class="ds-card-value">Mix sport accents</div>
+        <p class="type-body-sm" style="color:var(--text-secondary);margin-top:8px;">Golf green and Baseball navy together reads as a generic dashboard. Pick the product context.</p>
+      </div>
+      <div class="ds-card">
+        <div class="ds-card-label">Don't</div>
+        <div class="ds-card-value">Gradient the brand</div>
+        <p class="type-body-sm" style="color:var(--text-secondary);margin-top:8px;">Rapsodo Red stays flat. Depth comes from black, shadow, and photography.</p>
+      </div>
+    </div>
+  </section>
+
+  <nav class="ds-footer-nav">
+    <a href="../index.html">← All foundations</a>
+    <a href="typography.html">Typography →</a>
+  </nav>
+</main>
+</body>
+</html>
