@@ -50,8 +50,12 @@ export const GOLFER: Golfer = {
   membership: { tier: 'Premium Membership', expiresOn: '07/13/2026' },
 };
 
-// "Today" used to anchor relative dates. Matches memory (currentDate 2026-05-13).
-const TODAY = new Date('2026-05-13T12:00:00Z');
+// "Today" anchors every relative date in the dataset. We use the real clock
+// (evaluated once when this module loads, i.e. at build/launch) so the
+// prototype always has a full year of mock data running right up to now —
+// no stale "point in time" gaps on the dashboard. The seeded RNG keeps shot
+// *values* stable; only the dates ride along with the calendar.
+const TODAY = new Date();
 
 // ============================================================================
 // Shot generator
