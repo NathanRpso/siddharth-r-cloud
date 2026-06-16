@@ -19,6 +19,10 @@ const FS = {
   unit: 'clamp(7px, 2.8cqw, 11px)', // small unit riding alongside the number
   label: 'clamp(7px, 2.7cqw, 10px)', // quiet caption
   toggle: 'clamp(7px, 3cqw, 11px)',
+  // The edge rails — trackman/GCQuad-style stat chips hugging the video sides.
+  edgeValue: 'clamp(13px, 4.6cqw, 22px)',
+  edgeUnit: 'clamp(6px, 2.2cqw, 9px)',
+  edgeLabel: 'clamp(6px, 2.2cqw, 9px)',
 } as const;
 
 interface TileProps {
@@ -160,8 +164,9 @@ function VideoMode({
 
       <TileChrome shot={shot} index={index} def={def} liveCarry={liveCarry} onRemove={onRemove} />
 
-      {/* Shot ⇄ Impact view toggle */}
-      <div className="absolute bottom-[68px] left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/55 backdrop-blur-sm rounded-pill p-1">
+      {/* Shot ⇄ Impact view toggle — pinned to the top edge (centred) so it
+          never sits over the impact point / ball-strike in the lower-centre. */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/55 backdrop-blur-sm rounded-pill p-1">
         {(['shot', 'impact'] as const).map((v) => (
           <button
             key={v}
@@ -259,7 +264,7 @@ function FrameClearButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Clear this shot's markup"
       title="Clear this shot's markup"
-      className="absolute top-3 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1 px-2 py-1 rounded-pill bg-black/65 backdrop-blur-sm text-white hover:bg-rap-red transition-colors"
+      className="absolute top-12 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-1 px-2 py-1 rounded-pill bg-black/65 backdrop-blur-sm text-white hover:bg-rap-red transition-colors"
       style={{ fontSize: FS.toggle }}
     >
       <Icon name="trash" size={13} />
@@ -339,15 +344,81 @@ function TileChrome({
         )}
       </div>
 
-      {/* Bottom: static metric overlay */}
+      {/* Left edge rail — speed/strike numbers stacked down the side, clear of
+          the centre so the ball-flight / impact point stays unobstructed. */}
+      <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
+        <EdgeStat label="Ball Speed" value={shot.ballSpeed.toFixed(0)} unit="mph" />
+        <EdgeStat label="Club Speed" value={shot.clubSpeed.toFixed(0)} unit="mph" />
+        <EdgeStat label="Smash" value={shot.smash.toFixed(2)} />
+      </div>
+
+      {/* Right edge rail — flight numbers, right-aligned against the side. */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-end gap-1.5">
+        <EdgeStat label="Launch" value={shot.launchAngle.toFixed(1)} unit="°" align="right" />
+        <EdgeStat label="Spin" value={String(shot.spinRate)} unit="rpm" align="right" />
+        <EdgeStat label="Apex" value={String(shot.apex)} unit="ft" align="right" />
+      </div>
+
+      {/* Bottom: result line — total / side / descent over a gradient scrim. */}
       <div className="absolute bottom-0 left-0 right-0 px-3 py-3 bg-gradient-to-t from-black/80 to-transparent">
         <div className="grid grid-cols-3 gap-2 text-white">
-          <Stat label="Ball Speed" value={shot.ballSpeed.toFixed(0)} unit="mph" />
-          <Stat label="Launch" value={shot.launchAngle.toFixed(1)} unit="°" />
-          <Stat label="Apex" value={String(shot.apex)} unit="ft" />
+          <Stat label="Total" value={shot.total.toFixed(0)} unit="yds" />
+          <Stat
+            label="Side"
+            value={`${shot.sideCarry > 0 ? '+' : ''}${shot.sideCarry.toFixed(0)}`}
+            unit="yds"
+          />
+          <Stat label="Descent" value={shot.descentAngle.toFixed(0)} unit="°" />
         </div>
       </div>
     </>
+  );
+}
+
+/** A compact stat chip for the left/right edge rails (trackman-style). */
+function EdgeStat({
+  label,
+  value,
+  unit,
+  align = 'left',
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  align?: 'left' | 'right';
+}) {
+  return (
+    <div
+      className={clsx(
+        'rounded-md bg-black/55 backdrop-blur-sm px-2 py-1',
+        align === 'right' ? 'text-right' : 'text-left',
+      )}
+    >
+      <div
+        className="font-bold uppercase tracking-caps text-white/55 whitespace-nowrap"
+        style={{ fontSize: FS.edgeLabel }}
+      >
+        {label}
+      </div>
+      <div
+        className={clsx(
+          'flex items-baseline whitespace-nowrap leading-none',
+          align === 'right' && 'justify-end',
+        )}
+      >
+        <span className="type-display-xs italic text-white" style={{ fontSize: FS.edgeValue }}>
+          {value}
+        </span>
+        {unit && (
+          <span
+            className="font-semibold uppercase text-white/70 ml-0.5"
+            style={{ fontSize: FS.edgeUnit }}
+          >
+            {unit}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }
 

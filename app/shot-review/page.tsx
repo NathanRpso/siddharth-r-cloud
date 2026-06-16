@@ -8,7 +8,6 @@ import PageHeader from '@/components/PageHeader';
 import VideoTile from '@/components/VideoTile';
 import Icon from '@/components/Icon';
 import { type AnnotateTool, type Stroke } from '@/components/AnnotationCanvas';
-import { useCompareLayout } from '@/components/useCompareLayout';
 import { ALL_SHOTS, SESSIONS, getSession } from '@/lib/mockData';
 import { CLUBS } from '@/lib/clubs';
 import { getShotClips } from '@/lib/shotVideos';
@@ -96,10 +95,6 @@ function ShotReviewContent() {
   const [selected, setSelected] = useState<Shot[]>(initialShots);
   const selectedIds = selected.map((s) => s.id);
   const idsKey = selectedIds.join(',');
-
-  // Adaptive layout: measure available space → tiles-per-row + tile size.
-  // (Solver call lives below, once `perTile` is known.)
-  const contentRef = useRef<HTMLDivElement>(null);
 
   // ── Playback clocks + link groups ─────────────────────────────────────────
   // One clock per tile. Adjacent tiles can be linked into contiguous groups; a
@@ -211,18 +206,6 @@ function ShotReviewContent() {
     });
   }
 
-  // Break an entire group apart (every internal link → false).
-  function unlinkGroup(group: string[]) {
-    setLinks((prev) => {
-      const next = [...prev];
-      for (let j = 0; j < group.length - 1; j++) {
-        const li = selectedIds.indexOf(group[j]);
-        if (li >= 0) next[li] = false;
-      }
-      return next;
-    });
-  }
-
   // Shot ⇄ Impact view per tile — toggling one updates its whole link-group.
   const [views, setViews] = useState<Record<string, 'shot' | 'impact'>>({});
   const setGroupView = (id: string, v: 'shot' | 'impact') => {
@@ -233,31 +216,19 @@ function ShotReviewContent() {
     });
   };
 
-  // Uniform gap wide enough to seat a link connector between adjacent tiles.
-  const colGapPx = 36;
-  // The compare table's leading metric-label column. The solver reserves it so
-  // tiles + stats can share one grid and line up under each video.
-  const LABEL_W = 84;
+  // Uniform gap between tiles in the scroll rail (also seats the link connector).
+  const colGapPx = 28;
+  // Each tile fills (just under) half the rail so two big portrait videos show
+  // at once; you scroll horizontally to review the rest. A 9:16 portrait at a
+  // literal half-width would overflow the viewport on a landscape monitor, so we
+  // also cap by height (reserving room for the page chrome + controls) and clamp
+  // to a sane range. The smaller of the two wins → big, but never taller than
+  // the screen.
+  const tileWidthCss = `clamp(248px, min(calc((100% - ${colGapPx}px) / 2), calc((100vh - 250px) * 9 / 16)), 560px)`;
 
-  // Every tile carries its own control bar now, so always fold a control-bar
-  // height into each row of the fit-solver's budget; reserve the label column.
-  const layout = useCompareLayout(contentRef, selected.length, true, LABEL_W + colGapPx);
-
-  // Partition tiles into contiguous link-groups (one continuous control bar each).
-  const groups: string[][] = [];
-  selectedIds.forEach((id, i) => {
-    if (i === 0 || !links[i - 1]) groups.push([id]);
-    else groups[groups.length - 1].push(id);
-  });
-  // Continuous group bars only make sense on a single row.
-  const singleRow = !layout.carousel && layout.cols >= selected.length;
-  const maxRowW = layout.cols * layout.tileWidth + (layout.cols - 1) * colGapPx + 2;
-  // Shared grid template: a label column + one column per tile. Tiles, control
-  // bars, and stats all use it, so every shot's column lines up under its video.
-  const gridTemplate = `${LABEL_W}px repeat(${selected.length}, ${layout.tileWidth}px)`;
-  // Tile height (9:16) — used to centre the annotation rail against the videos
-  // only, not the controls/compare table below them.
-  const tileHeight = Math.round((layout.tileWidth * 16) / 9);
+  // Detailed numbers live in a collapsible table below (everything glanceable is
+  // already overlaid on the video edges). Collapsed by default for a clean view.
+  const [tableOpen, setTableOpen] = useState(false);
 
   // ── Annotation ───────────────────────────────────────────────────────────
   const [tool, setTool] = useState<AnnotateTool>('off');
@@ -343,9 +314,9 @@ function ShotReviewContent() {
       onEnded={() => endClock(shot.id)}
     />
   );
-  // Controls bound to a tile id. Actions broadcast to the tile's whole group,
-  // so a group's single bar (bound to its first tile) drives every member.
-  const renderControls = (id: string, onUnlink?: () => void) => (
+  // Controls bound to a tile id. Actions broadcast to the tile's whole link
+  // group, so playing/scrubbing one linked shot drives every member.
+  const renderControls = (id: string) => (
     <PlaybackControls
       compact
       clock={clockFor(id)}
@@ -353,7 +324,6 @@ function ShotReviewContent() {
       onScrub={(v) => scrubTo(id, v)}
       onStep={(d) => stepFrame(id, d)}
       onSpeed={(s) => setSpeed(id, s)}
-      onUnlink={onUnlink}
     />
   );
 
@@ -420,10 +390,9 @@ function ShotReviewContent() {
             <EmptyState />
           ) : (
             <>
-              <div className="flex gap-3 sm:gap-4 mb-8 items-start">
-                {/* Vertical annotation rail — centred against the videos only
-                    (its wrapper is sized to the tile height). */}
-                <div className="shrink-0 flex items-center" style={{ minHeight: tileHeight }}>
+              <div className="flex gap-3 sm:gap-4 mb-6 items-stretch">
+                {/* Vertical annotation rail — centred against the video rail. */}
+                <div className="shrink-0 flex items-center">
                   <AnnotationRail
                     tool={tool}
                     setTool={setTool}
@@ -435,135 +404,96 @@ function ShotReviewContent() {
                   />
                 </div>
 
-                {/* Tiles + playback controls. This column is what the fit solver
-                    measures (rail excluded). */}
-                <div ref={contentRef} className="flex-1 min-w-0">
-              {/* The same VideoTile elements stay mounted across modes (no clip
-                  reload). Single-row: tiles over one continuous control bar per
-                  linked group, with a join icon only at unlinked boundaries.
-                  Wrapped grid / carousel: per-tile bars (linking is a wide,
-                  single-row interaction). */}
-              {singleRow ? (
-                <>
-                  {/* Tiles on the shared grid: empty label cell + one per shot. */}
-                  <div
-                    className="grid items-end mb-2"
-                    style={{ gridTemplateColumns: gridTemplate, columnGap: colGapPx, justifyContent: 'center' }}
-                  >
-                    <div aria-hidden />
-                    {selected.map((shot, i) => (
-                      <div key={shot.id} className="transition-[width] duration-300 ease-out">
-                        {renderTile(shot, i)}
-                      </div>
-                    ))}
-                  </div>
-                  {/* Control bars on the same grid: one continuous bar per linked
-                      group (spans its columns); join icon at unlinked boundaries. */}
-                  <div
-                    className="grid mb-6"
-                    style={{ gridTemplateColumns: gridTemplate, columnGap: colGapPx, justifyContent: 'center' }}
-                  >
-                    <div aria-hidden style={{ gridColumn: 1 }} />
-                    {groups.map((group, gi) => {
-                      const startVid = selectedIds.indexOf(group[0]);
-                      const boundaryIdx = selectedIds.indexOf(group[group.length - 1]);
-                      return (
-                        <div
-                          key={group[0]}
-                          className="relative"
-                          style={{ gridColumn: `${2 + startVid} / span ${group.length}` }}
-                        >
-                          {renderControls(group[0], group.length > 1 ? () => unlinkGroup(group) : undefined)}
-                          {gi < groups.length - 1 && (
-                            <LinkConnector gap={colGapPx} onClick={() => toggleLink(boundaryIdx)} />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
+                {/* Horizontal scroll rail: two big portrait videos fill the
+                    width, scroll/swipe to review the rest. All the numbers ride
+                    on the video edges (trackman-style), so nothing crowds below.
+                    A link icon between adjacent tiles syncs their playback. */}
                 <div
-                  className={clsx(
-                    'flex items-end mb-6',
-                    layout.carousel
-                      ? 'flex-nowrap overflow-x-auto snap-x snap-mandatory justify-start -mx-1 px-1'
-                      : 'flex-wrap justify-center mx-auto',
-                  )}
-                  style={{
-                    columnGap: colGapPx,
-                    rowGap: 24,
-                    ...(layout.carousel ? {} : { maxWidth: maxRowW }),
-                  }}
+                  className="flex-1 min-w-0 flex overflow-x-auto snap-x snap-mandatory -mx-1 px-1 pb-2"
+                  style={{ columnGap: colGapPx }}
                 >
-                  {selected.map((shot, i) => {
-                    const showJoin =
-                      !layout.carousel && i < selected.length - 1 && (i + 1) % layout.cols !== 0 && !links[i];
-                    return (
-                      <div
-                        key={shot.id}
-                        className="relative flex flex-col items-center shrink-0 snap-center"
-                        style={{ width: layout.tileWidth }}
-                      >
-                        {renderTile(shot, i)}
-                        <div className="w-full mt-2">{renderControls(shot.id)}</div>
-                        {showJoin && <LinkConnector gap={colGapPx} onClick={() => toggleLink(i)} />}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Compare numbers — one metric-label column, each shot's values in
-                  a column under its video (shared grid → aligned with the tiles). */}
-              <div className="mt-6">
-                <div className={singleRow ? '' : 'overflow-x-auto'}>
-                  <div
-                    className="grid"
-                    style={{
-                      gridTemplateColumns: gridTemplate,
-                      columnGap: colGapPx,
-                      justifyContent: singleRow ? 'center' : 'start',
-                    }}
-                  >
-                    {/* Header row: empty corner + shot chips. */}
-                    <div aria-hidden />
-                    {selected.map((shot, i) => (
-                      <div
-                        key={shot.id}
-                        className="flex items-center justify-center gap-1.5 pb-2 mb-1 border-b border-border-subtle"
-                      >
-                        <span
-                          className="px-1.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-caps text-white"
-                          style={{ backgroundColor: CLUBS[shot.club].color }}
-                        >
-                          {shot.club}
-                        </span>
-                        <span className="text-[11px] font-bold uppercase tracking-caps text-text-tertiary">
-                          Shot {i + 1}
-                        </span>
-                      </div>
-                    ))}
-                    {/* One row per metric: label (left) + a value under each video. */}
-                    {METRICS.map((m) => (
-                      <Fragment key={m.label}>
-                        <div className="text-[11px] uppercase tracking-caps text-text-tertiary text-right self-center py-2 border-b border-border-subtle/50">
-                          {m.label}
-                        </div>
-                        {selected.map((shot) => (
-                          <div
-                            key={shot.id}
-                            className="text-sm font-semibold text-text-primary tabular-nums text-center py-2 border-b border-border-subtle/50"
-                          >
-                            {m.fmt(shot)}
-                          </div>
-                        ))}
-                      </Fragment>
-                    ))}
-                  </div>
+                  {selected.map((shot, i) => (
+                    <div
+                      key={shot.id}
+                      className="relative shrink-0 snap-start flex flex-col gap-2"
+                      style={{ width: tileWidthCss }}
+                    >
+                      {renderTile(shot, i)}
+                      {renderControls(shot.id)}
+                      {i < selected.length - 1 && (
+                        <LinkConnector
+                          gap={colGapPx}
+                          linked={links[i]}
+                          onClick={() => toggleLink(i)}
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-                </div>
+
+              {/* Collapsible detail table — everything glanceable is already on
+                  the videos; this is the deep side-by-side read on demand. */}
+              <div className="bg-white rounded-2xl border border-border-subtle shadow-sm overflow-hidden">
+                <button
+                  onClick={() => setTableOpen((v) => !v)}
+                  aria-expanded={tableOpen}
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-neutral-50 transition-colors"
+                >
+                  <span className="type-label-sm text-text-secondary">
+                    All metrics{tableOpen ? '' : ` · ${METRICS.length} per shot`}
+                  </span>
+                  <Icon
+                    name={tableOpen ? 'chevron-up' : 'chevron-down'}
+                    size={18}
+                    className="text-text-tertiary"
+                  />
+                </button>
+                {tableOpen && (
+                  <div className="px-4 pb-4 overflow-x-auto">
+                    <div
+                      className="grid min-w-fit"
+                      style={{
+                        gridTemplateColumns: `minmax(72px, max-content) repeat(${selected.length}, minmax(96px, 1fr))`,
+                      }}
+                    >
+                      {/* Header row: empty corner + shot chips. */}
+                      <div aria-hidden />
+                      {selected.map((shot, i) => (
+                        <div
+                          key={shot.id}
+                          className="flex items-center justify-center gap-1.5 pb-2 mb-1 border-b border-border-subtle"
+                        >
+                          <span
+                            className="px-1.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-caps text-white"
+                            style={{ backgroundColor: CLUBS[shot.club].color }}
+                          >
+                            {shot.club}
+                          </span>
+                          <span className="text-[11px] font-bold uppercase tracking-caps text-text-tertiary">
+                            Shot {i + 1}
+                          </span>
+                        </div>
+                      ))}
+                      {/* One row per metric: label (left) + a value per shot. */}
+                      {METRICS.map((m) => (
+                        <Fragment key={m.label}>
+                          <div className="text-[11px] uppercase tracking-caps text-text-tertiary text-right self-center py-2 pr-3 border-b border-border-subtle/50">
+                            {m.label}
+                          </div>
+                          {selected.map((shot) => (
+                            <div
+                              key={shot.id}
+                              className="text-sm font-semibold text-text-primary tabular-nums text-center py-2 border-b border-border-subtle/50"
+                            >
+                              {m.fmt(shot)}
+                            </div>
+                          ))}
+                        </Fragment>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -701,18 +631,24 @@ function PlaybackControls({
   );
 }
 
-/** Join affordance shown only at an unlinked boundary (linked groups render a
- *  continuous bar instead). A bare icon seated in the gap — no container. */
-function LinkConnector({ gap, onClick }: { gap: number; onClick: () => void }) {
+/** Seats in the gap between two adjacent tiles and toggles whether their
+ *  playback is synced. Filled red when linked, muted when not. */
+function LinkConnector({ gap, linked, onClick }: { gap: number; linked: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      aria-label="Link these shots"
-      title="Link these shots"
-      className="absolute z-10 -translate-x-1/2 w-6 h-6 flex items-center justify-center text-text-secondary hover:text-rap-red transition-colors"
+      aria-label={linked ? 'Unsync these shots' : 'Sync these shots'}
+      aria-pressed={linked}
+      title={linked ? 'Playback synced — click to separate' : 'Click to sync playback'}
+      className={clsx(
+        'absolute z-10 -translate-x-1/2 w-7 h-7 rounded-pill flex items-center justify-center shadow-sm transition-colors',
+        linked
+          ? 'bg-rap-red text-white hover:bg-rap-red-hover'
+          : 'bg-white border border-border-default text-text-secondary hover:text-rap-red',
+      )}
       style={{ left: `calc(100% + ${gap / 2}px)`, bottom: 10 }}
     >
-      <Icon name="link" size={16} />
+      <Icon name="link" size={15} />
     </button>
   );
 }
