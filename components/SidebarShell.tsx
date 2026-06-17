@@ -16,7 +16,10 @@ export default function SidebarShell({ children }: { children: React.ReactNode }
   return (
     <>
       {!isShared && <Sidebar />}
-      <main className={clsx('min-h-screen', !isShared && 'ml-[256px]')}>
+      {/* `key` on pathname re-mounts the main column on every navigation, so
+          the entrance fade plays each route change instead of only on first
+          load. Cheap and works with the existing static-page routing. */}
+      <main key={pathname} className={clsx('rcl-fade-in min-h-screen', !isShared && 'ml-[256px]')}>
         {children}
       </main>
     </>

@@ -40,10 +40,13 @@ export default function PageHeader({
       )}
       <div className="flex items-start justify-between gap-6">
         <div>
+          {/* Hairline brand accent — quiet identity mark that ties every page
+              back to Rapsodo without ever dominating the surface. */}
+          <span aria-hidden className="block h-[3px] w-10 rounded-pill rcl-brand-strip mb-3" />
           {eyebrow && (
-            <div className="text-sm text-text-secondary mb-1">{eyebrow}</div>
+            <div className="type-eyebrow mb-2">{eyebrow}</div>
           )}
-          <h1 className="type-display-sm text-text-primary">{title}</h1>
+          <h1 className="type-display-sm text-text-primary tracking-tight">{title}</h1>
         </div>
         <div className="flex flex-col items-end gap-3">
           <TopBar lastSync={lastSync} />

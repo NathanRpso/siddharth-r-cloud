@@ -187,9 +187,52 @@ body {
   font-size: 16px;
   line-height: 1.55;
   color: var(--text-primary);
-  background: var(--surface-1);
+  /* Warm off-white with a faint brand wash in the upper-left and a barely-
+     perceptible green wash in the lower-right. Feels like a paper surface
+     under a hint of brand light, never loud. */
+  background:
+    radial-gradient(1100px 520px at -10% -20%, rgba(205, 27, 50, 0.045), transparent 60%),
+    radial-gradient(900px 480px at 110% 110%, rgba(28, 184, 100, 0.035), transparent 60%),
+    #FAFAF7;
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-theme='dark'] body {
+  background:
+    radial-gradient(900px 480px at -5% -15%, rgba(205, 27, 50, 0.08), transparent 60%),
+    radial-gradient(900px 480px at 110% 110%, rgba(28, 184, 100, 0.05), transparent 60%),
+    #0B0E14;
+  background-attachment: fixed;
+}
+
+/* ── Card refinement ─────────────────────────────────────────────────────
+   The components reach for `.bg-white` + `.shadow-sm` + `.rounded-2xl` on
+   nearly every panel. We refine the result here — hairline border, breath
+   of a shadow, gentle hover lift — so every card on the site feels modern
+   without per-component edits. Kept low-specificity (a single class) so
+   any component that opts out via inline styles still wins. */
+.shadow-sm {
+  box-shadow:
+    0 1px 0 rgba(16, 24, 40, 0.02),
+    0 1px 3px rgba(16, 24, 40, 0.04),
+    0 1px 2px rgba(16, 24, 40, 0.03) !important;
+}
+.rounded-2xl.border.bg-white,
+.rounded-xl.border.bg-white {
+  transition:
+    transform 240ms var(--ease-out),
+    box-shadow 240ms var(--ease-out),
+    border-color 240ms var(--ease-out);
+}
+.rounded-2xl.border.bg-white:hover,
+.rounded-xl.border.bg-white:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(16, 24, 40, 0.02),
+    0 10px 24px -10px rgba(16, 24, 40, 0.10),
+    0 2px 6px -2px rgba(16, 24, 40, 0.06) !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -368,10 +411,18 @@ h1, h2, h3, h4, h5, h6 {
   );
 }
 .rcl-brand-bg {
+  /* Dark glass: a quiet slate base with the faintest brand glow in one corner
+     and a hint of green in the opposite. The colour is *present*, not loud. */
   background:
-    radial-gradient(1200px 420px at 12% -20%, rgba(205,27,50,0.55), transparent 60%),
-    radial-gradient(900px 380px at 92% 110%, rgba(28,184,100,0.35), transparent 60%),
-    linear-gradient(120deg, #1a0508 0%, #0A0A0A 55%, #0a1410 100%);
+    radial-gradient(900px 480px at 8% -10%, rgba(205,27,50,0.18), transparent 55%),
+    radial-gradient(700px 420px at 96% 115%, rgba(28,184,100,0.10), transparent 60%),
+    linear-gradient(135deg, #14181F 0%, #0E1117 55%, #0F141B 100%);
+}
+html[data-theme='dark'] .rcl-brand-bg {
+  background:
+    radial-gradient(900px 480px at 8% -10%, rgba(205,27,50,0.22), transparent 55%),
+    radial-gradient(700px 420px at 96% 115%, rgba(28,184,100,0.12), transparent 60%),
+    linear-gradient(135deg, #11151D 0%, #0A0D13 55%, #0B1117 100%);
 }
 .rcl-shimmer {
   background-image: linear-gradient(
