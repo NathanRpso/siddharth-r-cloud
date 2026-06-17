@@ -100,6 +100,86 @@
   --dur-fast: 120ms; --dur-base: 200ms; --dur-slow: 320ms;
 }
 
+/* ==========================================================================
+   Dark theme — opt-in via `<html data-theme="dark">` (see ThemeToggle).
+   Strategy: remap the design-system colour tokens, then patch the handful
+   of literal Tailwind classes the components reach for most often. The
+   sidebar is already dark in both themes, so it needs no overrides.
+   ========================================================================== */
+
+html[data-theme='dark'] {
+  --rap-red-hover: #E04256;
+
+  --neutral-0:   #0E1117;
+  --neutral-25:  #11151D;
+  --neutral-50:  #151A23;
+  --neutral-75:  #1A2030;
+  --neutral-100: #1F2638;
+  --neutral-150: #262E42;
+  --neutral-200: #2E3650;
+  --neutral-300: #1F2638;
+  --neutral-400: #6B7494;
+  --neutral-500: #8D94A2;
+  --neutral-600: #B6BAC6;
+  --neutral-700: #D2D5DD;
+  --neutral-800: #E4E6EC;
+  --neutral-850: #ECEEF3;
+  --neutral-900: #F2F3F7;
+  --neutral-950: #FAFAFC;
+
+  --surface-0: #151A23;
+  --surface-1: #0E1117;
+  --surface-2: #1A2030;
+  --surface-3: #1F2638;
+
+  --text-primary:   #FAFAFC;
+  --text-secondary: #B6BAC6;
+  --text-tertiary:  #8D94A2;
+  --text-disabled:  #6B7494;
+
+  --border-subtle:  #262E42;
+  --border-default: #2E3650;
+  --border-strong:  #6B7494;
+
+  color-scheme: dark;
+}
+
+html[data-theme='dark'] body { background: var(--surface-1); color: var(--text-primary); }
+
+/* Patch the literal-colour utility classes used across the components. We
+   keep these to a tight set so dark mode degrades predictably rather than
+   re-styling every component individually. */
+html[data-theme='dark'] .bg-white { background-color: var(--surface-0) !important; }
+html[data-theme='dark'] .bg-neutral-25 { background-color: var(--surface-2) !important; }
+html[data-theme='dark'] .bg-neutral-50 { background-color: var(--surface-2) !important; }
+html[data-theme='dark'] .bg-neutral-75 { background-color: var(--surface-2) !important; }
+html[data-theme='dark'] .bg-neutral-100 { background-color: var(--surface-3) !important; }
+html[data-theme='dark'] .bg-neutral-150 { background-color: var(--surface-3) !important; }
+html[data-theme='dark'] .bg-neutral-200 { background-color: #2E3650 !important; }
+html[data-theme='dark'] .hover\:bg-neutral-50:hover { background-color: var(--surface-2) !important; }
+html[data-theme='dark'] .hover\:bg-neutral-100:hover { background-color: var(--surface-3) !important; }
+html[data-theme='dark'] .hover\:bg-neutral-200:hover { background-color: #2E3650 !important; }
+
+html[data-theme='dark'] .text-text-primary   { color: var(--text-primary) !important; }
+html[data-theme='dark'] .text-text-secondary { color: var(--text-secondary) !important; }
+html[data-theme='dark'] .text-text-tertiary  { color: var(--text-tertiary) !important; }
+html[data-theme='dark'] .text-rap-black { color: var(--text-primary) !important; }
+
+html[data-theme='dark'] .border-border-subtle  { border-color: var(--border-subtle) !important; }
+html[data-theme='dark'] .border-border-default { border-color: var(--border-default) !important; }
+
+/* Recharts uses inline strokes — soften the gridline default to fit dark. */
+html[data-theme='dark'] .recharts-cartesian-grid line { stroke: #2A3148 !important; }
+html[data-theme='dark'] .recharts-cartesian-axis-tick text { fill: var(--text-tertiary) !important; }
+
+/* Shadows on a near-black surface read as a faint dark blob — swap them for
+   subtle outlines so cards still feel raised. */
+html[data-theme='dark'] .shadow-sm,
+html[data-theme='dark'] .shadow-md,
+html[data-theme='dark'] .shadow-lg {
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 1px 2px rgba(0,0,0,0.6) !important;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 
 body {

@@ -16,6 +16,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet" />
         {/* Adobe Fonts kit — acumin-pro-extra-condensed + Barlow (matches rapsodo app) */}
         <link rel="stylesheet" href="https://use.typekit.net/ptp6igk.css" />
+        {/* Apply the saved theme before first paint so dark-mode users don't
+            see a white flash on navigation. Runs inline, blocking, tiny. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('rcloud:theme');if(t==='dark'||t==='light'){document.documentElement.dataset.theme=t;}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body>
         <SidebarShell>{children}</SidebarShell>

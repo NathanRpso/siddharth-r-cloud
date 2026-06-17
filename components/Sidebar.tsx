@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import Icon, { type StrokeIconName } from './Icon';
+import ThemeToggle from './ThemeToggle';
 
 // Primary nav = data surfaces. Secondary nav = settings.
 const PRIMARY_NAV: { href: string; label: string; icon: StrokeIconName }[] = [
@@ -46,6 +47,11 @@ export default function Sidebar() {
         {SECONDARY_NAV.map((item) => (
           <NavLink key={item.href} item={item} pathname={pathname} />
         ))}
+      </div>
+
+      {/* Theme toggle — light ↔ dark */}
+      <div className="px-3 pb-2">
+        <ThemeToggle />
       </div>
 
       {/* Logout */}
