@@ -281,7 +281,13 @@ function FrameClearButton({ onClick }: { onClick: () => void }) {
 function Frame({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
     <div
-      className={clsx('relative rounded-xl overflow-hidden shadow-sm', className)}
+      className={clsx(
+        'rcl-fade-up relative rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5',
+        // A soft hover lift — keeps the tile feeling tactile without competing
+        // with the controls beneath it.
+        'transition-shadow duration-200 hover:shadow-lg',
+        className,
+      )}
       style={{ containerType: 'inline-size' }}
     >
       {children}
@@ -330,8 +336,16 @@ function TileChrome({
             </span>
           )}
         </div>
-        <div className="px-2.5 py-1 rounded-md bg-black/55 backdrop-blur-sm flex items-baseline gap-1.5">
-          <span className="type-display-xs italic text-white leading-none tabular-nums" style={{ fontSize: FS.hud }}>{liveCarry.value}</span>
+        <div className="px-2.5 py-1 rounded-md bg-black/55 backdrop-blur-sm flex items-baseline gap-1.5 ring-1 ring-white/10">
+          {/* `key` on the number re-mounts the span every time the integer
+              ticks, replaying the pop animation for a satisfying counter feel. */}
+          <span
+            key={liveCarry.value}
+            className="rcl-pop type-display-xs italic text-white leading-none tabular-nums"
+            style={{ fontSize: FS.hud }}
+          >
+            {liveCarry.value}
+          </span>
           <span className="font-bold uppercase tracking-caps text-white/60 whitespace-nowrap" style={{ fontSize: FS.hudLabel }}>{liveCarry.unit} carry</span>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import PageHeader from '@/components/PageHeader';
 import HeroCard from '@/components/HeroCard';
+import HomeHeroBanner from '@/components/HomeHeroBanner';
 import TrendChart from '@/components/TrendChart';
 import BagGappingChart from '@/components/BagGappingChart';
 import PercentileBand from '@/components/PercentileBand';
@@ -49,32 +50,38 @@ export default function HomePage() {
 
   return (
     <>
-      <PageHeader
-        eyebrow={`Welcome back, ${GOLFER.firstName}`}
-        title="Insights"
-      />
-      <div className="px-6 sm:px-8 lg:px-10 pb-10">
+      <div className="px-6 sm:px-8 lg:px-10 pt-6 pb-10">
        <div className="max-w-[1400px]">
+
+      {/* Branded welcome banner — replaces the plain page header on home so the
+          first thing visitors see is colour + motion, not white space. */}
+      <HomeHeroBanner
+        firstName={GOLFER.firstName}
+        totalShots={ALL_SHOTS.length}
+        totalSessions={SESSIONS.length}
+      />
 
       {/* Hero insight */}
       {hero && (
-        <section className="mb-10">
+        <section className="mb-10 rcl-fade-up rcl-delay-1">
           <HeroCard insight={hero} shots={ALL_SHOTS} />
         </section>
       )}
 
       {/* 30-day quick stats — client component, 4th tile is customisable */}
-      <QuickStatsStrip shots={ALL_SHOTS} sessions={SESSIONS} />
+      <div className="rcl-fade-up rcl-delay-2">
+        <QuickStatsStrip shots={ALL_SHOTS} sessions={SESSIONS} />
+      </div>
 
       {/* Trend chart */}
-      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
+      <section className="rcl-card rcl-fade-up rcl-delay-3 bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
         <h2 className="type-h2 text-text-primary mb-4">Trend</h2>
         <TrendChart shots={ALL_SHOTS} initial="carry" />
       </section>
 
       {/* Two-column row: Bag preview + Percentiles */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6">
+      <div className="rcl-fade-up rcl-delay-4 grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+        <section className="rcl-card bg-white rounded-2xl border border-border-subtle shadow-sm p-6">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="type-h2 text-text-primary">Bag at a glance</h2>
             <span className="text-xs text-text-tertiary">Last 30 days</span>
@@ -103,7 +110,7 @@ export default function HomePage() {
           />
         </section>
 
-        <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6">
+        <section className="rcl-card bg-white rounded-2xl border border-border-subtle shadow-sm p-6">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="type-h2 text-text-primary">Where you stand</h2>
             <span className="text-xs text-text-tertiary">

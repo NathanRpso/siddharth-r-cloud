@@ -216,3 +216,103 @@ h1, h2, h3, h4, h5, h6 {
 @media (prefers-reduced-motion: reduce) {
   .pb-anim { animation: none !important; }
 }
+
+/* ==========================================================================
+   General-purpose motion utilities — used to make the marketing surfaces
+   (home hero, card grids, shot review tiles) feel alive without changing the
+   underlying layout. All animations are short, ease out, and respect the
+   reduced-motion preference at the bottom of this block.
+   ========================================================================== */
+
+@keyframes rcl-fade-up {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes rcl-fade-in {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes rcl-hero-arc {
+  0%   { stroke-dashoffset: 480; opacity: 0; }
+  20%  { opacity: 1; }
+  100% { stroke-dashoffset: 0;   opacity: 1; }
+}
+@keyframes rcl-hero-ball {
+  0%   { offset-distance: 0%;   opacity: 0; }
+  10%  { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+@keyframes rcl-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+@keyframes rcl-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes rcl-impact-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(205,27,50,0.55); }
+  100% { box-shadow: 0 0 0 18px rgba(205,27,50,0); }
+}
+
+.rcl-fade-up    { animation: rcl-fade-up 520ms var(--ease-out) both; }
+.rcl-fade-in    { animation: rcl-fade-in 420ms var(--ease-out) both; }
+.rcl-delay-1    { animation-delay: 80ms; }
+.rcl-delay-2    { animation-delay: 160ms; }
+.rcl-delay-3    { animation-delay: 240ms; }
+.rcl-delay-4    { animation-delay: 320ms; }
+
+/* A reusable “lift on hover” for card surfaces. Adds a soft shadow + tiny
+   translate. Pair with `rcl-card` on the element you want to react. */
+.rcl-card {
+  transition:
+    transform 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    border-color 220ms var(--ease-out);
+  will-change: transform;
+}
+.rcl-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Branded gradient strip — used on hero accents and section dividers. */
+.rcl-brand-strip {
+  background-image: linear-gradient(
+    90deg,
+    var(--rap-red) 0%,
+    #E64A60 35%,
+    var(--sport-golf-600) 100%
+  );
+}
+.rcl-brand-bg {
+  background:
+    radial-gradient(1200px 420px at 12% -20%, rgba(205,27,50,0.55), transparent 60%),
+    radial-gradient(900px 380px at 92% 110%, rgba(28,184,100,0.35), transparent 60%),
+    linear-gradient(120deg, #1a0508 0%, #0A0A0A 55%, #0a1410 100%);
+}
+.rcl-shimmer {
+  background-image: linear-gradient(
+    100deg,
+    rgba(255,255,255,0) 30%,
+    rgba(255,255,255,0.18) 50%,
+    rgba(255,255,255,0) 70%
+  );
+  background-size: 200% 100%;
+  animation: rcl-shimmer 2.6s linear infinite;
+}
+
+.rcl-pop          { animation: rcl-pop 260ms var(--ease-out); }
+.rcl-impact-pulse { animation: rcl-impact-pulse 600ms var(--ease-out); border-radius: 9999px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rcl-fade-up,
+  .rcl-fade-in,
+  .rcl-shimmer,
+  .rcl-pop,
+  .rcl-impact-pulse { animation: none !important; }
+  .rcl-card { transition: none !important; }
+  .rcl-card:hover { transform: none !important; }
+}
