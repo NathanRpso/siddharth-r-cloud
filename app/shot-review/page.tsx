@@ -1,6 +1,7 @@
 'use client';
 
 import { Fragment, Suspense, useEffect, useMemo, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import clsx from 'clsx';
@@ -809,19 +810,26 @@ function AddShotControl({
   onAdd: (s: Shot) => void;
   units?: UnitSystem;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click (anywhere not the trigger or the portalled menu).
   useEffect(() => {
     if (!open) return;
     function onDoc(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (triggerRef.current?.contains(t)) return;
+      if (menuRef.current?.contains(t)) return;
+      setOpen(false);
     }
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [open, setOpen]);
 
   return (
-    <div ref={ref} className="relative">
+    <>
       <button
+        ref={triggerRef}
         onClick={() => setOpen(!open)}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-semibold text-text-secondary border border-dashed border-border-default hover:text-text-primary hover:border-text-primary transition-colors"
       >
@@ -829,7 +837,7 @@ function AddShotControl({
         Add shot
       </button>
       {open && (
-        <div className="absolute z-30 left-0 top-full mt-2 w-72 max-h-80 overflow-y-auto bg-white rounded-xl border border-border-default shadow-lg p-2">
+        <PortalMenu anchor={triggerRef} menuRef={menuRef} onClose={() => setOpen(false)}>
           {pool.length === 0 ? (
             <div className="px-3 py-6 text-center text-sm text-text-tertiary">No more shots to add</div>
           ) : (
@@ -860,20 +868,90 @@ function AddShotControl({
               </button>
             ))
           )}
-        </div>
+        </PortalMenu>
       )}
-    </div>
+    </>
+  );
+}
+
+/**
+ * Renders a floating menu in a portal at the document body, positioned just
+ * below an anchor element. Necessary because hardware-accelerated <video>
+ * elements paint in a separate compositor layer that ignores normal z-index,
+ * so a same-tree absolutely-positioned dropdown will flicker behind them.
+ * Repositions on scroll / resize so the menu tracks the trigger.
+ */
+function PortalMenu({
+  anchor,
+  menuRef,
+  onClose,
+  children,
+  align = 'left',
+  width = 288,
+  className = 'max-h-80 overflow-y-auto bg-white rounded-xl border border-border-default shadow-lg p-2',
+}: {
+  anchor: React.RefObject<HTMLElement>;
+  menuRef: React.RefObject<HTMLDivElement>;
+  onClose: () => void;
+  children: ReactNode;
+  align?: 'left' | 'right';
+  width?: number;
+  className?: string;
+}) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    function place() {
+      const el = anchor.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const left = align === 'right' ? r.right - width : r.left;
+      setPos({ top: r.bottom + 8, left });
+    }
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+    };
+  }, [anchor, align, width]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  if (typeof document === 'undefined' || !pos) return null;
+  return createPortal(
+    <div
+      ref={menuRef}
+      role="menu"
+      style={{ position: 'fixed', top: pos.top, left: pos.left, width, zIndex: 1000 }}
+      className={className}
+    >
+      {children}
+    </div>,
+    document.body,
   );
 }
 
 
 function UnitsControl({ value, onChange }: { value: UnitSystem; onChange: (u: UnitSystem) => void }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!open) return;
     function onDoc(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const t = e.target as Node;
+      if (triggerRef.current?.contains(t)) return;
+      if (menuRef.current?.contains(t)) return;
+      setOpen(false);
     }
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
@@ -881,8 +959,9 @@ function UnitsControl({ value, onChange }: { value: UnitSystem; onChange: (u: Un
   const current = UNIT_SYSTEMS.find((u) => u.id === value) ?? UNIT_SYSTEMS[0];
 
   return (
-    <div ref={ref} className="relative">
+    <>
       <button
+        ref={triggerRef}
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -895,9 +974,13 @@ function UnitsControl({ value, onChange }: { value: UnitSystem; onChange: (u: Un
         <Icon name={open ? 'chevron-up' : 'chevron-down'} size={12} />
       </button>
       {open && (
-        <div
-          role="listbox"
-          className="absolute z-30 right-0 top-full mt-2 w-56 bg-white rounded-xl border border-border-default shadow-lg p-1"
+        <PortalMenu
+          anchor={triggerRef}
+          menuRef={menuRef}
+          onClose={() => setOpen(false)}
+          align="right"
+          width={224}
+          className="bg-white rounded-xl border border-border-default shadow-lg p-1"
         >
           {UNIT_SYSTEMS.map((u) => {
             const active = u.id === value;
@@ -923,9 +1006,9 @@ function UnitsControl({ value, onChange }: { value: UnitSystem; onChange: (u: Un
               </button>
             );
           })}
-        </div>
+        </PortalMenu>
       )}
-    </div>
+    </>
   );
 }
 
