@@ -13,6 +13,14 @@ import { CLUBS } from '@/lib/clubs';
 import { getShotClips } from '@/lib/shotVideos';
 import { TIMELINE_MS } from '@/lib/ballFlight';
 import { modeLabel } from '@/lib/sessionTitle';
+import {
+  UNIT_SYSTEMS,
+  fmtDistance,
+  fmtSignedDistance,
+  fmtSpeed,
+  join as joinUnit,
+  type UnitSystem,
+} from '@/lib/units';
 import type { Shot } from '@/lib/types';
 
 const MAX_TILES = 4;
@@ -37,12 +45,12 @@ const INK_NAMES: Record<string, string> = {
 };
 
 // Metrics shown in the Compare table (one row each, value under each shot).
-const METRICS: { label: string; fmt: (s: Shot) => string }[] = [
-  { label: 'Carry', fmt: (s) => `${s.carry.toFixed(1)} yds` },
-  { label: 'Total', fmt: (s) => `${s.total.toFixed(1)} yds` },
-  { label: 'Side', fmt: (s) => `${s.sideCarry > 0 ? '+' : ''}${s.sideCarry.toFixed(1)} yds` },
-  { label: 'Ball speed', fmt: (s) => `${s.ballSpeed.toFixed(1)} mph` },
-  { label: 'Club speed', fmt: (s) => `${s.clubSpeed.toFixed(1)} mph` },
+const METRICS: { label: string; fmt: (s: Shot, u: UnitSystem) => string }[] = [
+  { label: 'Carry', fmt: (s, u) => joinUnit(fmtDistance(s.carry, u)) },
+  { label: 'Total', fmt: (s, u) => joinUnit(fmtDistance(s.total, u)) },
+  { label: 'Side', fmt: (s, u) => joinUnit(fmtSignedDistance(s.sideCarry, u)) },
+  { label: 'Ball speed', fmt: (s, u) => joinUnit(fmtSpeed(s.ballSpeed, u)) },
+  { label: 'Club speed', fmt: (s, u) => joinUnit(fmtSpeed(s.clubSpeed, u)) },
   { label: 'Smash', fmt: (s) => s.smash.toFixed(2) },
   { label: 'Launch', fmt: (s) => `${s.launchAngle.toFixed(1)}°` },
   { label: 'Spin', fmt: (s) => `${s.spinRate} rpm` },
@@ -288,6 +296,16 @@ function ShotReviewContent() {
 
   const [addOpen, setAddOpen] = useState(false);
 
+  // Display unit system — toggled from the picker bar; persists per session via localStorage.
+  const [units, setUnits] = useState<UnitSystem>('imperial');
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? window.localStorage.getItem('rcloud:units') : null;
+    if (saved === 'imperial' || saved === 'metric') setUnits(saved);
+  }, []);
+  useEffect(() => {
+    if (typeof window !== 'undefined') window.localStorage.setItem('rcloud:units', units);
+  }, [units]);
+
   const titleSuffix = session
     ? `${modeLabel(session.mode)} · ${new Date(session.date).toLocaleDateString('en-GB', {
         weekday: 'short', day: '2-digit', month: 'short',
@@ -312,6 +330,7 @@ function ShotReviewContent() {
       onRemove={() => removeShot(shot.id)}
       onProgress={(p) => reportProgress(shot.id, p)}
       onEnded={() => endClock(shot.id)}
+      units={units}
     />
   );
   // Controls bound to a tile id. Actions broadcast to the tile's whole link
@@ -357,7 +376,7 @@ function ShotReviewContent() {
                     </span>
                     <span className="text-xs font-semibold text-text-primary">Shot {i + 1}</span>
                     <span className="text-[11px] font-mono text-text-secondary">
-                      {shot.carry.toFixed(0)} yds
+                      {joinUnit(fmtDistance(shot.carry, units, 0))}
                     </span>
                     {shot.hasVideo && (
                       <Icon name="video-camera" size={12} className="text-text-tertiary" />
@@ -380,8 +399,12 @@ function ShotReviewContent() {
                       addShot(s);
                       setAddOpen(false);
                     }}
+                    units={units}
                   />
                 )}
+              </div>
+              <div className="ml-auto">
+                <UnitsControl value={units} onChange={setUnits} />
               </div>
             </div>
           </div>
@@ -486,7 +509,7 @@ function ShotReviewContent() {
                               key={shot.id}
                               className="text-sm font-semibold text-text-primary tabular-nums text-center py-2 border-b border-border-subtle/50"
                             >
-                              {m.fmt(shot)}
+                              {m.fmt(shot, units)}
                             </div>
                           ))}
                         </Fragment>
@@ -778,11 +801,13 @@ function AddShotControl({
   open,
   setOpen,
   onAdd,
+  units = 'imperial',
 }: {
   pool: Shot[];
   open: boolean;
   setOpen: (v: boolean) => void;
   onAdd: (s: Shot) => void;
+  units?: UnitSystem;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -820,8 +845,12 @@ function AddShotControl({
                 >
                   {shot.club}
                 </span>
-                <span className="text-sm font-semibold text-text-primary tabular-nums">{shot.carry.toFixed(0)} yds</span>
-                <span className="text-xs text-text-tertiary">{shot.ballSpeed.toFixed(0)} mph ball</span>
+                <span className="text-sm font-semibold text-text-primary tabular-nums">
+                  {joinUnit(fmtDistance(shot.carry, units, 0))}
+                </span>
+                <span className="text-xs text-text-tertiary">
+                  {joinUnit(fmtSpeed(shot.ballSpeed, units, 0))} ball
+                </span>
                 {shot.hasVideo && <Icon name="video-camera" size={13} className="text-sport-golf-600" />}
                 {shot.isOutlier && (
                   <span className="ml-auto px-1.5 py-0.5 rounded-sm bg-warning text-rap-black text-[9px] font-bold uppercase tracking-caps">
@@ -837,6 +866,68 @@ function AddShotControl({
   );
 }
 
+
+function UnitsControl({ value, onChange }: { value: UnitSystem; onChange: (u: UnitSystem) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+  const current = UNIT_SYSTEMS.find((u) => u.id === value) ?? UNIT_SYSTEMS[0];
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-semibold text-text-secondary border border-border-default hover:text-text-primary hover:border-text-primary transition-colors"
+      >
+        <Icon name="cog" size={14} />
+        <span>Metrics</span>
+        <span className="text-text-tertiary">·</span>
+        <span className="text-text-primary">{current.label}</span>
+        <Icon name={open ? 'chevron-up' : 'chevron-down'} size={12} />
+      </button>
+      {open && (
+        <div
+          role="listbox"
+          className="absolute z-30 right-0 top-full mt-2 w-56 bg-white rounded-xl border border-border-default shadow-lg p-1"
+        >
+          {UNIT_SYSTEMS.map((u) => {
+            const active = u.id === value;
+            return (
+              <button
+                key={u.id}
+                role="option"
+                aria-selected={active}
+                onClick={() => {
+                  onChange(u.id);
+                  setOpen(false);
+                }}
+                className={clsx(
+                  'w-full flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-left transition-colors',
+                  active ? 'bg-neutral-100' : 'hover:bg-neutral-50',
+                )}
+              >
+                <span className="flex flex-col">
+                  <span className="text-sm font-semibold text-text-primary">{u.label}</span>
+                  <span className="text-[11px] text-text-tertiary">{u.hint}</span>
+                </span>
+                {active && <Icon name="check" size={14} className="text-rap-red" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function EmptyState() {
   return (

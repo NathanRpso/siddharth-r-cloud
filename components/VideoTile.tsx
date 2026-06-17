@@ -8,6 +8,7 @@ import { CLUBS } from '@/lib/clubs';
 import { buildFlight, flightProgress, toPathD, IMPACT_AT } from '@/lib/ballFlight';
 import { getShotClips } from '@/lib/shotVideos';
 import type { Shot } from '@/lib/types';
+import { fmtDistance, fmtHeight, fmtSignedDistance, fmtSpeed, type UnitSystem } from '@/lib/units';
 
 // Overlay text scales with the tile's own width (container queries) and is
 // clamped so it never wraps, stacks, or truncates across the tile-size range.
@@ -49,6 +50,8 @@ interface TileProps {
   onProgress?: (p: number) => void;
   /** Fired when a video clip plays through to the end. */
   onEnded?: () => void;
+  /** Unit system for the overlay values. */
+  units?: UnitSystem;
 }
 
 /**
@@ -81,6 +84,7 @@ function VideoMode({
   onRemove,
   onProgress,
   onEnded,
+  units = 'imperial',
   clips,
 }: TileProps & { clips: { shot: string; impact: string } }) {
   const def = CLUBS[shot.club];
@@ -140,7 +144,7 @@ function VideoMode({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress, playing, view]);
 
-  const liveCarry = Math.round(progress * shot.carry);
+  const liveCarry = fmtDistance(progress * shot.carry, units, 0);
 
   return (
     <Frame className="aspect-[9/16] w-full bg-black">
@@ -162,7 +166,7 @@ function VideoMode({
         }}
       />
 
-      <TileChrome shot={shot} index={index} def={def} liveCarry={liveCarry} onRemove={onRemove} />
+      <TileChrome shot={shot} index={index} def={def} liveCarry={liveCarry} onRemove={onRemove} units={units} />
 
       {/* Shot ⇄ Impact view toggle — pinned to the top edge (centred) so it
           never sits over the impact point / ball-strike in the lower-centre. */}
@@ -189,7 +193,7 @@ function VideoMode({
 }
 
 // ── Synthetic tracer mode (no footage) ──────────────────────────────────────
-function TracerMode({ shot, index, progress, tool, color, strokes, onCommit, onClearFrame, onRemove }: TileProps) {
+function TracerMode({ shot, index, progress, tool, color, strokes, onCommit, onClearFrame, onRemove, units = 'imperial' }: TileProps) {
   const def = CLUBS[shot.club];
   const flight = useMemo(() => buildFlight(shot), [shot]);
 
@@ -199,7 +203,7 @@ function TracerMode({ shot, index, progress, tool, color, strokes, onCommit, onC
   const activePts = [...flight.path.slice(0, activeCount + 1), { x: ball.x, y: ball.y }];
   const fullD = toPathD(flight.path);
   const activeD = toPathD(activePts);
-  const liveCarry = Math.round(ball.distYds);
+  const liveCarry = fmtDistance(ball.distYds, units, 0);
   const ballSize = 6 + ball.r * 2.6;
   const impactGlow = progress > IMPACT_AT - 0.05 && progress < IMPACT_AT + 0.12;
 
@@ -250,7 +254,7 @@ function TracerMode({ shot, index, progress, tool, color, strokes, onCommit, onC
         aria-hidden
       />
 
-      <TileChrome shot={shot} index={index} def={def} liveCarry={liveCarry} onRemove={onRemove} noVideo />
+      <TileChrome shot={shot} index={index} def={def} liveCarry={liveCarry} onRemove={onRemove} noVideo units={units} />
       <AnnotationCanvas tool={tool} color={color} strokes={strokes} onCommit={onCommit} />
       {strokes.length > 0 && <FrameClearButton onClick={onClearFrame} />}
     </Frame>
@@ -292,14 +296,21 @@ function TileChrome({
   liveCarry,
   onRemove,
   noVideo,
+  units = 'imperial',
 }: {
   shot: Shot;
   index: number;
   def: (typeof CLUBS)[keyof typeof CLUBS];
-  liveCarry: number;
+  liveCarry: { value: string; unit: string };
   onRemove?: () => void;
   noVideo?: boolean;
+  units?: UnitSystem;
 }) {
+  const ballSpd = fmtSpeed(shot.ballSpeed, units, 0);
+  const clubSpd = fmtSpeed(shot.clubSpeed, units, 0);
+  const apex = fmtHeight(shot.apex, units, 0);
+  const total = fmtDistance(shot.total, units, 0);
+  const side = fmtSignedDistance(shot.sideCarry, units, 0);
   return (
     <>
       {/* Top-left: shot badge + live carry HUD */}
@@ -320,8 +331,8 @@ function TileChrome({
           )}
         </div>
         <div className="px-2.5 py-1 rounded-md bg-black/55 backdrop-blur-sm flex items-baseline gap-1.5">
-          <span className="type-display-xs italic text-white leading-none tabular-nums" style={{ fontSize: FS.hud }}>{liveCarry}</span>
-          <span className="font-bold uppercase tracking-caps text-white/60 whitespace-nowrap" style={{ fontSize: FS.hudLabel }}>yds carry</span>
+          <span className="type-display-xs italic text-white leading-none tabular-nums" style={{ fontSize: FS.hud }}>{liveCarry.value}</span>
+          <span className="font-bold uppercase tracking-caps text-white/60 whitespace-nowrap" style={{ fontSize: FS.hudLabel }}>{liveCarry.unit} carry</span>
         </div>
       </div>
 
@@ -347,8 +358,8 @@ function TileChrome({
       {/* Left edge rail — speed/strike numbers stacked down the side, clear of
           the centre so the ball-flight / impact point stays unobstructed. */}
       <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
-        <EdgeStat label="Ball Speed" value={shot.ballSpeed.toFixed(0)} unit="mph" />
-        <EdgeStat label="Club Speed" value={shot.clubSpeed.toFixed(0)} unit="mph" />
+        <EdgeStat label="Ball Speed" value={ballSpd.value} unit={ballSpd.unit} />
+        <EdgeStat label="Club Speed" value={clubSpd.value} unit={clubSpd.unit} />
         <EdgeStat label="Smash" value={shot.smash.toFixed(2)} />
       </div>
 
@@ -356,18 +367,14 @@ function TileChrome({
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-end gap-1.5">
         <EdgeStat label="Launch" value={shot.launchAngle.toFixed(1)} unit="°" align="right" />
         <EdgeStat label="Spin" value={String(shot.spinRate)} unit="rpm" align="right" />
-        <EdgeStat label="Apex" value={String(shot.apex)} unit="ft" align="right" />
+        <EdgeStat label="Apex" value={apex.value} unit={apex.unit} align="right" />
       </div>
 
       {/* Bottom: result line — total / side / descent over a gradient scrim. */}
       <div className="absolute bottom-0 left-0 right-0 px-3 py-3 bg-gradient-to-t from-black/80 to-transparent">
         <div className="grid grid-cols-3 gap-2 text-white">
-          <Stat label="Total" value={shot.total.toFixed(0)} unit="yds" />
-          <Stat
-            label="Side"
-            value={`${shot.sideCarry > 0 ? '+' : ''}${shot.sideCarry.toFixed(0)}`}
-            unit="yds"
-          />
+          <Stat label="Total" value={total.value} unit={total.unit} />
+          <Stat label="Side" value={side.value} unit={side.unit} />
           <Stat label="Descent" value={shot.descentAngle.toFixed(0)} unit="°" />
         </div>
       </div>
