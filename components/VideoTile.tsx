@@ -8,7 +8,13 @@ import { CLUBS } from '@/lib/clubs';
 import { buildFlight, flightProgress, toPathD, IMPACT_AT } from '@/lib/ballFlight';
 import { getShotClips } from '@/lib/shotVideos';
 import type { Shot } from '@/lib/types';
-import { fmtDistance, fmtSpeed, type UnitSystem } from '@/lib/units';
+import { fmtDistance, type UnitSystem } from '@/lib/units';
+import {
+  DEFAULT_OVERLAY,
+  metricsInZone,
+  type OverlayMetric,
+  type OverlayPrefs,
+} from '@/lib/overlayMetrics';
 
 // Overlay text scales with the tile's own width (container queries) and is
 // clamped so it never wraps, stacks, or truncates across the tile-size range.
@@ -52,6 +58,8 @@ interface TileProps {
   onEnded?: () => void;
   /** Unit system for the overlay values. */
   units?: UnitSystem;
+  /** Which metrics sit on which edge — user-customisable. */
+  overlay?: OverlayPrefs;
 }
 
 /**
@@ -85,6 +93,7 @@ function VideoMode({
   onProgress,
   onEnded,
   units = 'imperial',
+  overlay = DEFAULT_OVERLAY,
   clips,
 }: TileProps & { clips: { shot: string; impact: string } }) {
   const def = CLUBS[shot.club];
@@ -176,7 +185,7 @@ function VideoMode({
         }}
       />
 
-      <TileChrome shot={shot} index={index} def={def} liveCarry={liveCarry} onRemove={onRemove} units={units} />
+      <TileChrome shot={shot} index={index} def={def} liveCarry={liveCarry} onRemove={onRemove} units={units} overlay={overlay} />
 
       {/* Shot ⇄ Impact view toggle — pinned to the top edge (centred) so it
           never sits over the impact point / ball-strike in the lower-centre. */}
@@ -203,7 +212,7 @@ function VideoMode({
 }
 
 // ── Synthetic tracer mode (no footage) ──────────────────────────────────────
-function TracerMode({ shot, index, progress, tool, color, strokes, onCommit, onClearFrame, onRemove, units = 'imperial' }: TileProps) {
+function TracerMode({ shot, index, progress, tool, color, strokes, onCommit, onClearFrame, onRemove, units = 'imperial', overlay = DEFAULT_OVERLAY }: TileProps) {
   const def = CLUBS[shot.club];
   const flight = useMemo(() => buildFlight(shot), [shot]);
 
@@ -264,7 +273,7 @@ function TracerMode({ shot, index, progress, tool, color, strokes, onCommit, onC
         aria-hidden
       />
 
-      <TileChrome shot={shot} index={index} def={def} liveCarry={liveCarry} onRemove={onRemove} noVideo units={units} />
+      <TileChrome shot={shot} index={index} def={def} liveCarry={liveCarry} onRemove={onRemove} noVideo units={units} overlay={overlay} />
       <AnnotationCanvas tool={tool} color={color} strokes={strokes} onCommit={onCommit} />
       {strokes.length > 0 && <FrameClearButton onClick={onClearFrame} />}
     </Frame>
@@ -313,6 +322,7 @@ function TileChrome({
   onRemove,
   noVideo,
   units = 'imperial',
+  overlay = DEFAULT_OVERLAY,
 }: {
   shot: Shot;
   index: number;
@@ -321,14 +331,13 @@ function TileChrome({
   onRemove?: () => void;
   noVideo?: boolean;
   units?: UnitSystem;
+  overlay?: OverlayPrefs;
 }) {
-  const ballSpd = fmtSpeed(shot.ballSpeed, units, 0);
-  const clubSpd = fmtSpeed(shot.clubSpeed, units, 0);
-  const total = fmtDistance(shot.total, units, 0);
-  // Club path: positive = in-to-out, negative = out-to-in. Show with sign so
-  // golfers can read shape at a glance (a draw player wants positive numbers).
-  const path = shot.clubPath;
-  const pathStr = `${path > 0 ? '+' : ''}${path.toFixed(1)}`;
+  // Each edge renders whatever metrics the golfer pinned there (in catalogue
+  // order). Empty edges render nothing — no forced layout.
+  const leftStats = metricsInZone(overlay, 'left');
+  const rightStats = metricsInZone(overlay, 'right');
+  const bottomStats = metricsInZone(overlay, 'bottom');
   return (
     <>
       {/* Top-left: shot badge + live carry HUD */}
@@ -381,42 +390,74 @@ function TileChrome({
         )}
       </div>
 
-      {/* Left edge rail — the two speed metrics golfers read first. */}
-      <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
-        <EdgeStat label="Ball Speed" value={ballSpd.value} unit={ballSpd.unit} />
-        <EdgeStat label="Club Speed" value={clubSpd.value} unit={clubSpd.unit} />
-      </div>
-
-      {/* Right edge rail — spin + swing path. Secondary launch/apex/descent
-          metrics live in the "All metrics" table below the tiles. */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-end gap-1.5">
-        <EdgeStat label="Spin" value={String(shot.spinRate)} unit="rpm" align="right" />
-        <EdgeStat label="Path" value={pathStr} unit="°" align="right" />
-      </div>
-
-      {/* Bottom: the total carry — the second-most important number after the
-          live carry HUD, so it gets the bottom scrim to itself. */}
-      <div className="absolute bottom-0 left-0 right-0 px-3 py-3 bg-gradient-to-t from-black/80 to-transparent">
-        <div className="flex items-baseline gap-2 text-white">
-          <span
-            className="font-bold uppercase tracking-caps text-white/60"
-            style={{ fontSize: FS.label }}
-          >
-            Total
-          </span>
-          <span className="type-display-xs italic tabular-nums" style={{ fontSize: FS.value }}>
-            {total.value}
-          </span>
-          <span
-            className="font-semibold uppercase text-white/70"
-            style={{ fontSize: FS.unit }}
-          >
-            {total.unit}
-          </span>
+      {/* Left edge rail — whatever the golfer pinned left. */}
+      {leftStats.length > 0 && (
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
+          {leftStats.map((m) => (
+            <MetricChip key={m.id} metric={m} shot={shot} units={units} align="left" />
+          ))}
         </div>
-      </div>
+      )}
+
+      {/* Right edge rail — whatever the golfer pinned right. */}
+      {rightStats.length > 0 && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-end gap-1.5">
+          {rightStats.map((m) => (
+            <MetricChip key={m.id} metric={m} shot={shot} units={units} align="right" />
+          ))}
+        </div>
+      )}
+
+      {/* Bottom scrim — pinned metrics laid out in a row. Only drawn when
+          something's there, so a cleared bottom leaves the impact point open. */}
+      {bottomStats.length > 0 && (
+        <div className="absolute bottom-0 left-0 right-0 px-3 py-3 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="flex items-baseline gap-x-4 gap-y-1 flex-wrap text-white">
+            {bottomStats.map((m) => {
+              const f = m.fmt(shot, units);
+              return (
+                <div key={m.id} className="flex items-baseline gap-1.5">
+                  <span
+                    className="font-bold uppercase tracking-caps text-white/60"
+                    style={{ fontSize: FS.label }}
+                  >
+                    {m.label}
+                  </span>
+                  <span className="type-display-xs italic tabular-nums" style={{ fontSize: FS.value }}>
+                    {f.value}
+                  </span>
+                  {f.unit && (
+                    <span
+                      className="font-semibold uppercase text-white/70"
+                      style={{ fontSize: FS.unit }}
+                    >
+                      {f.unit}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </>
   );
+}
+
+/** Renders one catalogue metric as an edge chip for the given shot/units. */
+function MetricChip({
+  metric,
+  shot,
+  units,
+  align,
+}: {
+  metric: OverlayMetric;
+  shot: Shot;
+  units: UnitSystem;
+  align: 'left' | 'right';
+}) {
+  const f = metric.fmt(shot, units);
+  return <EdgeStat label={metric.label} value={f.value} unit={f.unit || undefined} align={align} />;
 }
 
 /** A compact stat chip for the left/right edge rails (trackman-style). */
