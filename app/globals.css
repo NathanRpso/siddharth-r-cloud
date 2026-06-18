@@ -448,16 +448,16 @@ html[data-theme='dark'] .rcl-brand-bg {
 }
 .rcl-page-enter { animation: rcl-page-enter 460ms var(--ease-out) both; }
 
-/* ── Ambient grain backdrop ──────────────────────────────────────────────
-   A faint, slowly-drifting noise texture behind the app — like soft grain or
-   rain on glass. Two layers at different scales/speeds give it depth without
-   ever reading as a pattern. Built from an inline SVG turbulence used as a
-   luminance mask, so a single tinted layer themes cleanly for dark mode and
-   the whole thing is GPU-cheap (just mask-position drifting). Sits below
-   content (cards are opaque) and never intercepts clicks. */
-@keyframes rcl-noise-fall {
-  from { -webkit-mask-position: 0 0;           mask-position: 0 0; }
-  to   { -webkit-mask-position: var(--tile) 0; mask-position: var(--tile) 0; }
+/* ── Ambient cloud backdrop ──────────────────────────────────────────────
+   A few large, soft tonal clouds drifting slowly behind the app. Built from
+   radial-gradient blobs on layers wider than the viewport, animated purely
+   with `transform` so the GPU composites them for ~free — no per-frame
+   repaint (the earlier SVG-noise-mask version was the main source of lag).
+   Gently sways (alternate) so the loop is seamless. Sits below content (cards
+   are opaque), never intercepts clicks; colour themes via --cloud. */
+@keyframes rcl-cloud-drift {
+  from { transform: translate3d(-3%, 0, 0); }
+  to   { transform: translate3d(3%, 0, 0); }
 }
 .rcl-ambient {
   position: fixed;
@@ -465,36 +465,33 @@ html[data-theme='dark'] .rcl-brand-bg {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  /* Grayscale fractal-noise tile, reused by both layers as a mask. */
-  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --cloud: rgba(17, 21, 28, 0.11);
 }
-.rcl-noise {
+html[data-theme='dark'] .rcl-ambient { --cloud: rgba(255, 255, 255, 0.08); }
+.rcl-cloud {
   position: absolute;
-  inset: 0;
-  background-color: rgba(17, 21, 28, 1);
-  -webkit-mask-image: var(--noise);
-  mask-image: var(--noise);
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
-  animation: rcl-noise-fall linear infinite;
+  top: -25%;
+  left: -25%;
+  width: 150%;
+  height: 150%;
+  background-repeat: no-repeat;
+  will-change: transform;
+  animation: rcl-cloud-drift ease-in-out infinite alternate;
 }
-.rcl-noise-1 {
-  --tile: 680px;
-  -webkit-mask-size: 680px 680px;
-  mask-size: 680px 680px;
-  opacity: 0.22;
-  animation-duration: 40s;
+.rcl-cloud-1 {
+  background-image:
+    radial-gradient(38% 46% at 22% 32%, var(--cloud), transparent 70%),
+    radial-gradient(32% 40% at 68% 58%, var(--cloud), transparent 70%),
+    radial-gradient(30% 38% at 88% 24%, var(--cloud), transparent 70%);
+  animation-duration: 26s;
 }
-.rcl-noise-2 {
-  --tile: 920px;
-  -webkit-mask-size: 920px 920px;
-  mask-size: 920px 920px;
-  opacity: 0.14;
-  animation-duration: 64s;
+.rcl-cloud-2 {
+  background-image:
+    radial-gradient(42% 50% at 50% 80%, var(--cloud), transparent 72%),
+    radial-gradient(34% 42% at 12% 70%, var(--cloud), transparent 72%);
+  animation-duration: 38s;
+  animation-direction: alternate-reverse;
 }
-html[data-theme='dark'] .rcl-noise { background-color: rgba(255, 255, 255, 1); }
-html[data-theme='dark'] .rcl-noise-1 { opacity: 0.13; }
-html[data-theme='dark'] .rcl-noise-2 { opacity: 0.09; }
 
 @media (prefers-reduced-motion: reduce) {
   .rcl-fade-up,
@@ -502,7 +499,7 @@ html[data-theme='dark'] .rcl-noise-2 { opacity: 0.09; }
   .rcl-page-enter,
   .rcl-shimmer,
   .rcl-pop,
-  .rcl-noise,
+  .rcl-cloud,
   .rcl-impact-pulse { animation: none !important; }
   .rcl-card { transition: none !important; }
   .rcl-card:hover { transform: none !important; }
