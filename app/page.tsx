@@ -133,7 +133,7 @@ export default function HomePage() {
           </div>
           {percentiles.length > 0 && (
             <Link
-              href="/performance?tab=strokes-gained"
+              href="/performance?tab=scoring"
               className="inline-flex items-center gap-1.5 mt-6 text-sm font-semibold text-rap-red hover:text-rap-red-hover transition-colors"
             >
               See your strokes-gained breakdown

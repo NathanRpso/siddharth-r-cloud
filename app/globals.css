@@ -438,11 +438,52 @@ html[data-theme='dark'] .rcl-brand-bg {
 .rcl-pop          { animation: rcl-pop 260ms var(--ease-out); }
 .rcl-impact-pulse { animation: rcl-impact-pulse 600ms var(--ease-out); border-radius: 9999px; }
 
+/* ── Route transition ────────────────────────────────────────────────────
+   Plays each navigation (the shell re-mounts <main> on pathname change). A
+   touch more than a plain fade — content settles up and in, like a card
+   being laid down — but short enough to never feel like a wait. */
+@keyframes rcl-page-enter {
+  0%   { opacity: 0; transform: translateY(14px) scale(0.992); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.rcl-page-enter { animation: rcl-page-enter 460ms var(--ease-out) both; }
+
+/* ── Ambient golf-swing backdrop ─────────────────────────────────────────
+   A single club sweeping a slow, even arc behind the app — present enough to
+   notice in the gutters and page headers, faint enough to stay formal. Sits
+   below content (cards are opaque) and never intercepts clicks. */
+@keyframes rcl-swing {
+  0%   { transform: rotate(-72deg); }
+  50%  { transform: rotate(72deg); }
+  100% { transform: rotate(-72deg); }
+}
+.rcl-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.rcl-ambient svg { width: 100%; height: 100%; display: block; }
+.rcl-swing { transform-origin: 0 0; animation: rcl-swing 7s ease-in-out infinite; }
+.rcl-ambient .amb-shaft  { stroke: rgba(17,21,28,0.11); }
+.rcl-ambient .amb-grip   { stroke: rgba(205,27,50,0.22); }
+.rcl-ambient .amb-head   { fill:   rgba(205,27,50,0.16); }
+.rcl-ambient .amb-plane  { stroke: rgba(17,21,28,0.07); }
+.rcl-ambient .amb-ground { stroke: rgba(17,21,28,0.06); }
+html[data-theme='dark'] .rcl-ambient .amb-shaft  { stroke: rgba(255,255,255,0.10); }
+html[data-theme='dark'] .rcl-ambient .amb-grip   { stroke: rgba(230,74,96,0.28); }
+html[data-theme='dark'] .rcl-ambient .amb-head   { fill:   rgba(230,74,96,0.20); }
+html[data-theme='dark'] .rcl-ambient .amb-plane  { stroke: rgba(255,255,255,0.06); }
+html[data-theme='dark'] .rcl-ambient .amb-ground { stroke: rgba(255,255,255,0.05); }
+
 @media (prefers-reduced-motion: reduce) {
   .rcl-fade-up,
   .rcl-fade-in,
+  .rcl-page-enter,
   .rcl-shimmer,
   .rcl-pop,
+  .rcl-swing,
   .rcl-impact-pulse { animation: none !important; }
   .rcl-card { transition: none !important; }
   .rcl-card:hover { transform: none !important; }

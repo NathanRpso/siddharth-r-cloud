@@ -4,7 +4,6 @@ import { Suspense, useMemo, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import PageHeader from '@/components/PageHeader';
-import BagGappingChart from '@/components/BagGappingChart';
 import ClubChipSelector from '@/components/ClubChipSelector';
 import DispersionPlot from '@/components/DispersionPlot';
 import TrendChart from '@/components/TrendChart';
@@ -18,7 +17,6 @@ import type { ClubId } from '@/lib/types';
 import {
   accuracySummary,
   aggregateByClub,
-  bagSummary,
   clubAccuracy,
   clubStrokesGained,
   mean,
@@ -28,7 +26,11 @@ import {
 } from '@/lib/stats';
 import type { Rating } from '@/lib/stats';
 
-type TabKey = 'bag' | 'strokes-gained' | 'accuracy' | 'metrics';
+// Two tabs only, by design: "Bag" answers "how does my equipment perform?"
+// (compare, dispersion, trend, any metric) and "Scoring" answers "where am I
+// winning or leaking strokes?" (strokes gained + accuracy). The distance
+// ladder deliberately lives on Home's "Bag at a glance" — not repeated here.
+type TabKey = 'bag' | 'scoring';
 
 const DEFAULT_SELECTED: ClubId[] = ['Dr', '7i'];
 
@@ -44,11 +46,11 @@ function PerformanceContent() {
   const router = useRouter();
   const params = useSearchParams();
   const paramTab = params.get('tab');
+  // `scoring` covers the old strokes-gained / accuracy deep-links too.
   const initialTab: TabKey =
-    paramTab === 'strokes-gained' ? 'strokes-gained'
-    : paramTab === 'accuracy'     ? 'accuracy'
-    : paramTab === 'metrics'      ? 'metrics'
-    : 'bag';
+    paramTab === 'scoring' || paramTab === 'strokes-gained' || paramTab === 'accuracy'
+      ? 'scoring'
+      : 'bag';
   const [tab, setTab] = useState<TabKey>(initialTab);
 
   // Keep URL in sync when user clicks tabs (shallow update; no scroll).
@@ -78,17 +80,16 @@ function PerformanceContent() {
           {/* Tab nav */}
           <div className="border-b border-border-subtle mb-8">
             <div className="flex gap-8">
-              <TabButton active={tab === 'bag'}            onClick={() => setTab('bag')}            label="Bag" />
-              <TabButton active={tab === 'strokes-gained'} onClick={() => setTab('strokes-gained')} label="Strokes Gained" />
-              <TabButton active={tab === 'accuracy'}       onClick={() => setTab('accuracy')}       label="Accuracy" />
-              <TabButton active={tab === 'metrics'}        onClick={() => setTab('metrics')}        label="Metrics" />
+              <TabButton active={tab === 'bag'}     onClick={() => setTab('bag')}     label="Bag" />
+              <TabButton active={tab === 'scoring'} onClick={() => setTab('scoring')} label="Scoring" />
             </div>
           </div>
 
-          {tab === 'bag' && <BagTab />}
-          {tab === 'strokes-gained' && <StrokesGainedTab />}
-          {tab === 'accuracy' && <AccuracyTab />}
-          {tab === 'metrics' && <MetricsTab />}
+          {/* `key` replays the entrance fade when you switch tabs. */}
+          <div key={tab} className="rcl-fade-up">
+            {tab === 'bag' && <BagTab />}
+            {tab === 'scoring' && <ScoringTab />}
+          </div>
         </div>
       </div>
     </>
@@ -121,7 +122,6 @@ function TabButton({
 
 function BagTab() {
   const [selected, setSelected] = useState<ClubId[]>(DEFAULT_SELECTED);
-  const bag = useMemo(() => bagSummary(ALL_SHOTS), []);
   const allByClub = useMemo(() => aggregateByClub(ALL_SHOTS), []);
   const available = useMemo(() => allByClub.map((c) => c.club), [allByClub]);
 
@@ -131,18 +131,8 @@ function BagTab() {
 
   return (
     <>
-      {/* Distance ladder */}
-      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
-        <div className="flex items-baseline justify-between mb-5">
-          <h2 className="type-h2 text-text-primary">Distance ladder</h2>
-          <span className="text-xs text-text-tertiary">
-            Avg carry by club
-          </span>
-        </div>
-        <BagGappingChart bag={bag} cta={false} />
-      </section>
-
-      {/* Compare clubs */}
+      {/* Compare clubs — the heart of the Bag tab. Trimmed to the columns
+          that actually drive a decision: how far, how repeatable, how solid. */}
       <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
         <div className="flex items-baseline justify-between mb-1">
           <h2 className="type-h2 text-text-primary">Compare clubs</h2>
@@ -167,14 +157,12 @@ function BagTab() {
           </div>
         ) : (
           <div className="mt-6 overflow-x-auto">
-            <table className="w-full min-w-[820px]">
+            <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="text-left border-b border-border-subtle">
                   <Th>Club</Th>
-                  <Th align="right">Shots</Th>
                   <Th align="right">Avg Carry</Th>
                   <Th align="right">Range</Th>
-                  <Th align="right">Avg Ball Spd</Th>
                   <Th align="right">Smash</Th>
                   <Th align="left">Consistency</Th>
                 </tr>
@@ -196,12 +184,10 @@ function BagTab() {
                           <span className="font-semibold text-text-primary">{def.label}</span>
                         </span>
                       </Td>
-                      <Td align="right" mono>{c.count}</Td>
                       <Td align="right" mono>{c.avgCarry.toFixed(0)} <Unit>yds</Unit></Td>
                       <Td align="right" mono>
                         <span className="text-text-secondary">±{c.carrySd.toFixed(0)} <Unit>yds</Unit></span>
                       </Td>
-                      <Td align="right" mono>{c.avgBallSpeed.toFixed(1)} <Unit>mph</Unit></Td>
                       <Td align="right" mono>{c.avgSmash.toFixed(2)}</Td>
                       <Td>
                         <RatingPill rating={rating} />
@@ -235,7 +221,7 @@ function BagTab() {
       )}
 
       {selected.length > 0 && selectedShots.length >= 10 && (
-        <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
+        <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
           <h2 className="type-h2 text-text-primary mb-1">
             {selected.length === 1 ? `${selected[0]} trend` : 'Trend for selected'}
           </h2>
@@ -247,14 +233,36 @@ function BagTab() {
           <TrendChart shots={selectedShots} initial="carry" />
         </section>
       )}
+
+      {/* Explore any metric — folded in from the old Metrics tab. Sits last
+          because it's the power-user "go deeper" layer, not the headline. */}
+      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
+        <div className="flex items-baseline justify-between mb-1">
+          <h2 className="type-h2 text-text-primary">Explore any metric</h2>
+          <span className="text-xs text-text-tertiary">Lifetime averages</span>
+        </div>
+        <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
+          Pick a metric to see how it varies across your whole bag. Bars are
+          coloured against typical 20-handicap baselines for each club.
+        </p>
+        <ClubMetricsChart shots={ALL_SHOTS} />
+      </section>
     </>
   );
 }
 
+/* ──────────────────────── SCORING TAB ──────────────────────── */
 
-/* ──────────────────── STROKES GAINED TAB ──────────────────── */
+function ScoringTab() {
+  return (
+    <>
+      <StrokesGainedSection />
+      <AccuracySection />
+    </>
+  );
+}
 
-function StrokesGainedTab() {
+function StrokesGainedSection() {
   const data = useMemo(() => clubStrokesGained(ALL_SHOTS), []);
   const summary = useMemo(() => strokesGainedSummary(data), [data]);
   const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
@@ -266,7 +274,7 @@ function StrokesGainedTab() {
     : 'text-text-primary';
 
   return (
-    <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
+    <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
       <div className="flex items-start justify-between gap-6 mb-5">
         <div>
           <h2 className="type-h2 text-text-primary mb-1">Strokes gained</h2>
@@ -309,9 +317,7 @@ function StrokesGainedTab() {
   );
 }
 
-/* ───────────────────────── ACCURACY TAB ───────────────────────── */
-
-function AccuracyTab() {
+function AccuracySection() {
   const data = useMemo(() => clubAccuracy(ALL_SHOTS), []);
   const summary = useMemo(() => accuracySummary(data), [data]);
   // Headline number: overall % of shots on target across the bag.
@@ -365,24 +371,6 @@ function AccuracyTab() {
           Hit a few more shots per club to see your accuracy pattern.
         </p>
       )}
-    </section>
-  );
-}
-
-/* ────────────────────────── METRICS TAB ────────────────────────── */
-
-function MetricsTab() {
-  return (
-    <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
-      <div className="flex items-baseline justify-between mb-1">
-        <h2 className="type-h2 text-text-primary">Metrics by club</h2>
-        <span className="text-xs text-text-tertiary">Lifetime averages</span>
-      </div>
-      <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
-        Pick a metric to see how it varies across your bag. Bars are coloured
-        against typical 20-handicap baselines for each club.
-      </p>
-      <ClubMetricsChart shots={ALL_SHOTS} />
     </section>
   );
 }
