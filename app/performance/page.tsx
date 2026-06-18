@@ -4,13 +4,14 @@ import { Suspense, useMemo, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import PageHeader from '@/components/PageHeader';
-import BagGappingChart from '@/components/BagGappingChart';
 import ClubChipSelector from '@/components/ClubChipSelector';
 import DispersionPlot from '@/components/DispersionPlot';
 import TrendChart from '@/components/TrendChart';
 import StrokesGainedChart from '@/components/StrokesGainedChart';
 import AccuracyHeatStrip from '@/components/AccuracyHeatStrip';
 import ClubMetricsChart from '@/components/ClubMetricsChart';
+import MetricTile from '@/components/MetricTile';
+import PuttingMakeChart from '@/components/PuttingMakeChart';
 import Icon from '@/components/Icon';
 import { ALL_SHOTS } from '@/lib/mockData';
 import { CLUBS } from '@/lib/clubs';
@@ -18,7 +19,6 @@ import type { ClubId } from '@/lib/types';
 import {
   accuracySummary,
   aggregateByClub,
-  bagSummary,
   clubAccuracy,
   clubStrokesGained,
   mean,
@@ -27,10 +27,31 @@ import {
   strokesGainedSummary,
 } from '@/lib/stats';
 import type { Rating } from '@/lib/stats';
+import {
+  SHORT_GAME_HEADLINES,
+  PUTTING_MAKE_RATES,
+  WEDGE_PROXIMITY,
+  LAG_PUTT_PROXIMITY,
+  rateHeadline,
+  headlineDelta,
+  shortGameSynthesis,
+} from '@/lib/shortGame';
+import {
+  loadProfile,
+  DEFAULT_PROFILE,
+  scaledCarryBenchmarks,
+  type GolferProfile,
+} from '@/lib/golferProfile';
 
-type TabKey = 'bag' | 'strokes-gained' | 'accuracy' | 'metrics';
+// Three tabs: "Bag" (how does my equipment perform — compare, dispersion,
+// trend, any metric), "Scoring" (where am I winning/leaking strokes), and
+// "Short Game" (the scoring zone the launch monitor doesn't see). The distance
+// ladder deliberately lives on Home's "Bag at a glance" — not repeated here.
+type TabKey = 'bag' | 'scoring' | 'short-game';
 
 const DEFAULT_SELECTED: ClubId[] = ['Dr', '7i'];
+
+type CarryBenchmarks = Partial<Record<ClubId, { p25: number; p50: number; p75: number }>>;
 
 export default function PerformancePage() {
   return (
@@ -44,12 +65,20 @@ function PerformanceContent() {
   const router = useRouter();
   const params = useSearchParams();
   const paramTab = params.get('tab');
+  // `scoring` covers the old strokes-gained / accuracy deep-links too.
   const initialTab: TabKey =
-    paramTab === 'strokes-gained' ? 'strokes-gained'
-    : paramTab === 'accuracy'     ? 'accuracy'
-    : paramTab === 'metrics'      ? 'metrics'
-    : 'bag';
+    paramTab === 'scoring' || paramTab === 'strokes-gained' || paramTab === 'accuracy'
+      ? 'scoring'
+      : paramTab === 'short-game'
+      ? 'short-game'
+      : 'bag';
   const [tab, setTab] = useState<TabKey>(initialTab);
+
+  // Golfer profile drives the comparison cohort (set on the My Game page).
+  // Read post-mount from localStorage so comparisons follow the golfer's
+  // handicap instead of a hardcoded 20; SSR markup stays deterministic.
+  const [profile, setProfile] = useState<GolferProfile>(DEFAULT_PROFILE);
+  useEffect(() => { setProfile(loadProfile()); }, []);
 
   // Keep URL in sync when user clicks tabs (shallow update; no scroll).
   useEffect(() => {
@@ -61,7 +90,12 @@ function PerformanceContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  const synthesis = useMemo(() => performanceSynthesis(ALL_SHOTS), []);
+  const cmpHcp = profile.comparisonHandicap;
+  const carryBenchmarks = useMemo(() => scaledCarryBenchmarks(cmpHcp), [cmpHcp]);
+  const synthesis = useMemo(
+    () => performanceSynthesis(ALL_SHOTS, cmpHcp, carryBenchmarks),
+    [cmpHcp, carryBenchmarks],
+  );
 
   return (
     <>
@@ -78,17 +112,18 @@ function PerformanceContent() {
           {/* Tab nav */}
           <div className="border-b border-border-subtle mb-8">
             <div className="flex gap-8">
-              <TabButton active={tab === 'bag'}            onClick={() => setTab('bag')}            label="Bag" />
-              <TabButton active={tab === 'strokes-gained'} onClick={() => setTab('strokes-gained')} label="Strokes Gained" />
-              <TabButton active={tab === 'accuracy'}       onClick={() => setTab('accuracy')}       label="Accuracy" />
-              <TabButton active={tab === 'metrics'}        onClick={() => setTab('metrics')}        label="Metrics" />
+              <TabButton active={tab === 'bag'}        onClick={() => setTab('bag')}        label="Bag" />
+              <TabButton active={tab === 'scoring'}    onClick={() => setTab('scoring')}    label="Scoring" />
+              <TabButton active={tab === 'short-game'} onClick={() => setTab('short-game')} label="Short Game" />
             </div>
           </div>
 
-          {tab === 'bag' && <BagTab />}
-          {tab === 'strokes-gained' && <StrokesGainedTab />}
-          {tab === 'accuracy' && <AccuracyTab />}
-          {tab === 'metrics' && <MetricsTab />}
+          {/* `key` replays the entrance fade when you switch tabs. */}
+          <div key={tab} className="rcl-fade-up">
+            {tab === 'bag' && <BagTab />}
+            {tab === 'scoring' && <ScoringTab benchmarks={carryBenchmarks} comparisonHandicap={cmpHcp} />}
+            {tab === 'short-game' && <ShortGameTab />}
+          </div>
         </div>
       </div>
     </>
@@ -121,7 +156,6 @@ function TabButton({
 
 function BagTab() {
   const [selected, setSelected] = useState<ClubId[]>(DEFAULT_SELECTED);
-  const bag = useMemo(() => bagSummary(ALL_SHOTS), []);
   const allByClub = useMemo(() => aggregateByClub(ALL_SHOTS), []);
   const available = useMemo(() => allByClub.map((c) => c.club), [allByClub]);
 
@@ -131,18 +165,8 @@ function BagTab() {
 
   return (
     <>
-      {/* Distance ladder */}
-      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
-        <div className="flex items-baseline justify-between mb-5">
-          <h2 className="type-h2 text-text-primary">Distance ladder</h2>
-          <span className="text-xs text-text-tertiary">
-            Avg carry by club
-          </span>
-        </div>
-        <BagGappingChart bag={bag} cta={false} />
-      </section>
-
-      {/* Compare clubs */}
+      {/* Compare clubs — the heart of the Bag tab. Trimmed to the columns
+          that actually drive a decision: how far, how repeatable, how solid. */}
       <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
         <div className="flex items-baseline justify-between mb-1">
           <h2 className="type-h2 text-text-primary">Compare clubs</h2>
@@ -167,14 +191,12 @@ function BagTab() {
           </div>
         ) : (
           <div className="mt-6 overflow-x-auto">
-            <table className="w-full min-w-[820px]">
+            <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="text-left border-b border-border-subtle">
                   <Th>Club</Th>
-                  <Th align="right">Shots</Th>
                   <Th align="right">Avg Carry</Th>
                   <Th align="right">Range</Th>
-                  <Th align="right">Avg Ball Spd</Th>
                   <Th align="right">Smash</Th>
                   <Th align="left">Consistency</Th>
                 </tr>
@@ -196,12 +218,10 @@ function BagTab() {
                           <span className="font-semibold text-text-primary">{def.label}</span>
                         </span>
                       </Td>
-                      <Td align="right" mono>{c.count}</Td>
                       <Td align="right" mono>{c.avgCarry.toFixed(0)} <Unit>yds</Unit></Td>
                       <Td align="right" mono>
                         <span className="text-text-secondary">±{c.carrySd.toFixed(0)} <Unit>yds</Unit></span>
                       </Td>
-                      <Td align="right" mono>{c.avgBallSpeed.toFixed(1)} <Unit>mph</Unit></Td>
                       <Td align="right" mono>{c.avgSmash.toFixed(2)}</Td>
                       <Td>
                         <RatingPill rating={rating} />
@@ -235,7 +255,7 @@ function BagTab() {
       )}
 
       {selected.length > 0 && selectedShots.length >= 10 && (
-        <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
+        <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
           <h2 className="type-h2 text-text-primary mb-1">
             {selected.length === 1 ? `${selected[0]} trend` : 'Trend for selected'}
           </h2>
@@ -247,15 +267,49 @@ function BagTab() {
           <TrendChart shots={selectedShots} initial="carry" />
         </section>
       )}
+
+      {/* Explore any metric — folded in from the old Metrics tab. Sits last
+          because it's the power-user "go deeper" layer, not the headline. */}
+      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
+        <div className="flex items-baseline justify-between mb-1">
+          <h2 className="type-h2 text-text-primary">Explore any metric</h2>
+          <span className="text-xs text-text-tertiary">Lifetime averages</span>
+        </div>
+        <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
+          Pick a metric to see how it varies across your whole bag. Bars are
+          coloured against typical 20-handicap baselines for each club.
+        </p>
+        <ClubMetricsChart shots={ALL_SHOTS} />
+      </section>
     </>
   );
 }
 
+/* ──────────────────────── SCORING TAB ──────────────────────── */
 
-/* ──────────────────── STROKES GAINED TAB ──────────────────── */
+function ScoringTab({
+  benchmarks,
+  comparisonHandicap,
+}: {
+  benchmarks: CarryBenchmarks;
+  comparisonHandicap: number;
+}) {
+  return (
+    <>
+      <StrokesGainedSection benchmarks={benchmarks} comparisonHandicap={comparisonHandicap} />
+      <AccuracySection />
+    </>
+  );
+}
 
-function StrokesGainedTab() {
-  const data = useMemo(() => clubStrokesGained(ALL_SHOTS), []);
+function StrokesGainedSection({
+  benchmarks,
+  comparisonHandicap,
+}: {
+  benchmarks: CarryBenchmarks;
+  comparisonHandicap: number;
+}) {
+  const data = useMemo(() => clubStrokesGained(ALL_SHOTS, benchmarks), [benchmarks]);
   const summary = useMemo(() => strokesGainedSummary(data), [data]);
   const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
 
@@ -266,12 +320,12 @@ function StrokesGainedTab() {
     : 'text-text-primary';
 
   return (
-    <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
+    <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
       <div className="flex items-start justify-between gap-6 mb-5">
         <div>
           <h2 className="type-h2 text-text-primary mb-1">Strokes gained</h2>
           <span className="text-xs text-text-tertiary">
-            Vs typical 20-handicap
+            Vs typical {comparisonHandicap}-handicap
           </span>
         </div>
         {data.length > 0 && (
@@ -294,8 +348,9 @@ function StrokesGainedTab() {
 
       <p className="type-body-sm text-text-secondary mb-6 max-w-prose">
         Estimates how many strokes per round each club gains or loses vs the
-        typical 20-handicap golfer, combining distance and dispersion. Positive
-        bars = strokes you're gaining. Negative bars = strokes you're leaking.
+        typical {comparisonHandicap}-handicap golfer, combining distance and
+        dispersion. Positive bars = strokes you're gaining. Negative bars =
+        strokes you're leaking.
       </p>
 
       {data.length ? (
@@ -309,9 +364,7 @@ function StrokesGainedTab() {
   );
 }
 
-/* ───────────────────────── ACCURACY TAB ───────────────────────── */
-
-function AccuracyTab() {
+function AccuracySection() {
   const data = useMemo(() => clubAccuracy(ALL_SHOTS), []);
   const summary = useMemo(() => accuracySummary(data), [data]);
   // Headline number: overall % of shots on target across the bag.
@@ -369,21 +422,105 @@ function AccuracyTab() {
   );
 }
 
-/* ────────────────────────── METRICS TAB ────────────────────────── */
+/* ──────────────────────── SHORT GAME TAB ──────────────────────── */
 
-function MetricsTab() {
+function ShortGameTab() {
+  const synthesis = shortGameSynthesis();
   return (
-    <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
-      <div className="flex items-baseline justify-between mb-1">
-        <h2 className="type-h2 text-text-primary">Metrics by club</h2>
-        <span className="text-xs text-text-tertiary">Lifetime averages</span>
-      </div>
-      <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
-        Pick a metric to see how it varies across your bag. Bars are coloured
-        against typical 20-handicap baselines for each club.
+    <>
+      <p className="type-body-lg text-text-primary font-semibold mb-6 leading-snug max-w-[78ch]">
+        {synthesis}
       </p>
-      <ClubMetricsChart shots={ALL_SHOTS} />
-    </section>
+
+      {/* Headline scoring-zone stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {SHORT_GAME_HEADLINES.map((h) => (
+          <MetricTile
+            key={h.key}
+            label={h.label}
+            value={h.value.toFixed(h.decimals)}
+            unit={h.unit}
+            rating={rateHeadline(h)}
+            sub={h.sub}
+            delta={headlineDelta(h)}
+            deltaUnit={h.unit === '%' ? ' pts vs avg' : ' vs avg'}
+            goodDirection={h.goodDirection}
+          />
+        ))}
+      </div>
+
+      {/* Putting make rate by distance */}
+      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
+        <div className="flex items-baseline justify-between mb-1">
+          <h2 className="type-h2 text-text-primary">Putting — make rate by distance</h2>
+          <span className="text-xs text-text-tertiary">This season</span>
+        </div>
+        <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
+          How often you hole out from each range. The tick on each bar is the
+          typical amateur make rate — clear the tick and you're gaining strokes
+          on the green.
+        </p>
+        <PuttingMakeChart data={PUTTING_MAKE_RATES} />
+        <div className="mt-5 pt-4 border-t border-border-subtle flex items-center justify-between gap-4">
+          <span className="type-body-sm text-text-secondary">
+            Average leave after a long (30 ft+) putt
+          </span>
+          <span className="text-sm font-semibold text-text-primary tabular-nums">
+            {LAG_PUTT_PROXIMITY.value} ft
+            <span className="text-text-tertiary font-normal"> · typical {LAG_PUTT_PROXIMITY.benchmark} ft</span>
+          </span>
+        </div>
+      </section>
+
+      {/* Wedge proximity from scoring range */}
+      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
+        <div className="flex items-baseline justify-between mb-1">
+          <h2 className="type-h2 text-text-primary">From scoring range</h2>
+          <span className="text-xs text-text-tertiary">Avg proximity to pin</span>
+        </div>
+        <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
+          How close you leave it from inside 100 yards — lower is better. Grey
+          is the typical amateur.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {WEDGE_PROXIMITY.map((w) => {
+            const better = w.proximityFt < w.benchmark;
+            return (
+              <div
+                key={w.distance}
+                className="rounded-xl border border-border-subtle bg-neutral-50 p-4"
+              >
+                <div className="type-label-sm text-text-tertiary tracking-caps mb-1.5">
+                  {w.distance}
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="type-display-md text-text-primary leading-none tabular-nums">
+                    {w.proximityFt}
+                  </span>
+                  <span className="text-xs text-text-tertiary font-semibold uppercase tracking-caps">
+                    ft
+                  </span>
+                </div>
+                <div
+                  className={clsx(
+                    'mt-2 text-xs font-semibold',
+                    better ? 'text-sport-golf-700' : 'text-warning',
+                  )}
+                >
+                  {better ? '−' : '+'}{Math.abs(w.proximityFt - w.benchmark)} ft vs typical {w.benchmark} ft
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <p className="text-xs text-text-tertiary max-w-prose">
+        Short-game numbers are entered from your rounds — your launch monitor
+        captures full swings, but scoring happens inside 100 yards, so this is
+        where you log it.
+      </p>
+    </>
   );
 }
 
