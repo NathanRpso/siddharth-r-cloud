@@ -151,7 +151,7 @@ function VideoMode({
   // count rises fast off the clubface and eases into landing, like a real
   // shot. The threshold is a heuristic over the MLM2PRO clip library; tune
   // here if the footage changes.
-  const VIDEO_IMPACT_AT = 0.42;
+  const VIDEO_IMPACT_AT = 0.58;
   const postImpact = Math.max(0, (progress - VIDEO_IMPACT_AT) / (1 - VIDEO_IMPACT_AT));
   const eased = Math.pow(postImpact, 0.7);
   const liveCarry = fmtDistance(eased * shot.carry, units, 0);
