@@ -75,7 +75,7 @@ export default function SessionScoreHero({
         {/* Label + delta */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <div className="type-eyebrow">Session score</div>
+            <div className="type-eyebrow">Session grade</div>
             <ScoreExplainer breakdown={breakdown} bandLabel={score.label} />
           </div>
           <h2 className={clsx('type-display-sm mb-2', BAND_FG[score.band])}>
