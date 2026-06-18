@@ -448,14 +448,16 @@ html[data-theme='dark'] .rcl-brand-bg {
 }
 .rcl-page-enter { animation: rcl-page-enter 460ms var(--ease-out) both; }
 
-/* ── Ambient golf-swing backdrop ─────────────────────────────────────────
-   A single club sweeping a slow, even arc behind the app — present enough to
-   notice in the gutters and page headers, faint enough to stay formal. Sits
-   below content (cards are opaque) and never intercepts clicks. */
-@keyframes rcl-swing {
-  0%   { transform: rotate(-72deg); }
-  50%  { transform: rotate(72deg); }
-  100% { transform: rotate(-72deg); }
+/* ── Ambient grain backdrop ──────────────────────────────────────────────
+   A faint, slowly-drifting noise texture behind the app — like soft grain or
+   rain on glass. Two layers at different scales/speeds give it depth without
+   ever reading as a pattern. Built from an inline SVG turbulence used as a
+   luminance mask, so a single tinted layer themes cleanly for dark mode and
+   the whole thing is GPU-cheap (just mask-position drifting). Sits below
+   content (cards are opaque) and never intercepts clicks. */
+@keyframes rcl-noise-fall {
+  from { -webkit-mask-position: 0 0;           mask-position: 0 0; }
+  to   { -webkit-mask-position: var(--tile) 0; mask-position: var(--tile) 0; }
 }
 .rcl-ambient {
   position: fixed;
@@ -463,19 +465,36 @@ html[data-theme='dark'] .rcl-brand-bg {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  /* Grayscale fractal-noise tile, reused by both layers as a mask. */
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.rcl-ambient svg { width: 100%; height: 100%; display: block; }
-.rcl-swing { transform-origin: 0 0; animation: rcl-swing 7s ease-in-out infinite; }
-.rcl-ambient .amb-shaft  { stroke: rgba(17,21,28,0.11); }
-.rcl-ambient .amb-grip   { stroke: rgba(205,27,50,0.22); }
-.rcl-ambient .amb-head   { fill:   rgba(205,27,50,0.16); }
-.rcl-ambient .amb-plane  { stroke: rgba(17,21,28,0.07); }
-.rcl-ambient .amb-ground { stroke: rgba(17,21,28,0.06); }
-html[data-theme='dark'] .rcl-ambient .amb-shaft  { stroke: rgba(255,255,255,0.10); }
-html[data-theme='dark'] .rcl-ambient .amb-grip   { stroke: rgba(230,74,96,0.28); }
-html[data-theme='dark'] .rcl-ambient .amb-head   { fill:   rgba(230,74,96,0.20); }
-html[data-theme='dark'] .rcl-ambient .amb-plane  { stroke: rgba(255,255,255,0.06); }
-html[data-theme='dark'] .rcl-ambient .amb-ground { stroke: rgba(255,255,255,0.05); }
+.rcl-noise {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(17, 21, 28, 1);
+  -webkit-mask-image: var(--noise);
+  mask-image: var(--noise);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  animation: rcl-noise-fall linear infinite;
+}
+.rcl-noise-1 {
+  --tile: 680px;
+  -webkit-mask-size: 680px 680px;
+  mask-size: 680px 680px;
+  opacity: 0.22;
+  animation-duration: 40s;
+}
+.rcl-noise-2 {
+  --tile: 920px;
+  -webkit-mask-size: 920px 920px;
+  mask-size: 920px 920px;
+  opacity: 0.14;
+  animation-duration: 64s;
+}
+html[data-theme='dark'] .rcl-noise { background-color: rgba(255, 255, 255, 1); }
+html[data-theme='dark'] .rcl-noise-1 { opacity: 0.13; }
+html[data-theme='dark'] .rcl-noise-2 { opacity: 0.09; }
 
 @media (prefers-reduced-motion: reduce) {
   .rcl-fade-up,
@@ -483,7 +502,7 @@ html[data-theme='dark'] .rcl-ambient .amb-ground { stroke: rgba(255,255,255,0.05
   .rcl-page-enter,
   .rcl-shimmer,
   .rcl-pop,
-  .rcl-swing,
+  .rcl-noise,
   .rcl-impact-pulse { animation: none !important; }
   .rcl-card { transition: none !important; }
   .rcl-card:hover { transform: none !important; }
