@@ -39,6 +39,7 @@ export default function SessionDetailPage({ params }: { params: { id: string } }
   // Contextual title (venue / course / mode-default) — same derivation
   // the list cards use, so identity matches across surfaces.
   const derivedTitle = deriveSessionTitle(session);
+  const isCourse = session.mode === 'Course';
 
   const devicesUsed = Array.from(new Set(session.shots.map((s) => s.device)));
   const devicesLabel = devicesUsed.join(' + ');
@@ -90,13 +91,23 @@ export default function SessionDetailPage({ params }: { params: { id: string } }
           <div className="flex flex-col items-end gap-3 shrink-0">
             <TopBar />
             <div className="flex items-center gap-2">
+              {/* Primary action: jump straight into Shot Review for this
+                  session. For Course rounds this lands on the 18-hole
+                  layout; for everything else, the standard shot rail. */}
+              <Link
+                href={`/shot-review?session=${session.id}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-rap-red text-white text-sm font-semibold uppercase tracking-cta hover:bg-rap-red-hover transition-colors shadow-sm"
+              >
+                <Icon name={isCourse ? 'flag' : 'video-camera'} size={16} />
+                {isCourse ? 'Review round' : 'Review shots'}
+              </Link>
               <Link
                 href={`/share/${session.id}`}
                 target="_blank"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-rap-red text-white text-sm font-semibold uppercase tracking-cta hover:bg-rap-red-hover transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-transparent border border-border-default text-text-primary text-sm font-semibold uppercase tracking-cta hover:bg-neutral-50 transition-colors"
               >
                 <Icon name="share" size={16} />
-                Share with coach
+                Share
               </Link>
               <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-transparent border border-border-default text-text-primary text-sm font-semibold uppercase tracking-cta hover:bg-neutral-50 transition-colors">
                 <Icon name="download" size={16} />
