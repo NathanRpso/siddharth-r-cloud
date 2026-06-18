@@ -8,7 +8,7 @@ import { CLUBS } from '@/lib/clubs';
 import { buildFlight, flightProgress, toPathD, IMPACT_AT } from '@/lib/ballFlight';
 import { getShotClips } from '@/lib/shotVideos';
 import type { Shot } from '@/lib/types';
-import { fmtDistance, fmtHeight, fmtSignedDistance, fmtSpeed, type UnitSystem } from '@/lib/units';
+import { fmtDistance, fmtSpeed, type UnitSystem } from '@/lib/units';
 
 // Overlay text scales with the tile's own width (container queries) and is
 // clamped so it never wraps, stacks, or truncates across the tile-size range.
@@ -314,9 +314,11 @@ function TileChrome({
 }) {
   const ballSpd = fmtSpeed(shot.ballSpeed, units, 0);
   const clubSpd = fmtSpeed(shot.clubSpeed, units, 0);
-  const apex = fmtHeight(shot.apex, units, 0);
   const total = fmtDistance(shot.total, units, 0);
-  const side = fmtSignedDistance(shot.sideCarry, units, 0);
+  // Club path: positive = in-to-out, negative = out-to-in. Show with sign so
+  // golfers can read shape at a glance (a draw player wants positive numbers).
+  const path = shot.clubPath;
+  const pathStr = `${path > 0 ? '+' : ''}${path.toFixed(1)}`;
   return (
     <>
       {/* Top-left: shot badge + live carry HUD */}
@@ -369,27 +371,38 @@ function TileChrome({
         )}
       </div>
 
-      {/* Left edge rail — speed/strike numbers stacked down the side, clear of
-          the centre so the ball-flight / impact point stays unobstructed. */}
+      {/* Left edge rail — the two speed metrics golfers read first. */}
       <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1.5">
         <EdgeStat label="Ball Speed" value={ballSpd.value} unit={ballSpd.unit} />
         <EdgeStat label="Club Speed" value={clubSpd.value} unit={clubSpd.unit} />
-        <EdgeStat label="Smash" value={shot.smash.toFixed(2)} />
       </div>
 
-      {/* Right edge rail — flight numbers, right-aligned against the side. */}
+      {/* Right edge rail — spin + swing path. Secondary launch/apex/descent
+          metrics live in the "All metrics" table below the tiles. */}
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-end gap-1.5">
-        <EdgeStat label="Launch" value={shot.launchAngle.toFixed(1)} unit="°" align="right" />
         <EdgeStat label="Spin" value={String(shot.spinRate)} unit="rpm" align="right" />
-        <EdgeStat label="Apex" value={apex.value} unit={apex.unit} align="right" />
+        <EdgeStat label="Path" value={pathStr} unit="°" align="right" />
       </div>
 
-      {/* Bottom: result line — total / side / descent over a gradient scrim. */}
+      {/* Bottom: the total carry — the second-most important number after the
+          live carry HUD, so it gets the bottom scrim to itself. */}
       <div className="absolute bottom-0 left-0 right-0 px-3 py-3 bg-gradient-to-t from-black/80 to-transparent">
-        <div className="grid grid-cols-3 gap-2 text-white">
-          <Stat label="Total" value={total.value} unit={total.unit} />
-          <Stat label="Side" value={side.value} unit={side.unit} />
-          <Stat label="Descent" value={shot.descentAngle.toFixed(0)} unit="°" />
+        <div className="flex items-baseline gap-2 text-white">
+          <span
+            className="font-bold uppercase tracking-caps text-white/60"
+            style={{ fontSize: FS.label }}
+          >
+            Total
+          </span>
+          <span className="type-display-xs italic tabular-nums" style={{ fontSize: FS.value }}>
+            {total.value}
+          </span>
+          <span
+            className="font-semibold uppercase text-white/70"
+            style={{ fontSize: FS.unit }}
+          >
+            {total.unit}
+          </span>
         </div>
       </div>
     </>
@@ -443,25 +456,3 @@ function EdgeStat({
   );
 }
 
-function Stat({ label, value, unit }: { label: string; value: string; unit?: string }) {
-  return (
-    <div className="min-w-0">
-      <div className="font-bold uppercase tracking-caps text-white/55 whitespace-nowrap" style={{ fontSize: FS.label }}>
-        {label}
-      </div>
-      <div className="flex items-baseline whitespace-nowrap leading-none">
-        <span className="type-display-xs italic" style={{ fontSize: FS.value }}>
-          {value}
-        </span>
-        {unit && (
-          <span
-            className={clsx('font-semibold uppercase text-white/70', unit.length > 1 && 'ml-0.5')}
-            style={{ fontSize: FS.unit }}
-          >
-            {unit}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}

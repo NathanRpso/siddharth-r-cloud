@@ -46,16 +46,30 @@ const INK_NAMES: Record<string, string> = {
 };
 
 // Metrics shown in the Compare table (one row each, value under each shot).
-const METRICS: { label: string; fmt: (s: Shot, u: UnitSystem) => string }[] = [
-  { label: 'Carry', fmt: (s, u) => joinUnit(fmtDistance(s.carry, u)) },
-  { label: 'Total', fmt: (s, u) => joinUnit(fmtDistance(s.total, u)) },
-  { label: 'Side', fmt: (s, u) => joinUnit(fmtSignedDistance(s.sideCarry, u)) },
+// Ordered to match a golfer's read priority: the six headline numbers come
+// first (carry, total, spin, ball speed, club speed, club path), then the
+// supporting/diagnostic stats below a divider.
+const signed = (n: number, digits = 1) => `${n > 0 ? '+' : ''}${n.toFixed(digits)}`;
+type MetricRow = {
+  label: string;
+  fmt: (s: Shot, u: UnitSystem) => string;
+  /** When true, drawn under a divider as a less-important supporting metric. */
+  secondary?: boolean;
+};
+const METRICS: MetricRow[] = [
+  { label: 'Carry',      fmt: (s, u) => joinUnit(fmtDistance(s.carry, u)) },
+  { label: 'Total',      fmt: (s, u) => joinUnit(fmtDistance(s.total, u)) },
+  { label: 'Spin',       fmt: (s) => `${s.spinRate} rpm` },
   { label: 'Ball speed', fmt: (s, u) => joinUnit(fmtSpeed(s.ballSpeed, u)) },
   { label: 'Club speed', fmt: (s, u) => joinUnit(fmtSpeed(s.clubSpeed, u)) },
-  { label: 'Smash', fmt: (s) => s.smash.toFixed(2) },
-  { label: 'Launch', fmt: (s) => `${s.launchAngle.toFixed(1)}°` },
-  { label: 'Spin', fmt: (s) => `${s.spinRate} rpm` },
-  { label: 'Attack', fmt: (s) => `${s.attackAngle.toFixed(1)}°` },
+  { label: 'Club path',  fmt: (s) => `${signed(s.clubPath)}°` },
+  { label: 'Side',       fmt: (s, u) => joinUnit(fmtSignedDistance(s.sideCarry, u)), secondary: true },
+  { label: 'Smash',      fmt: (s) => s.smash.toFixed(2),                             secondary: true },
+  { label: 'Launch',     fmt: (s) => `${s.launchAngle.toFixed(1)}°`,                 secondary: true },
+  { label: 'Attack',     fmt: (s) => `${signed(s.attackAngle)}°`,                    secondary: true },
+  { label: 'Apex',       fmt: (s) => `${s.apex} ft`,                                 secondary: true },
+  { label: 'Descent',    fmt: (s) => `${s.descentAngle.toFixed(0)}°`,                secondary: true },
+  { label: 'Spin axis',  fmt: (s) => `${signed(s.spinAxis)}°`,                       secondary: true },
 ];
 
 export default function ShotReviewPage() {
@@ -499,22 +513,41 @@ function ShotReviewContent() {
                           </span>
                         </div>
                       ))}
-                      {/* One row per metric: label (left) + a value per shot. */}
-                      {METRICS.map((m) => (
-                        <Fragment key={m.label}>
-                          <div className="text-[11px] uppercase tracking-caps text-text-tertiary text-right self-center py-2 pr-3 border-b border-border-subtle/50">
-                            {m.label}
-                          </div>
-                          {selected.map((shot) => (
+                      {/* One row per metric: label (left) + a value per shot.
+                          The first secondary metric gets a slightly heavier
+                          top-border to mark the break from "headline" stats. */}
+                      {METRICS.map((m, idx) => {
+                        const firstSecondary =
+                          m.secondary && !METRICS[idx - 1]?.secondary;
+                        const topBorder = firstSecondary
+                          ? 'border-t border-border-default pt-2 mt-1'
+                          : '';
+                        const dim = m.secondary ? 'text-text-tertiary' : 'text-text-primary';
+                        return (
+                          <Fragment key={m.label}>
                             <div
-                              key={shot.id}
-                              className="text-sm font-semibold text-text-primary tabular-nums text-center py-2 border-b border-border-subtle/50"
+                              className={clsx(
+                                'text-[11px] uppercase tracking-caps text-text-tertiary text-right self-center py-2 pr-3 border-b border-border-subtle/50',
+                                topBorder,
+                              )}
                             >
-                              {m.fmt(shot, units)}
+                              {m.label}
                             </div>
-                          ))}
-                        </Fragment>
-                      ))}
+                            {selected.map((shot) => (
+                              <div
+                                key={shot.id}
+                                className={clsx(
+                                  'text-sm font-semibold tabular-nums text-center py-2 border-b border-border-subtle/50',
+                                  dim,
+                                  topBorder,
+                                )}
+                              >
+                                {m.fmt(shot, units)}
+                              </div>
+                            ))}
+                          </Fragment>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
