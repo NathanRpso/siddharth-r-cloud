@@ -12,7 +12,15 @@ import AccuracyHeatStrip from '@/components/AccuracyHeatStrip';
 import ClubMetricsChart from '@/components/ClubMetricsChart';
 import MetricTile from '@/components/MetricTile';
 import PuttingMakeChart from '@/components/PuttingMakeChart';
+import GoalsCard from '@/components/GoalsCard';
 import Icon from '@/components/Icon';
+import {
+  loadProfile,
+  saveProfile,
+  DEFAULT_PROFILE,
+  scaledCarryBenchmarks,
+  type GolferProfile,
+} from '@/lib/golferProfile';
 import {
   SHORT_GAME_HEADLINES,
   PUTTING_MAKE_RATES,
@@ -66,6 +74,13 @@ function PerformanceContent() {
       : 'bag';
   const [tab, setTab] = useState<TabKey>(initialTab);
 
+  // Golfer profile — handicap, who to benchmark against, and goals. Hydrated
+  // post-mount (localStorage) so SSR markup stays deterministic; persisted on
+  // change. Drives the comparison cohort instead of a hardcoded 20-handicap.
+  const [profile, setProfile] = useState<GolferProfile>(DEFAULT_PROFILE);
+  useEffect(() => { setProfile(loadProfile()); }, []);
+  const updateProfile = (p: GolferProfile) => { setProfile(p); saveProfile(p); };
+
   // Keep URL in sync when user clicks tabs (shallow update; no scroll).
   useEffect(() => {
     const current = params.get('tab');
@@ -76,13 +91,21 @@ function PerformanceContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
-  const synthesis = useMemo(() => performanceSynthesis(ALL_SHOTS), []);
+  const cmpHcp = profile.comparisonHandicap;
+  const carryBenchmarks = useMemo(() => scaledCarryBenchmarks(cmpHcp), [cmpHcp]);
+  const synthesis = useMemo(
+    () => performanceSynthesis(ALL_SHOTS, cmpHcp, carryBenchmarks),
+    [cmpHcp, carryBenchmarks],
+  );
 
   return (
     <>
       <PageHeader title="Performance" eyebrow="Your golf, analysed" />
       <div className="px-6 sm:px-8 lg:px-10 pb-10">
         <div className="max-w-[1400px]">
+          {/* Your game — handicap, comparison cohort, and goals */}
+          <GoalsCard profile={profile} onChange={updateProfile} />
+
           {/* Page-level synthesis — composed from strokes gained data */}
           {synthesis && (
             <p className="type-body-lg text-text-primary font-semibold mb-6 leading-snug max-w-[78ch]">
@@ -102,7 +125,7 @@ function PerformanceContent() {
           {/* `key` replays the entrance fade when you switch tabs. */}
           <div key={tab} className="rcl-fade-up">
             {tab === 'bag' && <BagTab />}
-            {tab === 'scoring' && <ScoringTab />}
+            {tab === 'scoring' && <ScoringTab benchmarks={carryBenchmarks} comparisonHandicap={cmpHcp} />}
             {tab === 'short-game' && <ShortGameTab />}
           </div>
         </div>
@@ -268,17 +291,29 @@ function BagTab() {
 
 /* ──────────────────────── SCORING TAB ──────────────────────── */
 
-function ScoringTab() {
+function ScoringTab({
+  benchmarks,
+  comparisonHandicap,
+}: {
+  benchmarks: Partial<Record<ClubId, { p25: number; p50: number; p75: number }>>;
+  comparisonHandicap: number;
+}) {
   return (
     <>
-      <StrokesGainedSection />
+      <StrokesGainedSection benchmarks={benchmarks} comparisonHandicap={comparisonHandicap} />
       <AccuracySection />
     </>
   );
 }
 
-function StrokesGainedSection() {
-  const data = useMemo(() => clubStrokesGained(ALL_SHOTS), []);
+function StrokesGainedSection({
+  benchmarks,
+  comparisonHandicap,
+}: {
+  benchmarks: Partial<Record<ClubId, { p25: number; p50: number; p75: number }>>;
+  comparisonHandicap: number;
+}) {
+  const data = useMemo(() => clubStrokesGained(ALL_SHOTS, benchmarks), [benchmarks]);
   const summary = useMemo(() => strokesGainedSummary(data), [data]);
   const total = useMemo(() => data.reduce((s, d) => s + d.value, 0), [data]);
 
@@ -294,7 +329,7 @@ function StrokesGainedSection() {
         <div>
           <h2 className="type-h2 text-text-primary mb-1">Strokes gained</h2>
           <span className="text-xs text-text-tertiary">
-            Vs typical 20-handicap
+            Vs typical {comparisonHandicap}-handicap
           </span>
         </div>
         {data.length > 0 && (

@@ -542,12 +542,15 @@ export function accuracySummary(data: ClubAccuracy[]): string | null {
  *
  *  Values are illustrative for the prototype — production would source from
  *  proper strokes-gained tables. */
-export function clubStrokesGained(shots: Shot[]): Array<{ club: ClubId; value: number }> {
+export function clubStrokesGained(
+  shots: Shot[],
+  benchmarks: Partial<Record<ClubId, { p25: number; p50: number; p75: number }>> = CARRY_BENCHMARKS_20,
+): Array<{ club: ClubId; value: number }> {
   const byClub = aggregateByClub(shots);
   const results: Array<{ club: ClubId; value: number }> = [];
 
   for (const c of byClub) {
-    const benchmark = CARRY_BENCHMARKS_20[c.club];
+    const benchmark = benchmarks[c.club];
     if (!benchmark || c.count < 5) continue;
 
     // Distance component — where user's avg sits between p25 and p75.
@@ -577,22 +580,27 @@ export function clubStrokesGained(shots: Shot[]): Array<{ club: ClubId; value: n
 /** Top-of-Performance synthesis — one line that ties the whole page
  *  together before the user picks a tab. Composes from strokes gained:
  *  total + best/worst club callout. */
-export function performanceSynthesis(shots: Shot[]): string | null {
-  const data = clubStrokesGained(shots);
+export function performanceSynthesis(
+  shots: Shot[],
+  comparisonHandicap = 20,
+  benchmarks: Partial<Record<ClubId, { p25: number; p50: number; p75: number }>> = CARRY_BENCHMARKS_20,
+): string | null {
+  const data = clubStrokesGained(shots, benchmarks);
   if (!data.length) return null;
 
   const total = data.reduce((s, d) => s + d.value, 0);
   const sorted = [...data].sort((a, b) => b.value - a.value);
   const best = sorted[0];
   const worst = sorted[sorted.length - 1];
+  const ref = `a typical ${comparisonHandicap}-handicap`;
 
   let head: string;
   if (total > 2) {
-    head = `You're gaining about ${total.toFixed(1)} strokes per round vs the typical 20-handicap.`;
+    head = `You're gaining about ${total.toFixed(1)} strokes per round vs ${ref}.`;
   } else if (total < -2) {
-    head = `You're leaking about ${Math.abs(total).toFixed(1)} strokes per round vs the typical 20-handicap.`;
+    head = `You're leaking about ${Math.abs(total).toFixed(1)} strokes per round vs ${ref}.`;
   } else {
-    head = `You're roughly even with the typical 20-handicap overall.`;
+    head = `You're roughly even with ${ref} overall.`;
   }
 
   let tail = '';
@@ -669,22 +677,26 @@ export function percentile(value: number, p25: number, p50: number, p75: number)
 
 /** Synthesise a one-line read of where the golfer sits across the
  *  percentile snapshots. Used as the "Where you stand" headline. */
-export function synthesisePercentiles(snapshots: PercentileSnapshot[]): string | null {
+export function synthesisePercentiles(
+  snapshots: PercentileSnapshot[],
+  comparisonHandicap = 20,
+): string | null {
   if (!snapshots.length) return null;
   const bands = snapshots.map((s) => s.band);
   const total = bands.length;
   const top    = bands.filter((b) => b === 'top').length;
   const above  = bands.filter((b) => b === 'above').length;
   const below  = bands.filter((b) => b === 'below').length;
+  const ref = `a typical ${comparisonHandicap}-handicap`;
 
   if (top === total) {
-    return "You're in elite territory for your handicap.";
+    return "You're in elite territory for your level.";
   }
   if (top + above === total) {
-    return "You're above the typical 20-handicap on every metric.";
+    return `You're above ${ref} on every metric.`;
   }
   if (below === total) {
-    return 'Plenty of room to grow — every metric below the typical 20-handicap.';
+    return `Plenty of room to grow — every metric below ${ref}.`;
   }
 
   // Mixed picture — surface the best/worst extremes.
@@ -1095,7 +1107,10 @@ export interface PercentileSnapshot {
   band: 'top' | 'above' | 'average' | 'below';
 }
 
-export function handicapPercentiles(shots: Shot[]): PercentileSnapshot[] {
+export function handicapPercentiles(
+  shots: Shot[],
+  benchmarks: typeof HANDICAP_BENCHMARKS_20 = HANDICAP_BENCHMARKS_20,
+): PercentileSnapshot[] {
   const out: PercentileSnapshot[] = [];
   const driver = shots.filter((s) => s.club === 'Dr');
   const sevenI = shots.filter((s) => s.club === '7i');
@@ -1108,13 +1123,13 @@ export function handicapPercentiles(shots: Shot[]): PercentileSnapshot[] {
   if (driver.length >= 5) {
     // Driver distance
     const carry = mean(driver.map((s) => s.carry));
-    const bC = HANDICAP_BENCHMARKS_20.driverCarry;
+    const bC = benchmarks.driverCarry;
     const pC = percentile(carry, bC.p25, bC.p50, bC.p75);
     out.push({ metric: 'Driver carry', unit: 'yds', value: carry, percentile: pC, band: bandFor(pC) });
 
     // Driver power / swing speed
     const clubSpeed = mean(driver.map((s) => s.clubSpeed));
-    const bCS = HANDICAP_BENCHMARKS_20.driverClubSpeed;
+    const bCS = benchmarks.driverClubSpeed;
     const pCS = percentile(clubSpeed, bCS.p25, bCS.p50, bCS.p75);
     out.push({ metric: 'Driver swing speed', unit: 'mph', value: clubSpeed, percentile: pCS, band: bandFor(pCS) });
   }
@@ -1122,7 +1137,7 @@ export function handicapPercentiles(shots: Shot[]): PercentileSnapshot[] {
   if (sevenI.length >= 5) {
     // Mid-iron — the golfer's bread-and-butter club
     const carry = mean(sevenI.map((s) => s.carry));
-    const b = HANDICAP_BENCHMARKS_20.sevenIronCarry;
+    const b = benchmarks.sevenIronCarry;
     const p = percentile(carry, b.p25, b.p50, b.p75);
     out.push({ metric: '7-iron carry', unit: 'yds', value: carry, percentile: p, band: bandFor(p) });
   }
@@ -1130,7 +1145,7 @@ export function handicapPercentiles(shots: Shot[]): PercentileSnapshot[] {
   if (pw.length >= 5) {
     // Short game — scoring distance
     const carry = mean(pw.map((s) => s.carry));
-    const b = HANDICAP_BENCHMARKS_20.pitchingWedgeCarry;
+    const b = benchmarks.pitchingWedgeCarry;
     const p = percentile(carry, b.p25, b.p50, b.p75);
     out.push({ metric: 'Pitching wedge carry', unit: 'yds', value: carry, percentile: p, band: bandFor(p) });
   }
