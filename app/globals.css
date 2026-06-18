@@ -438,11 +438,67 @@ html[data-theme='dark'] .rcl-brand-bg {
 .rcl-pop          { animation: rcl-pop 260ms var(--ease-out); }
 .rcl-impact-pulse { animation: rcl-impact-pulse 600ms var(--ease-out); border-radius: 9999px; }
 
+/* ── Route transition ────────────────────────────────────────────────────
+   Plays each navigation (the shell re-mounts <main> on pathname change). A
+   touch more than a plain fade — content settles up and in, like a card
+   being laid down — but short enough to never feel like a wait. */
+@keyframes rcl-page-enter {
+  0%   { opacity: 0; transform: translateY(14px) scale(0.992); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.rcl-page-enter { animation: rcl-page-enter 460ms var(--ease-out) both; }
+
+/* ── Ambient cloud backdrop ──────────────────────────────────────────────
+   A few large, soft tonal clouds drifting slowly behind the app. Built from
+   radial-gradient blobs on layers wider than the viewport, animated purely
+   with `transform` so the GPU composites them for ~free — no per-frame
+   repaint. Gently sways (alternate) so the loop is seamless. Sits below
+   content (cards are opaque), never intercepts clicks; colour themes via --cloud. */
+@keyframes rcl-cloud-drift {
+  from { transform: translate3d(-3%, 0, 0); }
+  to   { transform: translate3d(3%, 0, 0); }
+}
+.rcl-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  --cloud: rgba(17, 21, 28, 0.11);
+}
+html[data-theme='dark'] .rcl-ambient { --cloud: rgba(255, 255, 255, 0.08); }
+.rcl-cloud {
+  position: absolute;
+  top: -25%;
+  left: -25%;
+  width: 150%;
+  height: 150%;
+  background-repeat: no-repeat;
+  will-change: transform;
+  animation: rcl-cloud-drift ease-in-out infinite alternate;
+}
+.rcl-cloud-1 {
+  background-image:
+    radial-gradient(38% 46% at 22% 32%, var(--cloud), transparent 70%),
+    radial-gradient(32% 40% at 68% 58%, var(--cloud), transparent 70%),
+    radial-gradient(30% 38% at 88% 24%, var(--cloud), transparent 70%);
+  animation-duration: 26s;
+}
+.rcl-cloud-2 {
+  background-image:
+    radial-gradient(42% 50% at 50% 80%, var(--cloud), transparent 72%),
+    radial-gradient(34% 42% at 12% 70%, var(--cloud), transparent 72%);
+  animation-duration: 38s;
+  animation-direction: alternate-reverse;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rcl-fade-up,
   .rcl-fade-in,
+  .rcl-page-enter,
   .rcl-shimmer,
   .rcl-pop,
+  .rcl-cloud,
   .rcl-impact-pulse { animation: none !important; }
   .rcl-card { transition: none !important; }
   .rcl-card:hover { transform: none !important; }

@@ -1,22 +1,18 @@
-import Link from 'next/link';
 import PageHeader from '@/components/PageHeader';
 import HeroCard from '@/components/HeroCard';
 import HomeHeroBanner from '@/components/HomeHeroBanner';
 import TrendChart from '@/components/TrendChart';
 import BagGappingChart from '@/components/BagGappingChart';
-import PercentileBand from '@/components/PercentileBand';
+import WhereYouStand from '@/components/WhereYouStand';
 import RecentSessionsCarousel from '@/components/RecentSessionsCarousel';
 import PersonalBestsStrip from '@/components/PersonalBestsStrip';
 import QuickStatsStrip from '@/components/QuickStatsStrip';
-import Icon from '@/components/Icon';
 import { GOLFER, ALL_SHOTS, SESSIONS } from '@/lib/mockData';
 import {
   lifetimeInsights,
   pickHeroInsight,
   bagSummary,
   pickBagInsight,
-  handicapPercentiles,
-  synthesisePercentiles,
   BAG_TONE_HEX,
 } from '@/lib/stats';
 
@@ -44,8 +40,6 @@ export default function HomePage() {
   const bag = bagSummary(last30AllShots);
   const bagInsight = pickBagInsight(bag);
 
-  const percentiles = handicapPercentiles(ALL_SHOTS);
-  const percentileSynthesis = synthesisePercentiles(percentiles);
   const recent = SESSIONS.slice(0, 5);
 
   return (
@@ -110,37 +104,7 @@ export default function HomePage() {
           />
         </section>
 
-        <section className="rcl-card bg-white rounded-2xl border border-border-subtle shadow-sm p-6">
-          <div className="flex items-baseline justify-between mb-4">
-            <h2 className="type-h2 text-text-primary">Where you stand</h2>
-            <span className="text-xs text-text-tertiary">
-              Vs other 20-handicaps
-            </span>
-          </div>
-          {percentileSynthesis && (
-            <p className="type-body text-text-primary font-semibold mb-6 leading-snug">
-              {percentileSynthesis}
-            </p>
-          )}
-          <div className="space-y-6">
-            {percentiles.length ? (
-              percentiles.map((p) => <PercentileBand key={p.metric} snapshot={p} />)
-            ) : (
-              <p className="text-sm text-text-secondary">
-                Hit a few more shots with driver and 7-iron to unlock skill benchmarks.
-              </p>
-            )}
-          </div>
-          {percentiles.length > 0 && (
-            <Link
-              href="/performance?tab=strokes-gained"
-              className="inline-flex items-center gap-1.5 mt-6 text-sm font-semibold text-rap-red hover:text-rap-red-hover transition-colors"
-            >
-              See your strokes-gained breakdown
-              <Icon name="arrow-right" size={14} />
-            </Link>
-          )}
-        </section>
+        <WhereYouStand />
       </div>
 
       {/* Recent sessions — compact tile carousel */}

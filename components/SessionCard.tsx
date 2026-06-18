@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import Icon from './Icon';
 import {
   sessionInsights, sessionScore,
-  type CardHeadline, type SessionScore,
+  type CardHeadline, type SessionScore, type ScoreBand,
 } from '@/lib/stats';
 import { CLUBS } from '@/lib/clubs';
 import { deriveSessionTitle, modeLabel } from '@/lib/sessionTitle';
@@ -223,26 +223,50 @@ function ScoreShell({
   );
 }
 
+/** Colour the grade number by band, so a high (good) grade reads green and a
+ *  poor one reads amber — reinforcing "higher is better" at a glance. */
+const GRADE_COLOR: Record<ScoreBand, string> = {
+  great:  'text-sport-golf-700',
+  solid:  'text-sport-golf-700',
+  decent: 'text-text-primary',
+  off:    'text-warning',
+};
+
+/** Practice sessions are graded out of 100 (higher = better). Labelled
+ *  "Session grade" — never just "Score" — so it can't be mistaken for a
+ *  strokes total sitting next to a course round in the same list. */
 function PracticeScorePanel({ score }: { score: SessionScore }) {
   return (
-    <ScoreShell label="Score">
+    <ScoreShell label="Session grade">
       <div className="flex items-baseline justify-end gap-1.5">
-        <span className="font-display italic font-extrabold uppercase tracking-tight leading-none tabular-nums text-text-primary text-5xl">
+        <span className={clsx(
+          'font-display italic font-extrabold uppercase tracking-tight leading-none tabular-nums text-5xl',
+          GRADE_COLOR[score.band],
+        )}>
           {score.value}
         </span>
         <span className="font-display italic font-extrabold uppercase tracking-tight leading-none tabular-nums text-text-tertiary text-2xl">
           / 100
         </span>
       </div>
+      <div className={clsx(
+        'text-[11px] font-bold uppercase tracking-caps mt-2 text-right',
+        GRADE_COLOR[score.band],
+      )}>
+        {score.label}
+      </div>
     </ScoreShell>
   );
 }
 
+/** Course rounds show real strokes (lower = better) with the to-par figure,
+ *  labelled "Score" — a different shape entirely from the graded panel. */
 function CourseScorePanel({ course }: { course: CourseInfo }) {
   const overPar = course.strokes - course.par;
   const sign = overPar > 0 ? '+' : '';
+  const toPar = overPar === 0 ? 'Even par' : `${sign}${overPar} to par`;
   return (
-    <ScoreShell>
+    <ScoreShell label="Score · strokes">
       <div className="flex items-baseline justify-end gap-1.5">
         <span className="font-display italic font-extrabold uppercase tracking-tight leading-none tabular-nums text-text-primary text-5xl">
           {course.strokes}
@@ -255,7 +279,7 @@ function CourseScorePanel({ course }: { course: CourseInfo }) {
         )}
       </div>
       <div className="text-[11px] text-text-tertiary font-semibold uppercase tracking-caps mt-2 text-right">
-        {course.holesPlayed} holes
+        {toPar} · {course.holesPlayed} holes
       </div>
     </ScoreShell>
   );

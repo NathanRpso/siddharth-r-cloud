@@ -3,10 +3,19 @@
 import Link from 'next/link';
 import clsx from 'clsx';
 import Icon from './Icon';
-import { sessionInsights, sessionScore } from '@/lib/stats';
+import { sessionInsights, sessionScore, type ScoreBand } from '@/lib/stats';
 import { deriveSessionTitle, modeLabel } from '@/lib/sessionTitle';
 import { useSessionRename } from '@/lib/sessionRename';
 import type { Session } from '@/lib/types';
+
+/** Grade number colour by band — high (good) reads green, poor reads amber,
+ *  reinforcing that the /100 grade is higher-is-better (unlike strokes). */
+const GRADE_COLOR: Record<ScoreBand, string> = {
+  great:  'text-sport-golf-700',
+  solid:  'text-sport-golf-700',
+  decent: 'text-text-primary',
+  off:    'text-warning',
+};
 
 /** Recent sessions as a grid of compact session tiles that fills the row —
  *  a condensed take on the full SessionCard, leading with the highest-impact
@@ -98,10 +107,12 @@ function CompactSessionTile({ session }: { session: Session }) {
           </span>
         </div>
 
-        {/* Score — the visual anchor */}
+        {/* Score — the visual anchor. Course = strokes (lower better);
+            practice = a graded /100 (higher better), so they're labelled
+            and coloured differently to never read as the same scale. */}
         <div className="mt-4">
           <div className="type-label-sm text-text-tertiary tracking-caps mb-0.5">
-            {isCourse ? 'Strokes' : 'Score'}
+            {isCourse ? 'Score · strokes' : 'Session grade'}
           </div>
           {isCourse && session.course ? (
             <div className="flex items-baseline gap-1.5">
@@ -116,7 +127,10 @@ function CompactSessionTile({ session }: { session: Session }) {
             </div>
           ) : (
             <div className="flex items-baseline gap-1">
-              <span className="font-display italic font-extrabold uppercase tracking-tight leading-none tabular-nums text-text-primary text-4xl">
+              <span className={clsx(
+                'font-display italic font-extrabold uppercase tracking-tight leading-none tabular-nums text-4xl',
+                GRADE_COLOR[score.band],
+              )}>
                 {score.value}
               </span>
               <span className="font-display italic font-extrabold uppercase tracking-tight leading-none tabular-nums text-text-tertiary text-lg">
