@@ -144,7 +144,17 @@ function VideoMode({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progress, playing, view]);
 
-  const liveCarry = fmtDistance(progress * shot.carry, units, 0);
+  // The shot-vision clip opens on the address position and runs through the
+  // backswing before the ball is ever struck, so a linear `progress * carry`
+  // ticks the HUD upward during the swing — wrong. Hold at zero until the
+  // approximate impact moment, then ramp with a slight deceleration so the
+  // count rises fast off the clubface and eases into landing, like a real
+  // shot. The threshold is a heuristic over the MLM2PRO clip library; tune
+  // here if the footage changes.
+  const VIDEO_IMPACT_AT = 0.42;
+  const postImpact = Math.max(0, (progress - VIDEO_IMPACT_AT) / (1 - VIDEO_IMPACT_AT));
+  const eased = Math.pow(postImpact, 0.7);
+  const liveCarry = fmtDistance(eased * shot.carry, units, 0);
 
   return (
     <Frame className="aspect-[9/16] w-full bg-black">
