@@ -23,18 +23,31 @@ export default function BagGappingChart({ bag, cta = true, highlight }: Props) {
   if (!bag.length) return null;
   const maxScale = Math.max(...bag.map((s) => s.maxCarry)) * 1.04;
 
+  // Anywhere a gap is flagged tight/wide, render a thin warning ribbon
+  // between the two rows it sits between — the gap belongs to a *pair*
+  // of clubs, not one row.
+  const rows: React.ReactNode[] = [];
+  bag.forEach((slot, i) => {
+    rows.push(
+      <BagRow key={slot.club} slot={slot} maxScale={maxScale} highlight={highlight} />,
+    );
+    const next = bag[i + 1];
+    if (next && slot.gapFlag && slot.gapFlag !== 'normal' && slot.gapToNext !== null) {
+      rows.push(
+        <GapRibbon
+          key={`${slot.club}-${next.club}-gap`}
+          flag={slot.gapFlag}
+          gapYds={slot.gapToNext}
+          from={slot.club}
+          to={next.club}
+        />,
+      );
+    }
+  });
+
   return (
     <div>
-      <div className="flex flex-col gap-2.5">
-        {bag.map((slot) => (
-          <BagRow
-            key={slot.club}
-            slot={slot}
-            maxScale={maxScale}
-            highlight={highlight}
-          />
-        ))}
-      </div>
+      <div className="flex flex-col gap-2.5">{rows}</div>
 
       {cta && (
         <Link
@@ -127,6 +140,45 @@ function BagRow({
         {slot.avgCarry.toFixed(0)}{' '}
         <span className="text-text-tertiary">yds</span>
       </span>
+    </div>
+  );
+}
+
+/** Sits between two BagRows when their gap is unusual. Reads as a coach
+ *  flag ("gap problem") rather than a quiet stat. */
+function GapRibbon({
+  flag,
+  gapYds,
+  from,
+  to,
+}: {
+  flag: 'tight' | 'wide';
+  gapYds: number;
+  from: ClubId;
+  to: ClubId;
+}) {
+  const yds = Math.round(gapYds);
+  const headline = flag === 'tight'
+    ? `${from} and ${to} carry only ${yds} yds apart — gap problem.`
+    : `${yds}-yd gap between ${from} and ${to} — you may have a yardage hole.`;
+  const detail = flag === 'tight'
+    ? 'These clubs are essentially the same — drop one or re-loft.'
+    : 'Consider a stronger lower-lofted club or a knock-down to bridge it.';
+  const color = flag === 'tight' ? '#F59E0B' : '#2B73DF';
+  return (
+    <div
+      className="relative -mx-3 px-3 py-1.5 rounded-md flex items-start gap-2"
+      style={{ backgroundColor: `${color}14` }}
+    >
+      <span
+        aria-hidden
+        className="mt-1.5 shrink-0 w-1 h-3 rounded-sm"
+        style={{ backgroundColor: color }}
+      />
+      <div className="flex-1 min-w-0 leading-tight">
+        <div className="text-[12px] font-semibold text-text-primary">{headline}</div>
+        <div className="text-[11px] text-text-secondary">{detail}</div>
+      </div>
     </div>
   );
 }

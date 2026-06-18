@@ -12,6 +12,7 @@ import { deriveSessionTitle, modeLabel } from '@/lib/sessionTitle';
 import EditableSessionTitle from '@/components/EditableSessionTitle';
 import TopBar from '@/components/TopBar';
 import MetricPill from '@/components/MetricPill';
+import ConditionsBadge from '@/components/ConditionsBadge';
 import Icon from '@/components/Icon';
 import DiagnosticDrilldown from '@/components/DiagnosticDrilldown';
 import CourseDrilldown from '@/components/CourseDrilldown';
@@ -77,12 +78,13 @@ export default function SessionDetailPage({ params }: { params: { id: string } }
               {dateStr} · {timeStr}
               {derivedTitle.subtitle && <> · {derivedTitle.subtitle}</>}
             </div>
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-4 items-center">
               <MetricPill icon={<Icon name="tag" size={14} />} label="Ball" value={session.ballType} />
               {session.elevation > 0 && (
                 <MetricPill icon={<Icon name="trending-up" size={14} />} label="Elev" value={`${session.elevation} ft`} />
               )}
               <MetricPill icon={<Icon name="desktop-computer" size={14} />} label="Device" value={devicesLabel} />
+              {session.conditions && <ConditionsBadge conditions={session.conditions} size="md" />}
             </div>
           </div>
           <div className="flex flex-col items-end gap-3 shrink-0">

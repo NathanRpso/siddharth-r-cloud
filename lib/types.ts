@@ -88,6 +88,24 @@ export interface Venue {
   city: string;
 }
 
+/** Weather snapshot logged with an outdoor session. The launch monitor
+ *  doesn't capture these — they're entered/inferred per session so a
+ *  windy practice doesn't look like a bad ball-striking day. */
+export interface SessionConditions {
+  /** Wind speed in mph, 0 for calm. */
+  windMph: number;
+  /** Wind direction the ball is travelling INTO, in compass degrees
+   *  (0 = N, 90 = E). For golf purposes the headwind/tailwind/cross
+   *  classification matters more than the exact bearing. */
+  windDir: number;
+  /** Air temperature in °F (1°F warmer ≈ ~0.25 yds more carry on
+   *  a 7-iron, so a 30°F day plays meaningfully short). */
+  tempF: number;
+  /** Free-text classifier so the UI can show "Calm" / "Breezy" / "Gusty"
+   *  without re-deriving it everywhere. */
+  label: 'Calm' | 'Light' | 'Breezy' | 'Windy' | 'Gusty';
+}
+
 export interface Session {
   id: string;
   date: string;              // ISO
@@ -100,6 +118,8 @@ export interface Session {
   shots: Shot[];
   /** Course-round data, present only when mode === 'Course'. */
   course?: CourseInfo;
+  /** Weather conditions — only set for Outdoor sessions. */
+  conditions?: SessionConditions;
 }
 
 export type Gender = 'Male' | 'Female' | 'Non-binary' | 'Prefer not to say';

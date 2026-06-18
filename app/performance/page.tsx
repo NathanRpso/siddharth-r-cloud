@@ -12,6 +12,8 @@ import AccuracyHeatStrip from '@/components/AccuracyHeatStrip';
 import ClubMetricsChart from '@/components/ClubMetricsChart';
 import MetricTile from '@/components/MetricTile';
 import PuttingMakeChart from '@/components/PuttingMakeChart';
+import SmartAimCard from '@/components/SmartAimCard';
+import WedgeMatrix from '@/components/WedgeMatrix';
 import Icon from '@/components/Icon';
 import { ALL_SHOTS } from '@/lib/mockData';
 import { CLUBS } from '@/lib/clubs';
@@ -254,6 +256,12 @@ function BagTab() {
         </section>
       )}
 
+      {/* Smart aim — turns the dispersion plot above into a single
+          pattern-centred instruction per club. */}
+      {selected.length > 0 && selectedShots.length >= 6 && (
+        <SmartAimCard shots={selectedShots} onlyClubs={selected} />
+      )}
+
       {selected.length > 0 && selectedShots.length >= 10 && (
         <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
           <h2 className="type-h2 text-text-primary mb-1">
@@ -471,6 +479,9 @@ function ShortGameTab() {
           </span>
         </div>
       </section>
+
+      {/* Wedge yardage matrix — repeatability at stock scoring-zone distances. */}
+      <WedgeMatrix shots={ALL_SHOTS} />
 
       {/* Wedge proximity from scoring range */}
       <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import clsx from 'clsx';
 import Icon from './Icon';
+import ConditionsBadge from './ConditionsBadge';
 import {
   sessionInsights, sessionScore,
   type CardHeadline, type SessionScore, type ScoreBand,
@@ -87,7 +88,7 @@ export default function SessionCard({
             </div>
           )}
 
-          <div className="mt-2.5">
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
             <span
               className={clsx(
                 'inline-flex items-center px-2.5 py-1 rounded-pill text-[11px] font-bold uppercase tracking-caps',
@@ -98,6 +99,7 @@ export default function SessionCard({
             >
               {modeLabel(session.mode)}
             </span>
+            {session.conditions && <ConditionsBadge conditions={session.conditions} />}
           </div>
 
           {/* Clubs row — practice only. */}
