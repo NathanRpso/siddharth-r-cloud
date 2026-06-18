@@ -12,11 +12,9 @@ import AccuracyHeatStrip from '@/components/AccuracyHeatStrip';
 import ClubMetricsChart from '@/components/ClubMetricsChart';
 import MetricTile from '@/components/MetricTile';
 import PuttingMakeChart from '@/components/PuttingMakeChart';
-import GoalsCard from '@/components/GoalsCard';
 import Icon from '@/components/Icon';
 import {
   loadProfile,
-  saveProfile,
   DEFAULT_PROFILE,
   scaledCarryBenchmarks,
   type GolferProfile,
@@ -74,12 +72,11 @@ function PerformanceContent() {
       : 'bag';
   const [tab, setTab] = useState<TabKey>(initialTab);
 
-  // Golfer profile — handicap, who to benchmark against, and goals. Hydrated
-  // post-mount (localStorage) so SSR markup stays deterministic; persisted on
-  // change. Drives the comparison cohort instead of a hardcoded 20-handicap.
+  // Golfer profile drives the comparison cohort (set on the My Game page).
+  // Read post-mount from localStorage so comparisons follow the golfer's
+  // handicap instead of a hardcoded 20; SSR markup stays deterministic.
   const [profile, setProfile] = useState<GolferProfile>(DEFAULT_PROFILE);
   useEffect(() => { setProfile(loadProfile()); }, []);
-  const updateProfile = (p: GolferProfile) => { setProfile(p); saveProfile(p); };
 
   // Keep URL in sync when user clicks tabs (shallow update; no scroll).
   useEffect(() => {
@@ -103,9 +100,6 @@ function PerformanceContent() {
       <PageHeader title="Performance" eyebrow="Your golf, analysed" />
       <div className="px-6 sm:px-8 lg:px-10 pb-10">
         <div className="max-w-[1400px]">
-          {/* Your game — handicap, comparison cohort, and goals */}
-          <GoalsCard profile={profile} onChange={updateProfile} />
-
           {/* Page-level synthesis — composed from strokes gained data */}
           {synthesis && (
             <p className="type-body-lg text-text-primary font-semibold mb-6 leading-snug max-w-[78ch]">

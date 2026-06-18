@@ -12,6 +12,7 @@ const PRIMARY_NAV: { href: string; label: string; icon: StrokeIconName }[] = [
   { href: '/sessions',    label: 'Sessions',    icon: 'flag' },
   { href: '/performance', label: 'Performance', icon: 'chart-bar' },
   { href: '/shot-review', label: 'Shot Review', icon: 'video-camera' },
+  { href: '/my-game',     label: 'My Game',     icon: 'star' },
 ];
 
 const SECONDARY_NAV: { href: string; label: string; icon: StrokeIconName }[] = [
