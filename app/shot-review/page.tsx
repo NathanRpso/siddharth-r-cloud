@@ -22,6 +22,15 @@ import {
   join as joinUnit,
   type UnitSystem,
 } from '@/lib/units';
+import {
+  OVERLAY_METRICS,
+  OVERLAY_STORAGE_KEY,
+  DEFAULT_OVERLAY,
+  loadOverlayPrefs,
+  shownCount,
+  type OverlayPrefs,
+  type OverlayZone,
+} from '@/lib/overlayMetrics';
 import type { Shot } from '@/lib/types';
 
 const MAX_TILES = 4;
@@ -321,6 +330,19 @@ function ShotReviewContent() {
     if (typeof window !== 'undefined') window.localStorage.setItem('rcloud:units', units);
   }, [units]);
 
+  // Overlay layout — which metrics ride on which video edge. Persisted so a
+  // golfer's preferred HUD sticks across sessions. Hydrated post-mount to keep
+  // the static-export markup deterministic.
+  const [overlay, setOverlay] = useState<OverlayPrefs>(DEFAULT_OVERLAY);
+  useEffect(() => {
+    setOverlay(loadOverlayPrefs());
+  }, []);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(OVERLAY_STORAGE_KEY, JSON.stringify(overlay));
+    }
+  }, [overlay]);
+
   const titleSuffix = session
     ? `${modeLabel(session.mode)} · ${new Date(session.date).toLocaleDateString('en-GB', {
         weekday: 'short', day: '2-digit', month: 'short',
@@ -346,6 +368,7 @@ function ShotReviewContent() {
       onProgress={(p) => reportProgress(shot.id, p)}
       onEnded={() => endClock(shot.id)}
       units={units}
+      overlay={overlay}
     />
   );
   // Controls bound to a tile id. Actions broadcast to the tile's whole link
@@ -418,7 +441,8 @@ function ShotReviewContent() {
                   />
                 )}
               </div>
-              <div className="ml-auto">
+              <div className="ml-auto flex items-center gap-2">
+                <OverlayControl prefs={overlay} setPrefs={setOverlay} />
                 <UnitsControl value={units} onChange={setUnits} />
               </div>
             </div>
@@ -972,6 +996,116 @@ function PortalMenu({
   );
 }
 
+
+// The four placement choices a metric can take, shown as a compact segment.
+const OVERLAY_ZONES: { id: OverlayZone; short: string; title: string }[] = [
+  { id: 'off', short: 'Off', title: 'Hidden' },
+  { id: 'left', short: 'L', title: 'Left edge' },
+  { id: 'right', short: 'R', title: 'Right edge' },
+  { id: 'bottom', short: 'B', title: 'Bottom' },
+];
+
+/** Lets the golfer choose which metrics pop up on the video and where —
+ *  pin Smash if you want it, drop the ones you don't. Persisted by the page. */
+function OverlayControl({
+  prefs,
+  setPrefs,
+}: {
+  prefs: OverlayPrefs;
+  setPrefs: Dispatch<SetStateAction<OverlayPrefs>>;
+}) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e: MouseEvent) {
+      const t = e.target as Node;
+      if (triggerRef.current?.contains(t)) return;
+      if (menuRef.current?.contains(t)) return;
+      setOpen(false);
+    }
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  const setZone = (id: string, zone: OverlayZone) =>
+    setPrefs((p) => ({ ...p, [id]: zone }));
+  const count = shownCount(prefs);
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-semibold text-text-secondary border border-border-default hover:text-text-primary hover:border-text-primary transition-colors"
+      >
+        <Icon name="view-grid" size={14} />
+        <span>Overlay</span>
+        <span className="text-text-tertiary">·</span>
+        <span className="text-text-primary">{count} shown</span>
+        <Icon name={open ? 'chevron-up' : 'chevron-down'} size={12} />
+      </button>
+      {open && (
+        <PortalMenu
+          anchor={triggerRef}
+          menuRef={menuRef}
+          onClose={() => setOpen(false)}
+          align="right"
+          width={304}
+          className="max-h-[70vh] overflow-y-auto bg-white rounded-xl border border-border-default shadow-lg p-2"
+        >
+          <div className="flex items-center justify-between px-2 pt-1 pb-2">
+            <span className="text-[11px] font-bold uppercase tracking-caps text-text-tertiary">
+              Show on video edges
+            </span>
+            <button
+              onClick={() => setPrefs({ ...DEFAULT_OVERLAY })}
+              className="text-[11px] font-semibold text-text-secondary hover:text-rap-red transition-colors"
+            >
+              Reset
+            </button>
+          </div>
+          {OVERLAY_METRICS.map((m) => {
+            const zone = prefs[m.id] ?? 'off';
+            return (
+              <div
+                key={m.id}
+                className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-50"
+              >
+                <span className="text-sm font-medium text-text-primary">{m.label}</span>
+                <div className="flex items-center gap-0.5 bg-neutral-100 rounded-pill p-0.5">
+                  {OVERLAY_ZONES.map((z) => {
+                    const active = zone === z.id;
+                    return (
+                      <button
+                        key={z.id}
+                        onClick={() => setZone(m.id, z.id)}
+                        title={z.title}
+                        aria-pressed={active}
+                        className={clsx(
+                          'min-w-[28px] px-2 py-1 rounded-pill text-[11px] font-semibold transition-colors',
+                          active
+                            ? 'bg-white text-text-primary shadow-sm'
+                            : 'text-text-secondary hover:text-text-primary',
+                        )}
+                      >
+                        {z.short}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </PortalMenu>
+      )}
+    </>
+  );
+}
 
 function UnitsControl({ value, onChange }: { value: UnitSystem; onChange: (u: UnitSystem) => void }) {
   const [open, setOpen] = useState(false);
