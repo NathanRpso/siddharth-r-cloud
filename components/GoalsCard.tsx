@@ -1,17 +1,22 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import clsx from 'clsx';
-import Icon from './Icon';
-import { ALL_SHOTS } from '@/lib/mockData';
-import { aggregateByClub } from '@/lib/stats';
-import { SHORT_GAME_HEADLINES } from '@/lib/shortGame';
+import Icon, { type StrokeIconName } from './Icon';
+import { ALL_SHOTS, SESSIONS } from '@/lib/mockData';
+import { aggregateByClub, courseStats, lateralDispersion } from '@/lib/stats';
+import {
+  BENCH_METRICS,
+  handicapProfile,
+  type BenchMetric,
+  type HandicapProfile,
+} from '@/lib/handicapBenchmarks';
 import type { GolferProfile } from '@/lib/golferProfile';
 
-/** "Your game" — the golfer's handicap, who they're measured against, and
- *  progress toward the goals they set. Doubles as the editor for all of it
- *  (the Profile page is a separate embedded prototype), so this is the one
- *  place a golfer sets handicap + goals and watches them move. */
+/** "My Game" — measures the golfer's real numbers against a typical player at
+ *  their handicap (accuracy first, because that's where handicaps are made),
+ *  then shows the gap to the handicap they're chasing. Everything responds to
+ *  the handicaps set at the top. */
 export default function GoalsCard({
   profile,
   onChange,
@@ -19,183 +24,198 @@ export default function GoalsCard({
   profile: GolferProfile;
   onChange: (p: GolferProfile) => void;
 }) {
-  const [editing, setEditing] = useState(false);
-
-  // Current values pulled from real data so goals track against actual play.
-  const currentDriver = useMemo(() => {
+  // The golfer's real game, from their actual shots + scorecards.
+  const me = useMemo<Partial<Record<keyof HandicapProfile, number | null>>>(() => {
+    const cs = courseStats(SESSIONS);
     const dr = aggregateByClub(ALL_SHOTS).find((c) => c.club === 'Dr');
-    return dr ? Math.round(dr.avgCarry) : 0;
+    return {
+      driverCarry: dr ? dr.avgCarry : null,
+      fairwaysPct: cs ? cs.fairwaysPct : null,
+      girPct: cs ? cs.girPct : null,
+      approachDispersionYds: lateralDispersion(ALL_SHOTS, '7i'),
+      scramblingPct: cs ? cs.scramblingPct : null,
+      puttsPerRound: cs ? cs.puttsPerRound : null,
+      scoringAvg: cs ? cs.scoringAvg : null,
+    };
   }, []);
-  const currentPutts = useMemo(
-    () => SHORT_GAME_HEADLINES.find((h) => h.key === 'putts')?.value ?? 0,
-    [],
-  );
 
-  const goals = [
-    {
-      key: 'handicap',
-      label: 'Handicap',
-      current: profile.handicap,
-      target: profile.goals.targetHandicap,
-      unit: '',
-      lowerIsBetter: true,
-      decimals: 1,
-    },
-    {
-      key: 'driver',
-      label: 'Driver carry',
-      current: currentDriver,
-      target: profile.goals.driverCarry,
-      unit: 'yds',
-      lowerIsBetter: false,
-      decimals: 0,
-    },
-    {
-      key: 'putts',
-      label: 'Putts / round',
-      current: currentPutts,
-      target: profile.goals.puttsPerRound,
-      unit: '',
-      lowerIsBetter: true,
-      decimals: 1,
-    },
-  ];
+  const cmp = profile.comparisonHandicap;
+  const target = profile.goals.targetHandicap;
+  const cmpProfile = useMemo(() => handicapProfile(cmp), [cmp]);
+  const targetProfile = useMemo(() => handicapProfile(target), [target]);
+
+  // How many areas am I ahead of my comparison level on?
+  const { ahead, scored } = useMemo(() => {
+    let a = 0, n = 0;
+    for (const m of BENCH_METRICS) {
+      const v = me[m.key];
+      if (v == null) continue;
+      n++;
+      const r = m.goodDir === 'up' ? v / cmpProfile[m.key] : cmpProfile[m.key] / v;
+      if (r >= 1) a++;
+    }
+    return { ahead: a, scored: n };
+  }, [me, cmpProfile]);
+
+  const accuracy = BENCH_METRICS.filter((m) => m.group === 'accuracy');
+  const rest = BENCH_METRICS.filter((m) => m.group !== 'accuracy');
 
   return (
-    <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
-      <div className="flex items-start justify-between gap-4 mb-5">
-        <div>
-          <h2 className="type-h2 text-text-primary">Your game</h2>
-          <p className="type-body-sm text-text-secondary mt-0.5">
-            Playing off <strong className="text-text-primary">{profile.handicap}</strong>
-            {' · '}compared against a typical{' '}
-            <strong className="text-text-primary">{profile.comparisonHandicap}</strong>-handicap
-          </p>
+    <>
+      {/* Controls */}
+      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
+        <h2 className="type-h2 text-text-primary mb-1">Set your bar</h2>
+        <p className="type-body-sm text-text-secondary mb-5">
+          Tell us your handicap, who to measure you against, and the level you're
+          chasing. Everything below — and your comparisons across the app — follows this.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <NumberField
+            label="My handicap"
+            value={profile.handicap}
+            step={0.1}
+            onChange={(v) => onChange({ ...profile, handicap: v })}
+            hint="Your current handicap index."
+          />
+          <NumberField
+            label="Compare me against"
+            value={cmp}
+            step={1}
+            onChange={(v) => onChange({ ...profile, comparisonHandicap: v })}
+            hint="A typical player off this handicap."
+          />
+          <NumberField
+            label="Goal handicap"
+            value={target}
+            step={0.1}
+            onChange={(v) => onChange({ ...profile, goals: { ...profile.goals, targetHandicap: v } })}
+            hint="The level you're working toward."
+          />
         </div>
-        <button
-          onClick={() => setEditing((v) => !v)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-xs font-semibold text-text-secondary border border-border-default hover:text-text-primary hover:border-text-primary transition-colors shrink-0"
-        >
-          <Icon name={editing ? 'check' : 'pencil'} size={14} />
-          {editing ? 'Done' : 'Edit'}
-        </button>
-      </div>
+      </section>
 
-      {editing ? (
-        <Editor profile={profile} onChange={onChange} />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {goals.map((g) => (
-            <GoalProgress
-              key={g.key}
-              label={g.label}
-              current={g.current}
-              target={g.target}
-              unit={g.unit}
-              lowerIsBetter={g.lowerIsBetter}
-              decimals={g.decimals}
-            />
+      {/* You vs your level */}
+      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
+        <div className="flex items-start justify-between gap-4 mb-1">
+          <h2 className="type-h2 text-text-primary">
+            You vs a typical {cmp}-handicap
+          </h2>
+          {scored > 0 && (
+            <span className={clsx(
+              'shrink-0 text-xs font-bold px-2.5 py-1 rounded-pill',
+              ahead >= scored - ahead ? 'bg-sport-golf/15 text-sport-golf-700' : 'bg-warning-bg text-warning',
+            )}>
+              Ahead in {ahead} of {scored}
+            </span>
+          )}
+        </div>
+        <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
+          Your real numbers against the average for that handicap. Accuracy comes
+          first — it&apos;s what separates handicaps far more than distance.
+        </p>
+
+        <GroupHeading icon="badge-check" title="Accuracy" caption="Where handicaps are really made" />
+        <div className="mb-6">
+          {accuracy.map((m) => (
+            <CompareRow key={m.key} m={m} your={me[m.key] ?? null} benchmark={cmpProfile[m.key]} refHcp={cmp} />
           ))}
         </div>
-      )}
-    </section>
+
+        <GroupHeading icon="chart-bar" title="Distance & scoring" />
+        <div>
+          {rest.map((m) => (
+            <CompareRow key={m.key} m={m} your={me[m.key] ?? null} benchmark={cmpProfile[m.key]} refHcp={cmp} />
+          ))}
+        </div>
+      </section>
+
+      {/* Path to goal */}
+      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
+        <h2 className="type-h2 text-text-primary mb-1">Your path to a {target}-handicap</h2>
+        <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
+          What a typical {target}-handicap does — and exactly where you need to
+          close the gap to get there. Anything green you&apos;re already at goal level.
+        </p>
+        <div>
+          {BENCH_METRICS.map((m) => (
+            <CompareRow key={m.key} m={m} your={me[m.key] ?? null} benchmark={targetProfile[m.key]} refHcp={target} pathMode />
+          ))}
+        </div>
+      </section>
+    </>
   );
 }
 
-function GoalProgress({
-  label, current, target, unit, lowerIsBetter, decimals,
-}: {
-  label: string; current: number; target: number; unit: string;
-  lowerIsBetter: boolean; decimals: number;
-}) {
-  const reached = lowerIsBetter ? current <= target : current >= target;
-  // Fill = how close current is to target (capped at 100%).
-  const fill = reached
-    ? 1
-    : lowerIsBetter
-    ? Math.max(0, Math.min(1, target / current))
-    : Math.max(0, Math.min(1, current / target));
-  const gap = Math.abs(current - target);
-  const gapLabel = reached
-    ? 'Goal reached'
-    : `${gap.toFixed(decimals)}${unit ? ' ' + unit : ''} to go`;
-
+function GroupHeading({ icon, title, caption }: { icon: StrokeIconName; title: string; caption?: string }) {
   return (
-    <div>
-      <div className="flex items-baseline justify-between mb-1.5">
-        <span className="type-label-sm text-text-tertiary tracking-caps">{label}</span>
-        <span className="text-xs text-text-tertiary">
-          Goal {target}{unit ? ` ${unit}` : ''}
-        </span>
-      </div>
-      <div className="flex items-baseline gap-1.5 mb-2">
-        <span className="type-display-sm text-text-primary leading-none tabular-nums">
-          {current.toFixed(decimals)}
-        </span>
-        {unit && (
-          <span className="text-xs text-text-tertiary font-semibold uppercase tracking-caps">{unit}</span>
-        )}
-      </div>
-      <div className="h-2 bg-neutral-100 rounded-pill overflow-hidden">
-        <div
-          className={clsx('h-full rounded-pill', reached ? 'bg-sport-golf' : 'bg-rap-red')}
-          style={{ width: `${Math.round(fill * 100)}%` }}
-        />
-      </div>
-      <div className={clsx('mt-1.5 text-xs font-semibold', reached ? 'text-sport-golf-700' : 'text-text-secondary')}>
-        {reached && <Icon name="check" size={12} className="inline mr-1" />}
-        {gapLabel}
-      </div>
+    <div className="flex items-center gap-2 mb-3">
+      <Icon name={icon} size={15} className="text-rap-red" />
+      <span className="type-label-sm text-text-primary tracking-caps font-bold">{title}</span>
+      {caption && <span className="text-xs text-text-tertiary">· {caption}</span>}
     </div>
   );
 }
 
-function Editor({
-  profile, onChange,
+function fmt(m: BenchMetric, v: number | null): string {
+  if (v == null) return '—';
+  const n = v.toFixed(m.decimals);
+  return m.unit === '%' ? `${n}%` : m.unit ? `${n} ${m.unit}` : n;
+}
+
+function CompareRow({
+  m, your, benchmark, refHcp, pathMode = false,
 }: {
-  profile: GolferProfile;
-  onChange: (p: GolferProfile) => void;
+  m: BenchMetric;
+  your: number | null;
+  benchmark: number;
+  refHcp: number;
+  pathMode?: boolean;
 }) {
-  const set = (patch: Partial<GolferProfile>) => onChange({ ...profile, ...patch });
-  const setGoal = (patch: Partial<GolferProfile['goals']>) =>
-    onChange({ ...profile, goals: { ...profile.goals, ...patch } });
+  const has = your != null;
+  // ratio >= 1 means at/above the reference (good), normalised for direction.
+  const ratio = has ? (m.goodDir === 'up' ? your! / benchmark : benchmark / your!) : 0;
+  const ahead = ratio >= 1.005;
+  const level = ratio >= 0.995 && ratio < 1.005;
+  const tone = !has ? 'none' : ahead || level ? 'good' : 'bad';
+
+  const TICK = (1 / 1.3) * 100; // typical sits here; past it = better
+  const fill = has ? Math.max(4, (Math.min(1.3, ratio) / 1.3) * 100) : 0;
+  const delta = has ? Math.abs(your! - benchmark) : 0;
+
+  const pill = !has
+    ? { text: 'No round data yet', cls: 'bg-neutral-100 text-text-tertiary' }
+    : level
+    ? { text: 'On level', cls: 'bg-neutral-100 text-text-secondary' }
+    : pathMode
+    ? ahead
+      ? { text: 'At goal', cls: 'bg-sport-golf/15 text-sport-golf-700' }
+      : { text: `${fmt(m, delta)} to go`, cls: 'bg-warning-bg text-warning' }
+    : ahead
+    ? { text: `Ahead by ${fmt(m, delta)}`, cls: 'bg-sport-golf/15 text-sport-golf-700' }
+    : { text: `Behind by ${fmt(m, delta)}`, cls: 'bg-warning-bg text-warning' };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <NumberField
-        label="My handicap"
-        value={profile.handicap}
-        step={0.1}
-        onChange={(v) => set({ handicap: v })}
-        hint="Stops the app assuming a 20."
-      />
-      <NumberField
-        label="Compare me against"
-        value={profile.comparisonHandicap}
-        step={1}
-        onChange={(v) => set({ comparisonHandicap: v })}
-        hint="A typical player off this handicap."
-      />
-      <NumberField
-        label="Target handicap"
-        value={profile.goals.targetHandicap}
-        step={0.1}
-        onChange={(v) => setGoal({ targetHandicap: v })}
-        hint="What you're playing toward."
-      />
-      <NumberField
-        label="Driver carry goal"
-        value={profile.goals.driverCarry}
-        step={1}
-        unit="yds"
-        onChange={(v) => setGoal({ driverCarry: v })}
-      />
-      <NumberField
-        label="Putts / round goal"
-        value={profile.goals.puttsPerRound}
-        step={0.5}
-        onChange={(v) => setGoal({ puttsPerRound: v })}
-      />
+    <div className="py-2.5 border-b border-border-subtle last:border-0">
+      <div className="flex items-center justify-between gap-3 mb-1.5">
+        <span className="text-sm font-semibold text-text-primary">{m.label}</span>
+        <span className={clsx('shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-pill', pill.cls)}>
+          {pill.text}
+        </span>
+      </div>
+      <div className="h-2 bg-neutral-100 rounded-pill relative overflow-hidden">
+        {has && (
+          <div
+            className={clsx('absolute top-0 bottom-0 left-0 rounded-pill', tone === 'good' ? 'bg-sport-golf' : 'bg-rap-red')}
+            style={{ width: `${fill}%`, opacity: 0.9 }}
+          />
+        )}
+        <div className="absolute top-0 bottom-0 w-px bg-neutral-500" style={{ left: `${TICK}%` }} />
+      </div>
+      <div className="flex items-center justify-between gap-2 mt-1 text-xs text-text-tertiary">
+        <span>You: <strong className="text-text-secondary">{fmt(m, your)}</strong></span>
+        <span className="text-text-tertiary/80">{m.note}</span>
+        <span>Typical {refHcp}: <strong className="text-text-secondary">{fmt(m, benchmark)}</strong></span>
+      </div>
     </div>
   );
 }

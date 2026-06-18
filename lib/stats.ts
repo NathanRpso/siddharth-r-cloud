@@ -1153,6 +1153,64 @@ export function handicapPercentiles(
   return out;
 }
 
+/** The golfer's real on-course accuracy + scoring, aggregated across every
+ *  course round that has a hole-by-hole scorecard. Returns null if none. */
+export interface CourseStats {
+  rounds: number;
+  holes: number;
+  fairwaysPct: number;
+  girPct: number;
+  puttsPerRound: number;
+  scramblingPct: number;
+  scoringAvg: number; // normalised to par 72
+}
+
+export function courseStats(sessions: Session[]): CourseStats | null {
+  let holes = 0, putts = 0, girs = 0;
+  let fwHit = 0, fwChances = 0, scrSave = 0, scrChances = 0;
+  let rounds = 0, scoreSum = 0, parSum = 0;
+
+  for (const s of sessions) {
+    const c = s.course;
+    if (!c?.holes?.length) continue;
+    rounds++;
+    for (const h of c.holes) {
+      holes++;
+      putts += h.putts;
+      if (h.gir) girs++;
+      if (h.fairwayHit !== null) {
+        fwChances++;
+        if (h.fairwayHit) fwHit++;
+      }
+      if (!h.gir) {
+        scrChances++;
+        if (h.strokes <= h.par) scrSave++;
+      }
+      scoreSum += h.strokes;
+      parSum += h.par;
+    }
+  }
+  if (!holes) return null;
+
+  return {
+    rounds,
+    holes,
+    fairwaysPct: fwChances ? (fwHit / fwChances) * 100 : 0,
+    girPct: (girs / holes) * 100,
+    puttsPerRound: (putts / holes) * 18,
+    scramblingPct: scrChances ? (scrSave / scrChances) * 100 : 0,
+    scoringAvg: parSum ? (scoreSum / parSum) * 72 : 0,
+  };
+}
+
+/** Lateral dispersion (std dev of yards offline) for a club — the golfer's
+ *  real "how straight am I" number. Null if too few shots. */
+export function lateralDispersion(shots: Shot[], club: ClubId): number | null {
+  const side = shots.filter((s) => s.club === club).map((s) => s.sideCarry);
+  if (side.length < 5) return null;
+  return stdDev(side);
+}
+
 /* ────────────────────────────────────────────────────────────────────
    SESSION SCORE + HIGHLIGHTS + IMPROVEMENT INSIGHTS
    Built on top of sessionInsights to power the Session Detail page.
