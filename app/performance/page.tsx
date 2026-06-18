@@ -10,7 +10,18 @@ import TrendChart from '@/components/TrendChart';
 import StrokesGainedChart from '@/components/StrokesGainedChart';
 import AccuracyHeatStrip from '@/components/AccuracyHeatStrip';
 import ClubMetricsChart from '@/components/ClubMetricsChart';
+import MetricTile from '@/components/MetricTile';
+import PuttingMakeChart from '@/components/PuttingMakeChart';
 import Icon from '@/components/Icon';
+import {
+  SHORT_GAME_HEADLINES,
+  PUTTING_MAKE_RATES,
+  WEDGE_PROXIMITY,
+  LAG_PUTT_PROXIMITY,
+  rateHeadline,
+  headlineDelta,
+  shortGameSynthesis,
+} from '@/lib/shortGame';
 import { ALL_SHOTS } from '@/lib/mockData';
 import { CLUBS } from '@/lib/clubs';
 import type { ClubId } from '@/lib/types';
@@ -30,7 +41,7 @@ import type { Rating } from '@/lib/stats';
 // (compare, dispersion, trend, any metric) and "Scoring" answers "where am I
 // winning or leaking strokes?" (strokes gained + accuracy). The distance
 // ladder deliberately lives on Home's "Bag at a glance" — not repeated here.
-type TabKey = 'bag' | 'scoring';
+type TabKey = 'bag' | 'scoring' | 'short-game';
 
 const DEFAULT_SELECTED: ClubId[] = ['Dr', '7i'];
 
@@ -50,6 +61,8 @@ function PerformanceContent() {
   const initialTab: TabKey =
     paramTab === 'scoring' || paramTab === 'strokes-gained' || paramTab === 'accuracy'
       ? 'scoring'
+      : paramTab === 'short-game'
+      ? 'short-game'
       : 'bag';
   const [tab, setTab] = useState<TabKey>(initialTab);
 
@@ -80,8 +93,9 @@ function PerformanceContent() {
           {/* Tab nav */}
           <div className="border-b border-border-subtle mb-8">
             <div className="flex gap-8">
-              <TabButton active={tab === 'bag'}     onClick={() => setTab('bag')}     label="Bag" />
-              <TabButton active={tab === 'scoring'} onClick={() => setTab('scoring')} label="Scoring" />
+              <TabButton active={tab === 'bag'}        onClick={() => setTab('bag')}        label="Bag" />
+              <TabButton active={tab === 'scoring'}    onClick={() => setTab('scoring')}    label="Scoring" />
+              <TabButton active={tab === 'short-game'} onClick={() => setTab('short-game')} label="Short Game" />
             </div>
           </div>
 
@@ -89,6 +103,7 @@ function PerformanceContent() {
           <div key={tab} className="rcl-fade-up">
             {tab === 'bag' && <BagTab />}
             {tab === 'scoring' && <ScoringTab />}
+            {tab === 'short-game' && <ShortGameTab />}
           </div>
         </div>
       </div>
@@ -372,6 +387,108 @@ function AccuracySection() {
         </p>
       )}
     </section>
+  );
+}
+
+/* ──────────────────────── SHORT GAME TAB ──────────────────────── */
+
+function ShortGameTab() {
+  const synthesis = shortGameSynthesis();
+  return (
+    <>
+      <p className="type-body-lg text-text-primary font-semibold mb-6 leading-snug max-w-[78ch]">
+        {synthesis}
+      </p>
+
+      {/* Headline scoring-zone stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {SHORT_GAME_HEADLINES.map((h) => (
+          <MetricTile
+            key={h.key}
+            label={h.label}
+            value={h.value.toFixed(h.decimals)}
+            unit={h.unit}
+            rating={rateHeadline(h)}
+            sub={h.sub}
+            delta={headlineDelta(h)}
+            deltaUnit={h.unit === '%' ? ' pts vs avg' : ' vs avg'}
+            goodDirection={h.goodDirection}
+          />
+        ))}
+      </div>
+
+      {/* Putting make rate by distance */}
+      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-8">
+        <div className="flex items-baseline justify-between mb-1">
+          <h2 className="type-h2 text-text-primary">Putting — make rate by distance</h2>
+          <span className="text-xs text-text-tertiary">This season</span>
+        </div>
+        <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
+          How often you hole out from each range. The tick on each bar is the
+          typical amateur make rate — clear the tick and you're gaining strokes
+          on the green.
+        </p>
+        <PuttingMakeChart data={PUTTING_MAKE_RATES} />
+        <div className="mt-5 pt-4 border-t border-border-subtle flex items-center justify-between gap-4">
+          <span className="type-body-sm text-text-secondary">
+            Average leave after a long (30 ft+) putt
+          </span>
+          <span className="text-sm font-semibold text-text-primary tabular-nums">
+            {LAG_PUTT_PROXIMITY.value} ft
+            <span className="text-text-tertiary font-normal"> · typical {LAG_PUTT_PROXIMITY.benchmark} ft</span>
+          </span>
+        </div>
+      </section>
+
+      {/* Wedge proximity from scoring range */}
+      <section className="bg-white rounded-2xl border border-border-subtle shadow-sm p-6 mb-10">
+        <div className="flex items-baseline justify-between mb-1">
+          <h2 className="type-h2 text-text-primary">From scoring range</h2>
+          <span className="text-xs text-text-tertiary">Avg proximity to pin</span>
+        </div>
+        <p className="type-body-sm text-text-secondary mb-5 max-w-prose">
+          How close you leave it from inside 100 yards — lower is better. Grey
+          is the typical amateur.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {WEDGE_PROXIMITY.map((w) => {
+            const better = w.proximityFt < w.benchmark;
+            return (
+              <div
+                key={w.distance}
+                className="rounded-xl border border-border-subtle bg-neutral-50 p-4"
+              >
+                <div className="type-label-sm text-text-tertiary tracking-caps mb-1.5">
+                  {w.distance}
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="type-display-md text-text-primary leading-none tabular-nums">
+                    {w.proximityFt}
+                  </span>
+                  <span className="text-xs text-text-tertiary font-semibold uppercase tracking-caps">
+                    ft
+                  </span>
+                </div>
+                <div
+                  className={clsx(
+                    'mt-2 text-xs font-semibold',
+                    better ? 'text-sport-golf-700' : 'text-warning',
+                  )}
+                >
+                  {better ? '−' : '+'}{Math.abs(w.proximityFt - w.benchmark)} ft vs typical {w.benchmark} ft
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <p className="text-xs text-text-tertiary max-w-prose">
+        Short-game numbers are entered from your rounds — your launch monitor
+        captures full swings, but scoring happens inside 100 yards, so this is
+        where you log it.
+      </p>
+    </>
   );
 }
 
