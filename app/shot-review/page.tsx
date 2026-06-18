@@ -32,6 +32,7 @@ import {
   type OverlayZone,
 } from '@/lib/overlayMetrics';
 import { diagnose, type ShotShape } from '@/lib/shotDiagnosis';
+import CourseRoundReview from '@/components/CourseRoundReview';
 import type { Shot } from '@/lib/types';
 
 const SHAPE_FILTERS: { id: ShotShape | 'all'; label: string }[] = [
@@ -394,6 +395,37 @@ function ShotReviewContent() {
       onSpeed={(s) => setSpeed(id, s)}
     />
   );
+
+  // Course-round mode: show a totally different layout where shots are
+  // bucketed by hole and overlaid on a procedural hole map.
+  const isCourseRound = session?.mode === 'Course' && !!session.course?.holes?.length;
+  if (isCourseRound) {
+    return (
+      <>
+        <PageHeader
+          eyebrow="Round review"
+          title={titleSuffix}
+          backHref={`/sessions/${sessionId}`}
+          backLabel="Back to session"
+        />
+        <div className="px-6 sm:px-8 lg:px-10 pb-10">
+          <div className="max-w-[1400px]">
+            {/* Just the global controls; no shot-picker bar in round mode. */}
+            <div className="bg-white rounded-2xl border border-border-subtle shadow-sm p-4 mb-6 flex items-center gap-2 flex-wrap">
+              <span className="type-label-sm text-text-tertiary">
+                {session.shots.length} shots · {session.course?.holesPlayed} holes
+              </span>
+              <div className="ml-auto flex items-center gap-2">
+                <OverlayControl prefs={overlay} setPrefs={setOverlay} />
+                <UnitsControl value={units} onChange={setUnits} />
+              </div>
+            </div>
+            <CourseRoundReview session={session!} units={units} overlay={overlay} />
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
