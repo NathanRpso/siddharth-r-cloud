@@ -403,7 +403,7 @@ function ShotReviewContent() {
     return (
       <>
         <PageHeader
-          eyebrow="Round review"
+          eyebrow="Round review - Drafting phase"
           title={titleSuffix}
           backHref={`/sessions/${sessionId}`}
           backLabel="Back to session"
