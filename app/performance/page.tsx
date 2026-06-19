@@ -30,10 +30,10 @@ import {
 } from '@/lib/stats';
 import type { Rating } from '@/lib/stats';
 import {
-  SHORT_GAME_HEADLINES,
-  PUTTING_MAKE_RATES,
-  WEDGE_PROXIMITY,
-  LAG_PUTT_PROXIMITY,
+  shortGameHeadlines,
+  puttingMakeRates,
+  wedgeProximity,
+  lagPuttProximity,
   rateHeadline,
   headlineDelta,
   shortGameSynthesis,
@@ -124,7 +124,9 @@ function PerformanceContent() {
           <div key={tab} className="rcl-fade-up">
             {tab === 'bag' && <BagTab />}
             {tab === 'scoring' && <ScoringTab benchmarks={carryBenchmarks} comparisonHandicap={cmpHcp} />}
-            {tab === 'short-game' && <ShortGameTab />}
+            {tab === 'short-game' && (
+              <ShortGameTab handicap={profile.handicap} comparisonHandicap={cmpHcp} />
+            )}
           </div>
         </div>
       </div>
@@ -432,8 +434,30 @@ function AccuracySection() {
 
 /* ──────────────────────── SHORT GAME TAB ──────────────────────── */
 
-function ShortGameTab() {
-  const synthesis = shortGameSynthesis();
+function ShortGameTab({
+  handicap,
+  comparisonHandicap,
+}: {
+  handicap: number;
+  comparisonHandicap: number;
+}) {
+  const headlines = useMemo(
+    () => shortGameHeadlines(handicap, comparisonHandicap),
+    [handicap, comparisonHandicap],
+  );
+  const makeRates = useMemo(
+    () => puttingMakeRates(handicap, comparisonHandicap),
+    [handicap, comparisonHandicap],
+  );
+  const wedges = useMemo(
+    () => wedgeProximity(handicap, comparisonHandicap),
+    [handicap, comparisonHandicap],
+  );
+  const lagPutt = useMemo(
+    () => lagPuttProximity(handicap, comparisonHandicap),
+    [handicap, comparisonHandicap],
+  );
+  const synthesis = shortGameSynthesis(headlines);
   return (
     <>
       <p className="type-body-lg text-text-primary font-semibold mb-6 leading-snug max-w-[78ch]">
@@ -442,7 +466,7 @@ function ShortGameTab() {
 
       {/* Headline scoring-zone stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {SHORT_GAME_HEADLINES.map((h) => (
+        {headlines.map((h) => (
           <MetricTile
             key={h.key}
             label={h.label}
@@ -468,14 +492,14 @@ function ShortGameTab() {
           typical amateur make rate — clear the tick and you're gaining strokes
           on the green.
         </p>
-        <PuttingMakeChart data={PUTTING_MAKE_RATES} />
+        <PuttingMakeChart data={makeRates} />
         <div className="mt-5 pt-4 border-t border-border-subtle flex items-center justify-between gap-4">
           <span className="type-body-sm text-text-secondary">
             Average leave after a long (30 ft+) putt
           </span>
           <span className="text-sm font-semibold text-text-primary tabular-nums">
-            {LAG_PUTT_PROXIMITY.value} ft
-            <span className="text-text-tertiary font-normal"> · typical {LAG_PUTT_PROXIMITY.benchmark} ft</span>
+            {lagPutt.value} ft
+            <span className="text-text-tertiary font-normal"> · typical {lagPutt.benchmark} ft</span>
           </span>
         </div>
       </section>
@@ -494,7 +518,7 @@ function ShortGameTab() {
           is the typical amateur.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {WEDGE_PROXIMITY.map((w) => {
+          {wedges.map((w) => {
             const better = w.proximityFt < w.benchmark;
             return (
               <div
