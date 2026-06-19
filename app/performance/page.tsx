@@ -13,21 +13,6 @@ import ClubMetricsChart from '@/components/ClubMetricsChart';
 import MetricTile from '@/components/MetricTile';
 import PuttingMakeChart from '@/components/PuttingMakeChart';
 import Icon from '@/components/Icon';
-import {
-  loadProfile,
-  DEFAULT_PROFILE,
-  scaledCarryBenchmarks,
-  type GolferProfile,
-} from '@/lib/golferProfile';
-import {
-  SHORT_GAME_HEADLINES,
-  PUTTING_MAKE_RATES,
-  WEDGE_PROXIMITY,
-  LAG_PUTT_PROXIMITY,
-  rateHeadline,
-  headlineDelta,
-  shortGameSynthesis,
-} from '@/lib/shortGame';
 import { ALL_SHOTS } from '@/lib/mockData';
 import { CLUBS } from '@/lib/clubs';
 import type { ClubId } from '@/lib/types';
@@ -42,14 +27,31 @@ import {
   strokesGainedSummary,
 } from '@/lib/stats';
 import type { Rating } from '@/lib/stats';
+import {
+  SHORT_GAME_HEADLINES,
+  PUTTING_MAKE_RATES,
+  WEDGE_PROXIMITY,
+  LAG_PUTT_PROXIMITY,
+  rateHeadline,
+  headlineDelta,
+  shortGameSynthesis,
+} from '@/lib/shortGame';
+import {
+  loadProfile,
+  DEFAULT_PROFILE,
+  scaledCarryBenchmarks,
+  type GolferProfile,
+} from '@/lib/golferProfile';
 
-// Two tabs only, by design: "Bag" answers "how does my equipment perform?"
-// (compare, dispersion, trend, any metric) and "Scoring" answers "where am I
-// winning or leaking strokes?" (strokes gained + accuracy). The distance
+// Three tabs: "Bag" (how does my equipment perform — compare, dispersion,
+// trend, any metric), "Scoring" (where am I winning/leaking strokes), and
+// "Short Game" (the scoring zone the launch monitor doesn't see). The distance
 // ladder deliberately lives on Home's "Bag at a glance" — not repeated here.
 type TabKey = 'bag' | 'scoring' | 'short-game';
 
 const DEFAULT_SELECTED: ClubId[] = ['Dr', '7i'];
+
+type CarryBenchmarks = Partial<Record<ClubId, { p25: number; p50: number; p75: number }>>;
 
 export default function PerformancePage() {
   return (
@@ -289,7 +291,7 @@ function ScoringTab({
   benchmarks,
   comparisonHandicap,
 }: {
-  benchmarks: Partial<Record<ClubId, { p25: number; p50: number; p75: number }>>;
+  benchmarks: CarryBenchmarks;
   comparisonHandicap: number;
 }) {
   return (
@@ -304,7 +306,7 @@ function StrokesGainedSection({
   benchmarks,
   comparisonHandicap,
 }: {
-  benchmarks: Partial<Record<ClubId, { p25: number; p50: number; p75: number }>>;
+  benchmarks: CarryBenchmarks;
   comparisonHandicap: number;
 }) {
   const data = useMemo(() => clubStrokesGained(ALL_SHOTS, benchmarks), [benchmarks]);
@@ -346,8 +348,9 @@ function StrokesGainedSection({
 
       <p className="type-body-sm text-text-secondary mb-6 max-w-prose">
         Estimates how many strokes per round each club gains or loses vs the
-        typical 20-handicap golfer, combining distance and dispersion. Positive
-        bars = strokes you're gaining. Negative bars = strokes you're leaking.
+        typical {comparisonHandicap}-handicap golfer, combining distance and
+        dispersion. Positive bars = strokes you're gaining. Negative bars =
+        strokes you're leaking.
       </p>
 
       {data.length ? (

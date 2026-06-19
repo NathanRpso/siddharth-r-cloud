@@ -452,9 +452,8 @@ html[data-theme='dark'] .rcl-brand-bg {
    A few large, soft tonal clouds drifting slowly behind the app. Built from
    radial-gradient blobs on layers wider than the viewport, animated purely
    with `transform` so the GPU composites them for ~free — no per-frame
-   repaint (the earlier SVG-noise-mask version was the main source of lag).
-   Gently sways (alternate) so the loop is seamless. Sits below content (cards
-   are opaque), never intercepts clicks; colour themes via --cloud. */
+   repaint. Gently sways (alternate) so the loop is seamless. Sits below
+   content (cards are opaque), never intercepts clicks; colour themes via --cloud. */
 @keyframes rcl-cloud-drift {
   from { transform: translate3d(-3%, 0, 0); }
   to   { transform: translate3d(3%, 0, 0); }

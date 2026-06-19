@@ -68,7 +68,7 @@ The split — **diagnostic** (find what's broken), **scored** (compete with your
 
 - **Missing: short game / putting practice.** This is the big gap.
 - **Missing: a warm-up / "just hitting balls" mode** that doesn't grade me. Sometimes I don't want a score; I want to loosen up.
-- **Missing: block vs random.** Real improvement comes from random practice (different club every ball). A mode that forces/te tracks that would be genuinely coach-approved.
+- **Missing: block vs random.** Real improvement comes from random practice (different club every ball). A mode that forces/tracks that would be genuinely coach-approved.
 - The names are fine, but I'd want to *pick the mode up front* and have the app coach me through it, not just label it afterward.
 
 ---

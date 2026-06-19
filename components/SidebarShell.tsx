@@ -16,14 +16,13 @@ export default function SidebarShell({ children }: { children: React.ReactNode }
 
   return (
     <>
-      {/* Ambient golf-swing motion, behind everything. Skipped on the
+      {/* Ambient drifting-cloud motion, behind everything. Skipped on the
           standalone coach-share view to keep it print-clean. */}
       {!isShared && <AmbientBackdrop />}
       {!isShared && <Sidebar />}
       {/* `key` on pathname re-mounts the main column on every navigation, so
           the page-enter transition plays each route change instead of only on
-          first load. `relative z-10` keeps content above the ambient backdrop.
-          Cheap and works with the existing static-page routing. */}
+          first load. `relative z-10` keeps content above the ambient backdrop. */}
       <main
         key={pathname}
         className={clsx('rcl-page-enter relative z-10 min-h-screen', !isShared && 'ml-[256px]')}
