@@ -7,6 +7,7 @@ import WhereYouStand from '@/components/WhereYouStand';
 import RecentSessionsCarousel from '@/components/RecentSessionsCarousel';
 import PersonalBestsStrip from '@/components/PersonalBestsStrip';
 import QuickStatsStrip from '@/components/QuickStatsStrip';
+import TypicalMissCard from '@/components/TypicalMissCard';
 import { GOLFER, ALL_SHOTS, SESSIONS } from '@/lib/mockData';
 import {
   lifetimeInsights,
@@ -65,6 +66,12 @@ export default function HomePage() {
       {/* 30-day quick stats — client component, 4th tile is customisable */}
       <div className="rcl-fade-up rcl-delay-2">
         <QuickStatsStrip shots={ALL_SHOTS} sessions={SESSIONS} />
+      </div>
+
+      {/* Typical miss — per-club shape diagnosis. The single most actionable
+          insight a launch monitor can give a golfer. */}
+      <div className="rcl-fade-up rcl-delay-3">
+        <TypicalMissCard shots={last30AllShots} />
       </div>
 
       {/* Trend chart */}

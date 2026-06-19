@@ -7,6 +7,7 @@ import type {
   Golfer,
   HoleResult,
   Session,
+  SessionConditions,
   SessionMode,
   Shot,
   Venue,
@@ -328,6 +329,31 @@ function pickDevice(r: () => number, weekIndex: number): Device {
   return r() < pro2Bias ? 'MLM2PRO' : 'MLM';
 }
 
+/** Synthesise a plausible weather snapshot for an outdoor session. Wind is
+ *  the dominant condition for a golfer; temperature shifts with month so
+ *  the range/practice log feels seasonal. */
+function generateConditions(r: () => number, date: Date): SessionConditions {
+  // Wind speed: log-ish distribution so most sessions are calm/light but a
+  // handful are genuinely windy.
+  const u = r();
+  const windMph = Math.round((u < 0.4 ? u * 6 : u < 0.85 ? 6 + (u - 0.4) * 22 : 16 + (u - 0.85) * 60));
+  const windDir = Math.floor(r() * 360);
+
+  // Temperature follows a sine over the year with a 20°F spread.
+  const m = date.getMonth(); // 0..11
+  const seasonal = 65 + 18 * Math.cos(((m - 6) / 12) * Math.PI * 2 + Math.PI);
+  const tempF = Math.round(seasonal + (r() - 0.5) * 12);
+
+  const label: SessionConditions['label'] =
+    windMph < 4 ? 'Calm'
+    : windMph < 9 ? 'Light'
+    : windMph < 15 ? 'Breezy'
+    : windMph < 22 ? 'Windy'
+    : 'Gusty';
+
+  return { windMph, windDir, tempF, label };
+}
+
 function generateSessions(): Session[] {
   const r = rng(20260513);
   const sessions: Session[] = [];
@@ -380,6 +406,7 @@ function generateSessions(): Session[] {
       const course =
         recipe.mode === 'Course' && venue ? generateCourseInfo(r, venue) : undefined;
       if (course?.holes) assignHoles(shots, course.holes);
+      const conditions = recipe.env === 'Outdoor' ? generateConditions(r, date) : undefined;
       sessions.push({
         id: sessionId,
         date: date.toISOString(),
@@ -390,6 +417,7 @@ function generateSessions(): Session[] {
         venue,
         shots,
         course,
+        conditions,
       });
     }
   }

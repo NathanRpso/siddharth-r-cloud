@@ -12,6 +12,7 @@ import { deriveSessionTitle, modeLabel } from '@/lib/sessionTitle';
 import EditableSessionTitle from '@/components/EditableSessionTitle';
 import TopBar from '@/components/TopBar';
 import MetricPill from '@/components/MetricPill';
+import ConditionsBadge from '@/components/ConditionsBadge';
 import Icon from '@/components/Icon';
 import DiagnosticDrilldown from '@/components/DiagnosticDrilldown';
 import CourseDrilldown from '@/components/CourseDrilldown';
@@ -38,6 +39,7 @@ export default function SessionDetailPage({ params }: { params: { id: string } }
   // Contextual title (venue / course / mode-default) — same derivation
   // the list cards use, so identity matches across surfaces.
   const derivedTitle = deriveSessionTitle(session);
+  const isCourse = session.mode === 'Course';
 
   const devicesUsed = Array.from(new Set(session.shots.map((s) => s.device)));
   const devicesLabel = devicesUsed.join(' + ');
@@ -77,24 +79,35 @@ export default function SessionDetailPage({ params }: { params: { id: string } }
               {dateStr} · {timeStr}
               {derivedTitle.subtitle && <> · {derivedTitle.subtitle}</>}
             </div>
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-4 items-center">
               <MetricPill icon={<Icon name="tag" size={14} />} label="Ball" value={session.ballType} />
               {session.elevation > 0 && (
                 <MetricPill icon={<Icon name="trending-up" size={14} />} label="Elev" value={`${session.elevation} ft`} />
               )}
               <MetricPill icon={<Icon name="desktop-computer" size={14} />} label="Device" value={devicesLabel} />
+              {session.conditions && <ConditionsBadge conditions={session.conditions} size="md" />}
             </div>
           </div>
           <div className="flex flex-col items-end gap-3 shrink-0">
             <TopBar />
             <div className="flex items-center gap-2">
+              {/* Primary action: jump straight into Shot Review for this
+                  session. For Course rounds this lands on the 18-hole
+                  layout; for everything else, the standard shot rail. */}
+              <Link
+                href={`/shot-review?session=${session.id}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-rap-red text-white text-sm font-semibold uppercase tracking-cta hover:bg-rap-red-hover transition-colors shadow-sm"
+              >
+                <Icon name={isCourse ? 'flag' : 'video-camera'} size={16} />
+                {isCourse ? 'Review round' : 'Review shots'}
+              </Link>
               <Link
                 href={`/share/${session.id}`}
                 target="_blank"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-rap-red text-white text-sm font-semibold uppercase tracking-cta hover:bg-rap-red-hover transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-transparent border border-border-default text-text-primary text-sm font-semibold uppercase tracking-cta hover:bg-neutral-50 transition-colors"
               >
                 <Icon name="share" size={16} />
-                Share with coach
+                Share
               </Link>
               <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-transparent border border-border-default text-text-primary text-sm font-semibold uppercase tracking-cta hover:bg-neutral-50 transition-colors">
                 <Icon name="download" size={16} />

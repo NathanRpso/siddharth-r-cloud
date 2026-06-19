@@ -31,7 +31,18 @@ import {
   type OverlayPrefs,
   type OverlayZone,
 } from '@/lib/overlayMetrics';
+import { diagnose, type ShotShape } from '@/lib/shotDiagnosis';
+import CourseRoundReview from '@/components/CourseRoundReview';
 import type { Shot } from '@/lib/types';
+
+const SHAPE_FILTERS: { id: ShotShape | 'all'; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'straight', label: 'Straight' },
+  { id: 'draw', label: 'Draw' },
+  { id: 'fade', label: 'Fade' },
+  { id: 'pull', label: 'Pull' },
+  { id: 'push', label: 'Push' },
+];
 
 const MAX_TILES = 4;
 const SPEEDS = [0.25, 0.5, 1] as const;
@@ -319,6 +330,7 @@ function ShotReviewContent() {
   }, [session]);
 
   const [addOpen, setAddOpen] = useState(false);
+  const [shapeFilter, setShapeFilter] = useState<ShotShape | 'all'>('all');
 
   // Display unit system — toggled from the picker bar; persists per session via localStorage.
   const [units, setUnits] = useState<UnitSystem>('imperial');
@@ -384,6 +396,37 @@ function ShotReviewContent() {
     />
   );
 
+  // Course-round mode: show a totally different layout where shots are
+  // bucketed by hole and overlaid on a procedural hole map.
+  const isCourseRound = session?.mode === 'Course' && !!session.course?.holes?.length;
+  if (isCourseRound) {
+    return (
+      <>
+        <PageHeader
+          eyebrow="Round review"
+          title={titleSuffix}
+          backHref={`/sessions/${sessionId}`}
+          backLabel="Back to session"
+        />
+        <div className="px-6 sm:px-8 lg:px-10 pb-10">
+          <div className="max-w-[1400px]">
+            {/* Just the global controls; no shot-picker bar in round mode. */}
+            <div className="bg-white rounded-2xl border border-border-subtle shadow-sm p-4 mb-6 flex items-center gap-2 flex-wrap">
+              <span className="type-label-sm text-text-tertiary">
+                {session.shots.length} shots · {session.course?.holesPlayed} holes
+              </span>
+              <div className="ml-auto flex items-center gap-2">
+                <OverlayControl prefs={overlay} setPrefs={setOverlay} />
+                <UnitsControl value={units} onChange={setUnits} />
+              </div>
+            </div>
+            <CourseRoundReview session={session!} units={units} overlay={overlay} />
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <PageHeader
@@ -416,6 +459,7 @@ function ShotReviewContent() {
                     <span className="text-[11px] font-mono text-text-secondary">
                       {joinUnit(fmtDistance(shot.carry, units, 0))}
                     </span>
+                    <ShapePill shot={shot} />
                     {shot.hasVideo && (
                       <Icon name="video-camera" size={12} className="text-text-tertiary" />
                     )}
@@ -438,6 +482,8 @@ function ShotReviewContent() {
                       setAddOpen(false);
                     }}
                     units={units}
+                    shapeFilter={shapeFilter}
+                    setShapeFilter={setShapeFilter}
                   />
                 )}
               </div>
@@ -482,6 +528,7 @@ function ShotReviewContent() {
                     >
                       {renderTile(shot, i)}
                       {renderControls(shot.id)}
+                      <ShotDiagnosis shot={shot} />
                       {i < selected.length - 1 && (
                         <LinkConnector
                           gap={colGapPx}
@@ -860,12 +907,16 @@ function AddShotControl({
   setOpen,
   onAdd,
   units = 'imperial',
+  shapeFilter = 'all',
+  setShapeFilter,
 }: {
   pool: Shot[];
   open: boolean;
   setOpen: (v: boolean) => void;
   onAdd: (s: Shot) => void;
   units?: UnitSystem;
+  shapeFilter?: ShotShape | 'all';
+  setShapeFilter?: (s: ShotShape | 'all') => void;
 }) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -893,40 +944,80 @@ function AddShotControl({
         <Icon name="plus" size={14} />
         Add shot
       </button>
-      {open && (
-        <PortalMenu anchor={triggerRef} menuRef={menuRef} onClose={() => setOpen(false)}>
-          {pool.length === 0 ? (
-            <div className="px-3 py-6 text-center text-sm text-text-tertiary">No more shots to add</div>
-          ) : (
-            pool.slice(0, 40).map((shot) => (
-              <button
-                key={shot.id}
-                onClick={() => onAdd(shot)}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-neutral-50 transition-colors text-left"
-              >
-                <span
-                  className="w-6 h-6 rounded-pill flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                  style={{ backgroundColor: CLUBS[shot.club].color }}
-                >
-                  {shot.club}
-                </span>
-                <span className="text-sm font-semibold text-text-primary tabular-nums">
-                  {joinUnit(fmtDistance(shot.carry, units, 0))}
-                </span>
-                <span className="text-xs text-text-tertiary">
-                  {joinUnit(fmtSpeed(shot.ballSpeed, units, 0))} ball
-                </span>
-                {shot.hasVideo && <Icon name="video-camera" size={13} className="text-sport-golf-600" />}
-                {shot.isOutlier && (
-                  <span className="ml-auto px-1.5 py-0.5 rounded-sm bg-warning text-rap-black text-[9px] font-bold uppercase tracking-caps">
-                    Surprise
-                  </span>
-                )}
-              </button>
-            ))
-          )}
-        </PortalMenu>
-      )}
+      {open && (() => {
+        const filtered =
+          shapeFilter === 'all'
+            ? pool
+            : pool.filter((s) => diagnose(s).shape === shapeFilter);
+        return (
+          <PortalMenu anchor={triggerRef} menuRef={menuRef} onClose={() => setOpen(false)}>
+            {/* Shape filter chips — "show me my fat 9-irons" style filtering. */}
+            {setShapeFilter && (
+              <div className="flex flex-wrap gap-1 px-1 pb-2 mb-1 border-b border-border-subtle">
+                {SHAPE_FILTERS.map((f) => {
+                  const active = f.id === shapeFilter;
+                  return (
+                    <button
+                      key={f.id}
+                      onClick={() => setShapeFilter(f.id)}
+                      className={clsx(
+                        'px-2 py-1 rounded-pill text-[11px] font-bold uppercase tracking-caps transition-colors',
+                        active
+                          ? 'bg-rap-red text-white'
+                          : 'bg-neutral-100 text-text-secondary hover:text-text-primary',
+                      )}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {filtered.length === 0 ? (
+              <div className="px-3 py-6 text-center text-sm text-text-tertiary">
+                {shapeFilter === 'all' ? 'No more shots to add' : `No ${shapeFilter} shots match.`}
+              </div>
+            ) : (
+              filtered.slice(0, 40).map((shot) => {
+                const dx = diagnose(shot);
+                return (
+                  <button
+                    key={shot.id}
+                    onClick={() => onAdd(shot)}
+                    className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-neutral-50 transition-colors text-left"
+                  >
+                    <span
+                      className="w-6 h-6 rounded-pill flex items-center justify-center text-[10px] font-bold text-white shrink-0"
+                      style={{ backgroundColor: CLUBS[shot.club].color }}
+                    >
+                      {shot.club}
+                    </span>
+                    <span className="text-sm font-semibold text-text-primary tabular-nums">
+                      {joinUnit(fmtDistance(shot.carry, units, 0))}
+                    </span>
+                    <span
+                      className={clsx(
+                        'text-[10px] font-bold uppercase tracking-caps px-1.5 py-0.5 rounded-sm',
+                        dx.tone === 'warn'     && 'bg-warning-bg text-warning',
+                        dx.tone === 'neutral'  && 'bg-neutral-100 text-text-secondary',
+                        dx.tone === 'positive' && 'bg-sport-golf/15 text-sport-golf-700',
+                      )}
+                    >
+                      {dx.shapeLabel}
+                    </span>
+                    {shot.hasVideo && <Icon name="video-camera" size={13} className="text-sport-golf-600" />}
+                    {shot.isOutlier && (
+                      <span className="ml-auto px-1.5 py-0.5 rounded-sm bg-warning text-rap-black text-[9px] font-bold uppercase tracking-caps">
+                        Surprise
+                      </span>
+                    )}
+                  </button>
+                );
+              })
+            )}
+          </PortalMenu>
+        );
+      })()}
     </>
   );
 }
@@ -1176,6 +1267,43 @@ function UnitsControl({ value, onChange }: { value: UnitSystem; onChange: (u: Un
         </PortalMenu>
       )}
     </>
+  );
+}
+
+/** A small coloured pill summarising the shot's shape (Pull-draw, Push…). */
+function ShapePill({ shot }: { shot: Shot }) {
+  const dx = diagnose(shot);
+  return (
+    <span
+      className={clsx(
+        'text-[10px] font-bold uppercase tracking-caps px-1.5 py-0.5 rounded-sm',
+        dx.tone === 'warn'     && 'bg-warning-bg text-warning',
+        dx.tone === 'neutral'  && 'bg-neutral-100 text-text-secondary',
+        dx.tone === 'positive' && 'bg-sport-golf/15 text-sport-golf-700',
+      )}
+      title={dx.line}
+    >
+      {dx.shapeLabel}
+    </span>
+  );
+}
+
+/** Plain-English one-liner sitting under the tile controls, tone-coloured
+ *  by whether this shot was a flushed-and-straight result or a problem. */
+function ShotDiagnosis({ shot }: { shot: Shot }) {
+  const dx = diagnose(shot);
+  return (
+    <div
+      className={clsx(
+        'rounded-md px-3 py-2 text-[12px] leading-snug border',
+        dx.tone === 'warn'     && 'bg-warning-bg/40 border-warning/30 text-text-primary',
+        dx.tone === 'neutral'  && 'bg-neutral-50    border-border-subtle text-text-primary',
+        dx.tone === 'positive' && 'bg-sport-golf/10 border-sport-golf/30 text-text-primary',
+      )}
+    >
+      <span className="font-semibold mr-1">{dx.shapeLabel}.</span>
+      <span className="text-text-secondary">{dx.line}</span>
+    </div>
   );
 }
 
