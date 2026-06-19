@@ -1,14 +1,16 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import Icon from './Icon';
 import VideoTile from './VideoTile';
 import HoleLayout from './HoleLayout';
 import { CLUBS } from '@/lib/clubs';
 import { generateHoleLayout, plotShots, zoneLabel } from '@/lib/holeLayout';
+import { getShotClips } from '@/lib/shotVideos';
+import { TIMELINE_MS } from '@/lib/ballFlight';
 import { fmtDistance, type UnitSystem } from '@/lib/units';
-import { DEFAULT_OVERLAY, type OverlayPrefs } from '@/lib/overlayMetrics';
+import { type OverlayPrefs } from '@/lib/overlayMetrics';
 import type { Session, Shot } from '@/lib/types';
 import type { AnnotateTool, Stroke } from './AnnotationCanvas';
 
@@ -18,7 +20,14 @@ interface Props {
   overlay: OverlayPrefs;
 }
 
-const EMPTY_STROKES: Stroke[] = [];
+const SPEEDS = [0.25, 0.5, 1] as const;
+const INK_COLORS = ['#FFFFFF', '#1BE377', '#FF4D4D', '#FFC53D'] as const;
+const INK_NAMES: Record<string, string> = {
+  '#FFFFFF': 'White',
+  '#1BE377': 'Green',
+  '#FF4D4D': 'Red',
+  '#FFC53D': 'Amber',
+};
 
 /**
  * Course-round view of Shot Review. Groups the session's shots by hole and
@@ -319,19 +328,11 @@ function HoleShotRow({
       {selected && (
         <div className="border-t border-border-subtle p-3">
           {/* Constrain the tile so it doesn't blow up the row; 9:16 video
-              tiles look right at ~300px wide on a desktop. */}
-          <div className="mx-auto w-full max-w-[300px]">
-            <VideoTile
+              tiles look right at ~320px wide on a desktop. */}
+          <div className="mx-auto w-full max-w-[320px]">
+            <HoleShotPlayer
               shot={shot}
               index={index}
-              progress={0}
-              playing={false}
-              speed={1}
-              tool="off"
-              color="#FFFFFF"
-              strokes={EMPTY_STROKES}
-              onCommit={() => {}}
-              onClearFrame={() => {}}
               units={units}
               overlay={overlay}
             />
@@ -339,5 +340,221 @@ function HoleShotRow({
         </div>
       )}
     </div>
+  );
+}
+
+/** A fully interactive replay of a single hole shot — playback clock, Shot ⇄
+ *  Impact toggle, scrub/frame controls, and the same draw-on-video annotation
+ *  tools as the main Shot Review compare rail. Each player owns its own state,
+ *  so opening several holes doesn't entangle their clocks. */
+function HoleShotPlayer({
+  shot,
+  index,
+  units,
+  overlay,
+}: {
+  shot: Shot;
+  index: number;
+  units: UnitSystem;
+  overlay: OverlayPrefs;
+}) {
+  const hasVideo = useMemo(() => !!getShotClips(shot), [shot]);
+
+  const [progress, setProgress] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  const [view, setView] = useState<'shot' | 'impact'>('shot');
+
+  const [tool, setTool] = useState<AnnotateTool>('off');
+  const [ink, setInk] = useState<string>(INK_COLORS[1]);
+  const [strokes, setStrokes] = useState<Stroke[]>([]);
+
+  // Tracer (no-footage) tiles have no native clock, so advance progress here.
+  // Real video tiles report their own position via onProgress/onEnded.
+  useEffect(() => {
+    if (!playing || hasVideo) return;
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = now - last;
+      last = now;
+      setProgress((p) => {
+        const next = p + (dt / TIMELINE_MS) * speed;
+        if (next >= 1) {
+          setPlaying(false);
+          return 1;
+        }
+        return next;
+      });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [playing, hasVideo, speed]);
+
+  const togglePlay = () => {
+    setPlaying((pl) => {
+      if (!pl && progress >= 1) setProgress(0);
+      return !pl;
+    });
+  };
+  const scrubTo = (v: number) => {
+    setPlaying(false);
+    setProgress(v);
+  };
+  const cycleSpeed = () => {
+    const i = SPEEDS.indexOf(speed as (typeof SPEEDS)[number]);
+    setSpeed(SPEEDS[(i + 1) % SPEEDS.length]);
+  };
+  const reportProgress = (p: number) => setProgress((prev) => (prev !== p ? p : prev));
+  const endClock = () => {
+    setPlaying(false);
+    setProgress(1);
+  };
+
+  const toggleTool = (t: AnnotateTool) => setTool((cur) => (cur === t ? 'off' : t));
+  const commitStroke = (s: Stroke) => setStrokes((prev) => [...prev, s]);
+  const clearFrame = () => setStrokes([]);
+  const undo = () => setStrokes((prev) => prev.slice(0, -1));
+
+  return (
+    <div className="flex flex-col gap-2">
+      <VideoTile
+        shot={shot}
+        index={index}
+        progress={progress}
+        playing={playing}
+        speed={speed}
+        tool={tool}
+        color={ink}
+        strokes={strokes}
+        onCommit={commitStroke}
+        onClearFrame={clearFrame}
+        view={view}
+        onView={setView}
+        onProgress={reportProgress}
+        onEnded={endClock}
+        units={units}
+        overlay={overlay}
+      />
+
+      {/* Playback bar */}
+      <div className="w-full flex items-center gap-2 bg-white rounded-pill border border-border-subtle shadow-sm px-3 py-1.5">
+        <button
+          onClick={togglePlay}
+          aria-label={playing ? 'Pause' : 'Play'}
+          className="w-8 h-8 rounded-pill bg-rap-red text-white hover:bg-rap-red-hover flex items-center justify-center transition-colors shrink-0"
+        >
+          <Icon name={playing ? 'pause-circle' : 'play-circle'} size={18} />
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.005}
+          value={progress}
+          onChange={(e) => scrubTo(parseFloat(e.target.value))}
+          aria-label="Scrub playback"
+          className="flex-1 accent-rap-red cursor-pointer"
+        />
+        <button
+          onClick={cycleSpeed}
+          className="shrink-0 w-11 text-center text-[11px] font-semibold text-text-secondary hover:text-text-primary bg-neutral-100 rounded-pill px-2 py-1"
+        >
+          {speed}×
+        </button>
+      </div>
+
+      {/* Annotation toolbar */}
+      <div className="w-full flex items-center gap-1.5 bg-white rounded-pill border border-border-subtle shadow-sm px-2 py-1.5">
+        <PlayerTool glyph={<Icon name="pencil" size={15} />} label="Pen" active={tool === 'pen'} onClick={() => toggleTool('pen')} />
+        <PlayerTool glyph={<LineGlyph />} label="Line" active={tool === 'line'} onClick={() => toggleTool('line')} />
+        <PlayerTool glyph={<Icon name="arrow-right" size={15} />} label="Arrow" active={tool === 'arrow'} onClick={() => toggleTool('arrow')} />
+        <PlayerTool glyph={<DotGlyph />} label="Dot" active={tool === 'dot'} onClick={() => toggleTool('dot')} />
+        <span className="w-px h-5 bg-border-subtle mx-0.5" />
+        {INK_COLORS.map((c) => {
+          const name = INK_NAMES[c] ?? c;
+          const isWhite = c.toUpperCase() === '#FFFFFF';
+          return (
+            <button
+              key={c}
+              onClick={() => setInk(c)}
+              aria-label={`${name} ink`}
+              title={`${name} ink`}
+              className={clsx(
+                'w-5 h-5 rounded-pill transition-transform',
+                ink === c
+                  ? 'scale-110 ring-2 ring-offset-1 ring-text-primary border border-white'
+                  : isWhite
+                    ? 'border-2 border-neutral-500 hover:scale-105'
+                    : 'border border-neutral-300 hover:scale-105',
+              )}
+              style={{ backgroundColor: c }}
+            />
+          );
+        })}
+        <span className="w-px h-5 bg-border-subtle mx-0.5" />
+        <button
+          onClick={undo}
+          disabled={!strokes.length}
+          aria-label="Undo last markup"
+          title="Undo last markup"
+          className="w-7 h-7 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-neutral-100 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-default"
+        >
+          <UndoGlyph />
+        </button>
+        <button
+          onClick={clearFrame}
+          disabled={!strokes.length}
+          aria-label="Clear all markup"
+          title="Clear all markup"
+          className="w-7 h-7 rounded-md flex items-center justify-center text-text-secondary hover:text-rap-red hover:bg-neutral-50 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-default"
+        >
+          <Icon name="trash" size={15} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PlayerTool({ glyph, label, active, onClick }: { glyph: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      aria-pressed={active}
+      className={clsx(
+        'w-7 h-7 rounded-md flex items-center justify-center transition-colors shrink-0',
+        active ? 'bg-rap-red text-white' : 'text-text-secondary hover:text-text-primary hover:bg-neutral-100',
+      )}
+    >
+      {glyph}
+    </button>
+  );
+}
+
+function LineGlyph() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden>
+      <line x1="5" y1="19" x2="19" y2="5" />
+    </svg>
+  );
+}
+
+function DotGlyph() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <circle cx="12" cy="12" r="5" />
+    </svg>
+  );
+}
+
+function UndoGlyph() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M9 14L4 9l5-5" />
+      <path d="M4 9h11a5 5 0 0 1 0 10h-1" />
+    </svg>
   );
 }
